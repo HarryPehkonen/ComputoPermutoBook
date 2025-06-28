@@ -1,6 +1,6 @@
 ## **Appendix A: Complete Operator Reference**
 
-This appendix provides a quick reference for all 22 operators available in Computo.
+This appendix provides a quick reference for all 25 operators available in Computo.
 
 ### Data Access & Scoping
 
@@ -24,9 +24,15 @@ Retrieves a value from a JSON object or array using a JSON Pointer.
 
 ---
 #### `$input`
-Returns the entire input JSON document that was provided to the script.
+Returns the entire input JSON document that was provided to the script (equivalent to the first input when multiple inputs are provided).
 *   **Syntax:** `["$input"]`
 *   **Example:** If `input.json` is `{"id": 1}`, `["$input"]` -> `{"id": 1}`
+
+---
+#### `$inputs`
+Returns an array containing all input JSON documents that were provided to the script.
+*   **Syntax:** `["$inputs"]`
+*   **Example:** If called with `input1.json` and `input2.json`, returns `[<input1_content>, <input2_content>]`
 
 ### Logic & Control Flow
 
@@ -68,6 +74,20 @@ Merges two or more objects. Rightmost keys win in case of conflict.
 Applies a Permuto template to a context object.
 *   **Syntax:** `["permuto.apply", <template_expr>, <context_expr>]`
 *   **Example:** `["permuto.apply", {"id": "${/user_id}"}, {"user_id": 123}]` -> `{"id": 123}`
+
+### JSON Patch Operations (RFC 6902)
+
+---
+#### `diff`
+Generates an RFC 6902 JSON Patch array that describes the differences between two JSON documents.
+*   **Syntax:** `["diff", <original_document>, <modified_document>]`
+*   **Example:** `["diff", {"status": "active"}, {"status": "archived"}]` -> `[{"op": "replace", "path": "/status", "value": "archived"}]`
+
+---
+#### `patch`
+Applies an RFC 6902 JSON Patch array to a document, returning the modified document.
+*   **Syntax:** `["patch", <document_to_patch>, <patch_array>]`
+*   **Example:** `["patch", {"status": "active"}, [{"op": "replace", "path": "/status", "value": "archived"}]]` -> `{"status": "archived"}`
 
 ### Mathematical
 
