@@ -199,7 +199,7 @@ full_html = f'''<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title}</title>
+    <title>$title</title>
     <link rel="stylesheet" href="$(if [[ "$GITHUB_PAGES_MODE" == true ]]; then echo "style.css"; else echo "../style.css"; fi)">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -379,4 +379,3 @@ main() {
 }
 
 main "$@"
-EOF
