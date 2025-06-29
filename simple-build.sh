@@ -180,6 +180,7 @@ convert_md_to_html() {
     local md_file="$1"
     local html_file="$2"
     local title="$3"
+    local is_appendix="$4"
     
     python3 << EOF
 import markdown
@@ -200,18 +201,17 @@ full_html = f'''<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>$title</title>
-    <link rel="stylesheet" href="$(if [[ "$GITHUB_PAGES_MODE" == true ]]; then echo "style.css"; else echo "../style.css"; fi)">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="$(if [[ "$is_appendix" == "true" ]]; then echo "../style.css"; else echo "style.css"; fi)">
 </head>
 <body>
     <div class="back-to-index">
-        <a href="$(if [[ "$GITHUB_PAGES_MODE" == true ]]; then echo "index.html"; else echo "../index.html"; fi)">← Back to Table of Contents</a>
+        <a href="$(if [[ "$is_appendix" == "true" ]]; then echo "../index.html"; else echo "index.html"; fi)">← Back to Table of Contents</a>
     </div>
     
     {html_content}
     
     <div class="back-to-index">
-        <a href="$(if [[ "$GITHUB_PAGES_MODE" == true ]]; then echo "index.html"; else echo "../index.html"; fi)">← Back to Table of Contents</a>
+        <a href="$(if [[ "$is_appendix" == "true" ]]; then echo "../index.html"; else echo "index.html"; fi)">← Back to Table of Contents</a>
     </div>
 </body>
 </html>'''
@@ -239,12 +239,12 @@ generate_html() {
             if [[ "$md_file" == *"/appendices/"* ]]; then
                 html_file="$HTML_DIR/appendices/$basename.html"
                 title="ComputoPermuto Book - Appendix $basename"
+                convert_md_to_html "$md_file" "$html_file" "$title" "true"
             else
                 html_file="$HTML_DIR/$basename.html"
                 title="ComputoPermuto Book - $basename"
+                convert_md_to_html "$md_file" "$html_file" "$title" "false"
             fi
-            
-            convert_md_to_html "$md_file" "$html_file" "$title"
         fi
     done
     
@@ -252,6 +252,7 @@ generate_html() {
     create_index_html
     
     # Note: README files are linked directly to GitHub repositories for latest information
+    # No longer converting local README files
     
     print_status "HTML generation complete!"
 }
