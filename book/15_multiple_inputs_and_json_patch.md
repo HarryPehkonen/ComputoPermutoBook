@@ -448,6 +448,300 @@ The `car` and `cdr` operators are particularly powerful for processing multiple 
 computo --pretty=2 conversation_processor.json initial_conversation.json patch1.json patch2.json patch3.json
 ```
 
+## Advanced List Building and Manipulation Operations
+
+Beyond basic list processing, Computo provides powerful operators for constructing and manipulating arrays in sophisticated ways. These operations complement the functional `car` and `cdr` operators.
+
+### The `cons` Operator: List Building
+
+The `cons` operator prepends an item to the beginning of an array, following functional programming conventions:
+
+```json
+["cons", <item>, <array>]
+```
+
+**Basic usage:**
+```json
+["cons", "first", {"array": [2, 3, 4]}]
+// Result: ["first", 2, 3, 4]
+```
+
+**Building lists incrementally:**
+```json
+// Start with empty array and build a list
+["cons", 1, 
+  ["cons", 2, 
+    ["cons", 3, {"array": []}]
+  ]
+]
+// Result: [1, 2, 3]
+```
+
+**Practical example - Adding metadata to processing results:**
+```json
+["let", [
+    ["processing_results", ["map", 
+      ["get", ["$input"], "/user_data"],
+      ["lambda", ["user"], ["obj", 
+        ["id", ["get", ["$", "/user"], "/id"]], 
+        ["processed", true]
+      ]]
+    ]],
+    ["timestamp", "2024-01-15T12:00:00Z"]
+  ],
+  ["cons", 
+    ["obj", ["processing_metadata", ["$", "/timestamp"]]],
+    ["$", "/processing_results"]
+  ]
+]
+```
+
+### The `append` Operator: Array Concatenation
+
+The `append` operator concatenates multiple arrays into a single array:
+
+```json
+["append", <array1>, <array2>, <array3>, ...]
+```
+
+**Basic concatenation:**
+```json
+["append", 
+  {"array": [1, 2]}, 
+  {"array": [3, 4]}, 
+  {"array": [5]}
+]
+// Result: [1, 2, 3, 4, 5]
+```
+
+**Combining data from multiple sources:**
+```json
+["let", [
+    ["primary_users", ["get", ["$inputs"], "/0/users"]],
+    ["backup_users", ["get", ["$inputs"], "/1/users"]],
+    ["temp_users", ["get", ["$inputs"], "/2/users"]]
+  ],
+  ["obj",
+    ["all_users", ["append", 
+      ["$", "/primary_users"],
+      ["$", "/backup_users"], 
+      ["$", "/temp_users"]
+    ]],
+    ["total_count", ["count", ["append",
+      ["$", "/primary_users"],
+      ["$", "/backup_users"],
+      ["$", "/temp_users"]
+    ]]]
+  ]
+]
+```
+
+**Real-world example - Aggregating log entries:**
+```json
+// Combine log entries from multiple services
+["let", [
+    ["web_logs", ["get", ["$inputs"], "/0/entries"]],
+    ["api_logs", ["get", ["$inputs"], "/1/entries"]],
+    ["db_logs", ["get", ["$inputs"], "/2/entries"]]
+  ],
+  ["obj",
+    ["combined_logs", ["append", 
+      ["$", "/web_logs"], 
+      ["$", "/api_logs"], 
+      ["$", "/db_logs"]
+    ]],
+    ["log_sources", {"array": ["web", "api", "database"]}],
+    ["total_entries", ["count", ["append",
+      ["$", "/web_logs"],
+      ["$", "/api_logs"], 
+      ["$", "/db_logs"]
+    ]]]
+  ]
+]
+```
+
+### The `chunk` Operator: Batch Processing
+
+The `chunk` operator splits an array into smaller arrays of a specified size, perfect for batch processing:
+
+```json
+["chunk", <array>, <size>]
+```
+
+**Basic chunking:**
+```json
+["chunk", {"array": [1, 2, 3, 4, 5, 6, 7]}, 3]
+// Result: [[1, 2, 3], [4, 5, 6], [7]]
+```
+
+**Processing data in batches:**
+```json
+["let", [
+    ["all_users", ["get", ["$input"], "/users"]],
+    ["batch_size", 50],
+    ["user_batches", ["chunk", ["$", "/all_users"], ["$", "/batch_size"]]]
+  ],
+  ["obj",
+    ["total_users", ["count", ["$", "/all_users"]]],
+    ["batch_count", ["count", ["$", "/user_batches"]]],
+    ["batch_size", ["$", "/batch_size"]],
+    ["batches", ["$", "/user_batches"]]
+  ]
+]
+```
+
+**Real-world example - Email campaign processing:**
+```json
+// Prepare email lists for batch sending
+["let", [
+    ["subscriber_list", ["get", ["$input"], "/subscribers"]],
+    ["batch_size", 100],
+    ["email_batches", ["chunk", ["$", "/subscriber_list"], ["$", "/batch_size"]]]
+  ],
+  ["obj",
+    ["campaign_id", ["get", ["$input"], "/campaign_id"]],
+    ["total_subscribers", ["count", ["$", "/subscriber_list"]]],
+    ["email_batches", ["map", 
+      ["$", "/email_batches"],
+      ["lambda", ["batch"], ["obj",
+        ["batch_size", ["count", ["$", "/batch"]]],
+        ["recipients", ["$", "/batch"]]
+      ]]
+    ]],
+    ["estimated_send_time_minutes", ["/", 
+      ["count", ["$", "/email_batches"]], 
+      2
+    ]]
+  ]
+]
+```
+
+### The `partition` Operator: Conditional Splitting
+
+The `partition` operator splits an array into two groups based on a predicate function:
+
+```json
+["partition", <array>, <lambda_predicate>]
+```
+
+**Returns:** `[<truthy_items>, <falsy_items>]`
+
+**Basic partitioning:**
+```json
+["partition", 
+  {"array": [1, 2, 3, 4, 5, 6]},
+  ["lambda", ["x"], [">", ["$", "/x"], 3]]
+]
+// Result: [[4, 5, 6], [1, 2, 3]]
+```
+
+**Separating valid and invalid records:**
+```json
+["let", [
+    ["user_records", ["get", ["$input"], "/users"]],
+    ["partitioned", ["partition", 
+      ["$", "/user_records"],
+      ["lambda", ["user"], ["&&",
+        ["!=", ["get", ["$", "/user"], "/email"], null],
+        ["!=", ["get", ["$", "/user"], "/name"], ""]
+      ]]
+    ]]
+  ],
+  ["obj",
+    ["valid_users", ["car", ["$", "/partitioned"]]],
+    ["invalid_users", ["car", ["cdr", ["$", "/partitioned"]]]],
+    ["valid_count", ["count", ["car", ["$", "/partitioned"]]]],
+    ["invalid_count", ["count", ["car", ["cdr", ["$", "/partitioned"]]]]],
+    ["validation_summary", ["obj",
+      ["total_processed", ["count", ["$", "/user_records"]]],
+      ["pass_rate", ["/", 
+        ["count", ["car", ["$", "/partitioned"]]], 
+        ["count", ["$", "/user_records"]]
+      ]]
+    ]]
+  ]
+]
+```
+
+**Real-world example - Order processing:**
+```json
+// Separate urgent and standard orders for different processing queues
+["let", [
+    ["all_orders", ["get", ["$input"], "/orders"]],
+    ["partitioned_orders", ["partition",
+      ["$", "/all_orders"],
+      ["lambda", ["order"], ["||",
+        ["==", ["get", ["$", "/order"], "/priority"], "urgent"],
+        [">", ["get", ["$", "/order"], "/amount"], 1000]
+      ]]
+    ]]
+  ],
+  ["obj",
+    ["urgent_orders", ["car", ["$", "/partitioned_orders"]]],
+    ["standard_orders", ["car", ["cdr", ["$", "/partitioned_orders"]]]],
+    ["processing_queues", ["obj",
+      ["urgent_queue", ["obj",
+        ["orders", ["car", ["$", "/partitioned_orders"]]],
+        ["count", ["count", ["car", ["$", "/partitioned_orders"]]]],
+        ["estimated_processing_hours", 2]
+      ]],
+      ["standard_queue", ["obj",
+        ["orders", ["car", ["cdr", ["$", "/partitioned_orders"]]]],
+        ["count", ["count", ["car", ["cdr", ["$", "/partitioned_orders"]]]]],
+        ["estimated_processing_hours", 24]
+      ]]
+    ]]
+  ]
+]
+```
+
+### Combining List Operations for Complex Processing
+
+These operators work beautifully together for sophisticated data processing workflows:
+
+**Example: Processing survey responses in batches by category:**
+```json
+["let", [
+    ["all_responses", ["get", ["$input"], "/survey_responses"]],
+    // First partition by satisfaction level
+    ["satisfaction_split", ["partition",
+      ["$", "/all_responses"],
+      ["lambda", ["response"], [">", ["get", ["$", "/response"], "/satisfaction"], 7]]
+    ]],
+    ["positive_responses", ["car", ["$", "/satisfaction_split"]]],
+    ["negative_responses", ["car", ["cdr", ["$", "/satisfaction_split"]]]],
+    // Then chunk positive responses for follow-up campaigns
+    ["positive_batches", ["chunk", ["$", "/positive_responses"], 25]],
+    // And chunk negative responses for support outreach
+    ["negative_batches", ["chunk", ["$", "/negative_responses"], 10]]
+  ],
+  ["obj",
+    ["processing_summary", ["obj",
+      ["total_responses", ["count", ["$", "/all_responses"]]],
+      ["positive_count", ["count", ["$", "/positive_responses"]]],
+      ["negative_count", ["count", ["$", "/negative_responses"]]]
+    ]],
+    ["follow_up_campaigns", ["map",
+      ["$", "/positive_batches"],
+      ["lambda", ["batch"], ["obj",
+        ["type", "testimonial_request"],
+        ["recipients", ["$", "/batch"]],
+        ["batch_size", ["count", ["$", "/batch"]]]
+      ]]
+    ]],
+    ["support_outreach", ["map",
+      ["$", "/negative_batches"],
+      ["lambda", ["batch"], ["obj",
+        ["type", "customer_support"],
+        ["priority", "high"],
+        ["recipients", ["$", "/batch"]],
+        ["batch_size", ["count", ["$", "/batch"]]]
+      ]]
+    ]]
+  ]
+]
+```
+
 ### Best Practices for Multiple Input Processing
 
 1. **Use descriptive variable names** when working with `let` bindings
@@ -457,6 +751,10 @@ computo --pretty=2 conversation_processor.json initial_conversation.json patch1.
 5. **Use patch operations for incremental updates** rather than full replacements
 6. **Consider car/cdr for functional processing** when dealing with variable numbers of inputs
 7. **Use car/cdr with reduce** for applying operations across multiple inputs
+8. **Use cons for building lists incrementally** rather than complex array construction
+9. **Use append for combining multiple data sources** efficiently
+10. **Use chunk for batch processing** large datasets
+11. **Use partition for conditional data splitting** instead of multiple filter operations
 
 ### Chapter Summary
 
@@ -467,6 +765,10 @@ In this chapter, you learned:
 - How to generate standardized JSON patches using the `diff` operator
 - How to apply patches using the `patch` operator  
 - **Functional list processing** with `car` and `cdr` operators for elegant array manipulation
+- **Advanced list building** with `cons` for prepending items to arrays
+- **Array concatenation** with `append` for combining multiple data sources
+- **Batch processing** with `chunk` for splitting arrays into manageable sizes
+- **Conditional splitting** with `partition` for separating data based on predicates
 - **Functional patterns** for processing variable numbers of inputs
 - Complete workflows for document versioning and change management
 - Advanced patterns for multi-document processing

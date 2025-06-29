@@ -1,6 +1,6 @@
 ## **Appendix A: Complete Operator Reference**
 
-This appendix provides a quick reference for all 29 operators available in Computo.
+This appendix provides a quick reference for all 33 operators available in Computo.
 
 ### Data Access & Scoping
 
@@ -254,3 +254,43 @@ Returns all elements except the first from an array. Inspired by Lisp's cdr func
 *   **Example:** `["cdr", {"array": [1, 2, 3]}]` -> `[2, 3]`
 
 *   **Note:** Returns empty array `[]` if input array is empty; throws `InvalidArgumentException` if argument is not an array
+
+---
+#### `cons`
+Prepends an item to the beginning of an array. Fundamental list building operation from functional programming.
+
+*   **Syntax:** `["cons", <item_expr>, <array_expr>]`
+
+*   **Example:** `["cons", "first", {"array": [2, 3, 4]}]` -> `["first", 2, 3, 4]`
+
+*   **Note:** Creates a new array; original array is not modified
+
+---
+#### `append`
+Concatenates multiple arrays into a single array.
+
+*   **Syntax:** `["append", <array1_expr>, <array2_expr>, <array3_expr>, ...]`
+
+*   **Example:** `["append", {"array": [1, 2]}, {"array": [3, 4]}, {"array": [5]}]` -> `[1, 2, 3, 4, 5]`
+
+*   **Note:** Accepts any number of array arguments; creates a new array
+
+---
+#### `chunk`
+Splits an array into smaller arrays of a specified size. Perfect for batch processing.
+
+*   **Syntax:** `["chunk", <array_expr>, <size_expr>]`
+
+*   **Example:** `["chunk", {"array": [1, 2, 3, 4, 5]}, 2]` -> `[[1, 2], [3, 4], [5]]`
+
+*   **Note:** Last chunk may be smaller if array length is not evenly divisible by size
+
+---
+#### `partition`
+Splits an array into two groups based on a predicate function: [truthy_items, falsy_items].
+
+*   **Syntax:** `["partition", <array_expr>, ["lambda", ["item_var"], <condition_expr>]]`
+
+*   **Example:** `["partition", {"array": [1, 2, 3, 4, 5]}, ["lambda", ["x"], [">", ["$", "/x"], 3]]]` -> `[[4, 5], [1, 2, 3]]`
+
+*   **Note:** Returns a two-element array: first contains items where predicate is truthy, second contains items where predicate is falsy

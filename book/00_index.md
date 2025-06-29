@@ -95,12 +95,12 @@
 - RFC 6902 JSON Patch support with `diff` and `patch` operators
 - Document versioning and change management
 - Multi-document processing patterns
-- **Operators introduced:** `$inputs`, `diff`, `patch`, `car`, `cdr`, `count`
+- **Operators introduced:** `$inputs`, `diff`, `patch`, `car`, `cdr`, `cons`, `append`, `chunk`, `partition`, `count`
 
 ### **Appendices**
 
 **[Appendix A: Complete Operator Reference](appendices/A_operator_reference.html)**
-- Comprehensive reference for all 29 operators
+- Comprehensive reference for all 33 operators
 - Syntax examples and use cases
 - Quick lookup guide
 - **All operators now covered:** Complete documentation in chapters and appendix
