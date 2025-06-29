@@ -22,11 +22,13 @@
 - Understanding the "code as data" philosophy
 - Basic syntax and operators
 - Your first transformations
+- **Operators introduced:** `+`, `-`, `*`, `/`, `obj`, `{"array": [...]}`, `$input`, `get`, `let`, `$`
 
 **[Chapter 4: Permuto Basics - Template Processing](04_permuto_basics.md)**
 - Declarative templating with `${path}` syntax
 - Type preservation and string interpolation
 - Integration with Computo scripts
+- **Operators introduced:** `permuto.apply`
 
 ### **Part II: Core Operations**
 
@@ -34,21 +36,25 @@
 - Conditional expressions with `if`
 - Comparison operators
 - Building decision trees
+- **Operators introduced:** `if`, `>`, `<`, `>=`, `<=`, `==`, `!=`, `&&`, `||`, `approx` (plus truthiness rules and short-circuit evaluation)
 
 **[Chapter 6: Working with Arrays](06_working_with_arrays.md)**
 - Array literals and basic operations
 - Introduction to functional programming concepts
 - Lambda expressions
+- **Operators introduced:** `map`, `lambda`
 
 **[Chapter 7: Object Manipulation](07_object_manipulation.md)**
 - Creating and merging objects
 - JSON Pointer navigation
 - Variable scoping with `let`
+- **Operators introduced:** `merge`
 
 **[Chapter 8: Advanced Array Operations](08_advanced_array_ops.md)**
 - Functional programming with `map`, `filter`, and `reduce`
 - Complex data transformations
 - Performance considerations
+- **Operators introduced:** `filter`, `reduce`, `find`, `some`, `every`, `flatMap`
 
 ### **Part III: Advanced Techniques**
 
@@ -89,13 +95,15 @@
 - RFC 6902 JSON Patch support with `diff` and `patch` operators
 - Document versioning and change management
 - Multi-document processing patterns
+- **Operators introduced:** `$inputs`, `diff`, `patch`, `car`, `cdr`, `count`
 
 ### **Appendices**
 
 **[Appendix A: Complete Operator Reference](appendices/A_operator_reference.md)**
-- Comprehensive reference for all 25 operators
+- Comprehensive reference for all 29 operators
 - Syntax examples and use cases
 - Quick lookup guide
+- **All operators now covered:** Complete documentation in chapters and appendix
 
 ---
 

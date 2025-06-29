@@ -2,7 +2,7 @@
 
 In Chapter 6, we introduced `map`, the fundamental tool for transforming arrays. However, transformation is only one part of the story. Often, you need to select a subset of items from an array or aggregate an entire array into a single value.
 
-This chapter introduces the remaining core array operators: `filter` and `reduce`. Mastering these three operators (`map`, `filter`, and `reduce`) will give you a complete and powerful toolkit for virtually any array manipulation task.
+This chapter introduces the remaining array operators: `filter`, `reduce`, and specialized query operators (`find`, `some`, `every`, `flatMap`). Mastering these operators alongside `map` will give you a complete and powerful toolkit for virtually any array manipulation task.
 
 ### `filter`: Selecting Items from an Array
 
@@ -164,12 +164,189 @@ Now we can combine all three to answer complex questions. For example: "What is 
 
 **Output:** `20`
 
+### Additional Array Query Operators
+
+Beyond the core transformation operators (`map`, `filter`, `reduce`), Computo provides specialized operators for common array query patterns. These operators make it easy to answer questions like "Does any item match this condition?" or "What's the first item that meets my criteria?"
+
+#### `find`: Locating the First Match
+
+The `find` operator searches through an array and returns the **first item** that matches a condition. If no item matches, it returns `null`.
+
+`["find", <array_expression>, ["lambda", ["<item_variable>"], <condition_expression>]]`
+
+**Example: Finding the first premium user**
+
+**`find_premium_user.json`:**
+```json
+[
+  /* Find the first user with a premium plan */
+  "find",
+  ["get", ["$input"], "/users"],
+  ["lambda", ["user"], ["==", ["get", ["$", "/user"], "/plan"], "premium"]]
+]
+```
+
+**Output:**
+```json
+{
+  "active": true,
+  "name": "Alice", 
+  "plan": "premium"
+}
+```
+
+If no premium users existed, the result would be `null`.
+
+#### `some`: Testing for Any Match
+
+The `some` operator returns `true` if **at least one** item in the array matches the condition, `false` otherwise. It's perfect for answering "Is there any..." questions.
+
+`["some", <array_expression>, ["lambda", ["<item_variable>"], <condition_expression>]]`
+
+**Example: Checking if any users are inactive**
+
+**`has_inactive_users.json`:**
+```json
+[
+  /* Check if there are any inactive users in the system */
+  "some",
+  ["get", ["$input"], "/users"],
+  ["lambda", ["user"], ["==", ["get", ["$", "/user"], "/active"], false]]
+]
+```
+
+**Output:** `true` (because Bob is inactive)
+
+This is much more efficient than filtering and checking the count, especially for large arrays, because `some` stops as soon as it finds the first match.
+
+#### `every`: Testing for Universal Match
+
+The `every` operator returns `true` if **all** items in the array match the condition, `false` otherwise. It answers "Are all..." questions.
+
+`["every", <array_expression>, ["lambda", ["<item_variable>"], <condition_expression>]]`
+
+**Example: Verifying all users are active**
+
+**`all_users_active.json`:**
+```json
+[
+  /* Verify that all users in the system are active */
+  "every", 
+  ["get", ["$input"], "/users"],
+  ["lambda", ["user"], ["get", ["$", "/user"], "/active"]]
+]
+```
+
+**Output:** `false` (because Bob is inactive)
+
+**Note:** `every` returns `true` for empty arrays, which is mathematically correct (vacuous truth).
+
+#### `flatMap`: Transforming and Flattening
+
+The `flatMap` operator is like `map`, but if the transformation function returns an array, those arrays are flattened into a single result array. This is useful when each item needs to be expanded into multiple items.
+
+`["flatMap", <array_expression>, ["lambda", ["<item_variable>"], <transform_expression>]]`
+
+**Example: Expanding user permissions**
+
+Let's say each user has multiple roles, and we want a flat list of all permissions across all users.
+
+**`expanded_users_input.json`:**
+```json
+{
+  "users": [
+    { 
+      "name": "Alice", 
+      "roles": ["admin", "editor"] 
+    },
+    { 
+      "name": "Bob", 
+      "roles": ["viewer"] 
+    },
+    { 
+      "name": "Charlie", 
+      "roles": ["editor", "contributor"] 
+    }
+  ]
+}
+```
+
+**`all_roles.json`:**
+```json
+[
+  /* Extract all roles from all users into a single flat array */
+  "flatMap",
+  ["get", ["$input"], "/users"],
+  ["lambda", ["user"], ["get", ["$", "/user"], "/roles"]]
+]
+```
+
+**Output:**
+```json
+["admin", "editor", "viewer", "editor", "contributor"]
+```
+
+Compare this to regular `map`, which would give you nested arrays:
+```json
+[["admin", "editor"], ["viewer"], ["editor", "contributor"]]
+```
+
+#### Practical Combinations
+
+These operators work beautifully together for complex queries:
+
+**`user_validation_report.json`:**
+```json
+["obj",
+  /* Check various conditions about our user base */
+  ["has_premium_users", [
+    "some", 
+    ["get", ["$input"], "/users"],
+    ["lambda", ["u"], ["==", ["get", ["$", "/u"], "/plan"], "premium"]]
+  ]],
+  
+  ["all_users_active", [
+    "every",
+    ["get", ["$input"], "/users"], 
+    ["lambda", ["u"], ["get", ["$", "/u"], "/active"]]
+  ]],
+  
+  ["first_inactive_user", [
+    "find",
+    ["get", ["$input"], "/users"],
+    ["lambda", ["u"], ["==", ["get", ["$", "/u"], "/active"], false]]
+  ]],
+  
+  ["total_user_count", [
+    "count", 
+    ["get", ["$input"], "/users"]
+  ]]
+]
+```
+
+**Output:**
+```json
+{
+  "has_premium_users": true,
+  "all_users_active": false,
+  "first_inactive_user": {
+    "name": "Bob",
+    "active": false,
+    "plan": "basic"
+  },
+  "total_user_count": 3
+}
+```
+
 ### In This Chapter
 
-You have now completed the core functional toolkit for array processing.
+You have now completed the comprehensive functional toolkit for array processing.
 *   You learned to use **`filter`** to selectively create new arrays based on a condition.
 *   You learned to use **`reduce`** to aggregate an array's contents into a single result.
 *   You saw how **chaining `filter` and `map`** creates powerful data pipelines.
 *   You combined all three operators—**`filter`, `map`, and `reduce`**—to answer a complex question about a data set in a single, expressive script.
+*   You discovered specialized query operators: **`find`** for locating items, **`some`** for existence checks, and **`every`** for universal validation.
+*   You explored **`flatMap`** for transforming and flattening nested data structures.
+*   You saw how these operators combine to create comprehensive data analysis reports.
 
 You are now equipped to handle a vast range of data transformation challenges. The following chapters will build on this foundation, exploring how to apply these patterns to real-world integration scenarios.

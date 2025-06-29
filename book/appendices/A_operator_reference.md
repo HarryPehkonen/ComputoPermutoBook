@@ -1,6 +1,6 @@
 ## **Appendix A: Complete Operator Reference**
 
-This appendix provides a quick reference for all 27 operators available in Computo.
+This appendix provides a quick reference for all 29 operators available in Computo.
 
 ### Data Access & Scoping
 
@@ -41,6 +41,20 @@ Returns an array containing all input JSON documents that were provided to the s
 Evaluates a condition and returns one of two expressions.
 *   **Syntax:** `["if", <condition>, <then_expr>, <else_expr>]`
 *   **Example:** `["if", true, "Yes", "No"]` -> `"Yes"`
+
+---
+#### `&&`
+Logical AND operator with short-circuit evaluation. Returns `true` only if all arguments are truthy.
+*   **Syntax:** `["&&", <expr1>, <expr2>, <expr3>, ...]`
+*   **Example:** `["&&", true, [">", 10, 5], ["!=", "hello", ""]]` -> `true`
+*   **Short-circuit:** Stops evaluating at first falsy value
+
+---
+#### `||`
+Logical OR operator with short-circuit evaluation. Returns `true` if any argument is truthy.
+*   **Syntax:** `["||", <expr1>, <expr2>, <expr3>, ...]`
+*   **Example:** `["||", false, ["==", 2, 2]]` -> `true`
+*   **Short-circuit:** Stops evaluating at first truthy value
 
 ---
 #### `==`, `!=`, `>`, `<`, `>=`, `<=`
@@ -96,6 +110,25 @@ Applies an RFC 6902 JSON Patch array to a document, returning the modified docum
 Performs a mathematical operation on two numbers.
 *   **Syntax:** `["<op>", <num1_expr>, <num2_expr>]`
 *   **Example:** `["*", 5, 10]` -> `50`
+
+### Lambda Functions
+
+---
+#### `lambda`
+Defines an anonymous function for use with array operators. **Used ONLY with array operators** (`map`, `filter`, `reduce`, `find`, `some`, `every`, `flatMap`).
+
+*   **Syntax:** `["lambda", ["param1", "param2", ...], <body_expression>]`
+
+*   **How Lambda Works:**
+    1. **Parameter Declaration:** The second element is an array of parameter names (as strings)
+    2. **Body Expression:** The third element is the expression that gets executed
+    3. **Parameter Access:** Inside the body, access parameters using `["$", "/param_name"]`
+
+*   **Single Parameter Example:** 
+    `["lambda", ["x"], ["+", ["$", "/x"], 1]]` - adds 1 to parameter `x`
+
+*   **Two Parameter Example (for `reduce`):** 
+    `["lambda", ["acc", "item"], ["+", ["$", "/acc"], ["$", "/item"]]]` - adds `item` to accumulator `acc`
 
 ### Array Operators
 
