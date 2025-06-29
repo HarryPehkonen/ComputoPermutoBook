@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Computo README</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="html/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Computo README</h1>
+</header>
+<h1 id="computo">Computo</h1>
+<p>A safe, sandboxed JSON transformation engine with Lisp-like syntax
+expressed in JSON. Features RFC 6902 JSON Patch support for document
+diffing and patching, plus <strong>Permuto</strong> integration for
+advanced templating.</p>
+<h2 id="architecture-overview">Architecture Overview</h2>
+<ul>
+<li><strong>Computo</strong>: Handles complex programmatic logic
+(conditionals, loops, calculations, diff/patch operations)</li>
+<li><strong>Permuto</strong>: Handles simple declarative substitutions
+and templating using <code>${path}</code> syntax</li>
+<li><strong>JSON Patch</strong>: RFC 6902 compliant diff generation and
+patch application</li>
+<li><strong>Code is Data</strong>: All scripts are valid JSON with
+unambiguous syntax</li>
+<li><strong>Immutable</strong>: Pure functions that don’t modify input
+data</li>
+<li><strong>Sandboxed</strong>: No I/O operations or system access</li>
+</ul>
+<h2 id="quick-start">Quick Start</h2>
+<h3 id="building">Building</h3>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Configure and build</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cmake</span> <span class="at">-B</span> build <span class="at">-DCMAKE_BUILD_TYPE</span><span class="op">=</span>Debug</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cmake</span> <span class="at">--build</span> build</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Run tests (153 tests, 100% passing)</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> build <span class="kw">&amp;&amp;</span> <span class="ex">ctest</span> <span class="at">--verbose</span></span></code></pre></div>
+<h3 id="cli-usage">CLI Usage</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Basic transformation (single input)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./build/computo</span> script.json input.json</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Multiple input files</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">./build/computo</span> script.json input1.json input2.json input3.json</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate JSON Patch from transformation</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">./build/computo</span> <span class="at">--diff</span> transform_script.json original.json</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># With Permuto string interpolation</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="ex">./build/computo</span> <span class="at">--interpolation</span> script.json input.json</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Available CLI options</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="ex">./build/computo</span> <span class="at">--missing-key</span><span class="op">=</span>error <span class="at">--max-depth</span><span class="op">=</span>32 script.json input.json</span></code></pre></div>
+<h3 id="library-usage">Library Usage</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;computo/computo.hpp&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Single input (traditional)</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>nlohmann<span class="op">::</span>json script <span class="op">=</span> <span class="st">R&quot;(</span><span class="vs">[&quot;*&quot;, [&quot;get&quot;, [&quot;$input&quot;], &quot;/value&quot;], 2]</span><span class="st">)&quot;</span>_json<span class="op">;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>nlohmann<span class="op">::</span>json input <span class="op">=</span> <span class="st">R&quot;(</span><span class="vs">{&quot;value&quot;: 21}</span><span class="st">)&quot;</span>_json<span class="op">;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>nlohmann<span class="op">::</span>json result <span class="op">=</span> computo<span class="op">::</span>execute<span class="op">(</span>script<span class="op">,</span> input<span class="op">);</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">// Result: 42</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">// Multiple inputs (new)</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>vector<span class="op">&lt;</span>nlohmann<span class="op">::</span>json<span class="op">&gt;</span> inputs <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">R&quot;(</span><span class="vs">{&quot;data&quot;: [1, 2, 3]}</span><span class="st">)&quot;</span>_json<span class="op">,</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">R&quot;(</span><span class="vs">{&quot;multiplier&quot;: 10}</span><span class="st">)&quot;</span>_json</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>nlohmann<span class="op">::</span>json multi_script <span class="op">=</span> <span class="st">R&quot;(</span><span class="vs">[&quot;map&quot;, [&quot;get&quot;, [&quot;$inputs&quot;], &quot;/0/data&quot;], </span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="vs">  [&quot;lambda&quot;, [&quot;x&quot;], [&quot;*&quot;, [&quot;$&quot;, &quot;/x&quot;], [&quot;get&quot;, [&quot;$inputs&quot;], &quot;/1/multiplier&quot;]]]]</span><span class="st">)&quot;</span>_json<span class="op">;</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>nlohmann<span class="op">::</span>json result <span class="op">=</span> computo<span class="op">::</span>execute<span class="op">(</span>multi_script<span class="op">,</span> inputs<span class="op">);</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">// Result: [10, 20, 30]</span></span></code></pre></div>
+<h2 id="core-syntax">Core Syntax</h2>
+<h3 id="operator-calls-vs-literal-data">Operator Calls vs Literal
+Data</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Operator</span> <span class="er">call:</span> <span class="ot">[</span><span class="er">operator</span><span class="ot">,</span> <span class="er">arg1</span><span class="ot">,</span> <span class="er">arg2</span><span class="ot">,</span> <span class="er">...</span><span class="ot">]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;*&quot;</span><span class="ot">,</span> <span class="dv">6</span><span class="ot">,</span> <span class="dv">7</span><span class="ot">]</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Literal</span> <span class="er">array:</span> <span class="fu">{</span><span class="dt">&quot;array&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="er">item1</span><span class="ot">,</span> <span class="er">item2</span><span class="ot">,</span> <span class="er">...</span><span class="ot">]</span><span class="fu">}</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;array&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">6</span><span class="ot">,</span> <span class="dv">7</span><span class="ot">]</span><span class="fu">}</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Objects</span> <span class="er">are</span> <span class="er">standard</span> <span class="er">JSON</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;key&quot;</span><span class="fu">:</span> <span class="st">&quot;value&quot;</span><span class="fu">,</span> <span class="dt">&quot;number&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">}</span></span></code></pre></div>
+<h3 id="system-variables">System Variables</h3>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Single</span> <span class="er">input</span> <span class="er">access</span> <span class="er">(backward</span> <span class="er">compatible)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;$input&quot;</span><span class="ot">]</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Multiple</span> <span class="er">inputs</span> <span class="er">access</span> <span class="er">(new)</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">]</span>  <span class="er">//</span> <span class="er">Returns</span> <span class="er">array</span> <span class="er">of</span> <span class="er">all</span> <span class="er">input</span> <span class="er">documents</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Variable</span> <span class="er">access</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/variable_name&quot;</span><span class="ot">]</span></span></code></pre></div>
+<h3 id="essential-operators">Essential Operators</h3>
+<h4 id="data-access-input-handling">Data Access &amp; Input
+Handling</h4>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Access</span> <span class="er">first</span> <span class="er">input</span> <span class="er">(traditional)</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;$input&quot;</span><span class="ot">]</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Access</span> <span class="er">all</span> <span class="er">inputs</span> <span class="er">as</span> <span class="er">array</span> <span class="er">(new)</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">]</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Access</span> <span class="er">specific</span> <span class="er">input</span> <span class="er">by</span> <span class="er">index</span> <span class="er">(new)</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/0&quot;</span><span class="ot">]</span>  <span class="er">//</span> <span class="er">First</span> <span class="er">input</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/1&quot;</span><span class="ot">]</span>  <span class="er">//</span> <span class="er">Second</span> <span class="er">input</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Variable</span> <span class="er">binding</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;let&quot;</span><span class="ot">,</span> <span class="ot">[[</span><span class="st">&quot;x&quot;</span><span class="ot">,</span> <span class="dv">10</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;y&quot;</span><span class="ot">,</span> <span class="dv">20</span><span class="ot">]],</span> <span class="ot">[</span><span class="st">&quot;*&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/x&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/y&quot;</span><span class="ot">]]]</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Variable</span> <span class="er">access</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/variable_name&quot;</span><span class="ot">]</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">JSON</span> <span class="er">Pointer</span> <span class="er">access</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;key&quot;</span><span class="fu">:</span> <span class="fu">{</span><span class="dt">&quot;nested&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">}}</span><span class="ot">,</span> <span class="st">&quot;/key/nested&quot;</span><span class="ot">]</span></span></code></pre></div>
+<h4 id="json-patch-operations-rfc-6902">JSON Patch Operations (RFC
+6902)</h4>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Generate</span> <span class="er">diff</span> <span class="er">between</span> <span class="er">two</span> <span class="er">documents</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;diff&quot;</span><span class="ot">,</span> <span class="er">original_doc</span><span class="ot">,</span> <span class="er">modified_doc</span><span class="ot">]</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Returns:</span> <span class="ot">[</span><span class="fu">{</span><span class="dt">&quot;op&quot;</span><span class="fu">:</span> <span class="st">&quot;replace&quot;</span><span class="fu">,</span> <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;/status&quot;</span><span class="fu">,</span> <span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="st">&quot;new&quot;</span><span class="fu">}</span><span class="ot">]</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Apply</span> <span class="er">patch</span> <span class="er">to</span> <span class="er">document</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;patch&quot;</span><span class="ot">,</span> <span class="er">document</span><span class="ot">,</span> <span class="er">patch_array</span><span class="ot">]</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">patch_array</span> <span class="er">must</span> <span class="er">be</span> <span class="er">valid</span> <span class="er">RFC</span> <span class="er">6902</span> <span class="er">JSON</span> <span class="er">Patch</span> <span class="er">format</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Example</span> <span class="er">patch</span> <span class="er">operations</span> <span class="er">that</span> <span class="er">can</span> <span class="er">be</span> <span class="er">generated/applied:</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="fu">{</span><span class="dt">&quot;op&quot;</span><span class="fu">:</span> <span class="st">&quot;add&quot;</span><span class="fu">,</span> <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;/new_field&quot;</span><span class="fu">,</span> <span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="st">&quot;new_value&quot;</span><span class="fu">}</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="fu">{</span><span class="dt">&quot;op&quot;</span><span class="fu">:</span> <span class="st">&quot;remove&quot;</span><span class="fu">,</span> <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;/old_field&quot;</span><span class="fu">}</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="fu">{</span><span class="dt">&quot;op&quot;</span><span class="fu">:</span> <span class="st">&quot;replace&quot;</span><span class="fu">,</span> <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;/field&quot;</span><span class="fu">,</span> <span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="st">&quot;updated_value&quot;</span><span class="fu">}</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="fu">{</span><span class="dt">&quot;op&quot;</span><span class="fu">:</span> <span class="st">&quot;move&quot;</span><span class="fu">,</span> <span class="dt">&quot;from&quot;</span><span class="fu">:</span> <span class="st">&quot;/old_path&quot;</span><span class="fu">,</span> <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;/new_path&quot;</span><span class="fu">}</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="fu">{</span><span class="dt">&quot;op&quot;</span><span class="fu">:</span> <span class="st">&quot;copy&quot;</span><span class="fu">,</span> <span class="dt">&quot;from&quot;</span><span class="fu">:</span> <span class="st">&quot;/source&quot;</span><span class="fu">,</span> <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;/destination&quot;</span><span class="fu">}</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="fu">{</span><span class="dt">&quot;op&quot;</span><span class="fu">:</span> <span class="st">&quot;test&quot;</span><span class="fu">,</span> <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;/field&quot;</span><span class="fu">,</span> <span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="st">&quot;expected_value&quot;</span><span class="fu">}</span></span></code></pre></div>
+<h4 id="logic-control-flow">Logic &amp; Control Flow</h4>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Conditional</span> <span class="er">execution</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;if&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;&gt;&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/score&quot;</span><span class="ot">],</span> <span class="dv">80</span><span class="ot">],</span> <span class="st">&quot;Pass&quot;</span><span class="ot">,</span> <span class="st">&quot;Fail&quot;</span><span class="ot">]</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Comparison</span> <span class="er">operators</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;&gt;&quot;</span><span class="ot">,</span> <span class="dv">10</span><span class="ot">,</span> <span class="dv">5</span><span class="ot">]</span>     <span class="er">//</span> <span class="er">true</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;==&quot;</span><span class="ot">,</span> <span class="st">&quot;a&quot;</span><span class="ot">,</span> <span class="st">&quot;b&quot;</span><span class="ot">]</span> <span class="er">//</span> <span class="er">false</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;!=&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">,</span> <span class="dv">2</span><span class="ot">]</span>     <span class="er">//</span> <span class="er">true</span></span></code></pre></div>
+<h4 id="data-construction">Data Construction</h4>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Object</span> <span class="er">creation</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;obj&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;name&quot;</span><span class="ot">,</span> <span class="st">&quot;Alice&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;age&quot;</span><span class="ot">,</span> <span class="dv">30</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;active&quot;</span><span class="ot">,</span> <span class="kw">true</span><span class="ot">]]</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Array</span> <span class="er">creation</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;array&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">1</span><span class="ot">,</span> <span class="dv">2</span><span class="ot">,</span> <span class="dv">3</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;*&quot;</span><span class="ot">,</span> <span class="dv">2</span><span class="ot">,</span> <span class="dv">4</span><span class="ot">]]</span><span class="fu">}</span></span></code></pre></div>
+<h4 id="array-operations-with-lambdas">Array Operations with
+Lambdas</h4>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Transform</span> <span class="er">array</span> <span class="er">elements</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;map&quot;</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;array&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">1</span><span class="ot">,</span> <span class="dv">2</span><span class="ot">,</span> <span class="dv">3</span><span class="ot">]</span><span class="fu">}</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;lambda&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;x&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;*&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/x&quot;</span><span class="ot">],</span> <span class="dv">2</span><span class="ot">]]]</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Result:</span> <span class="ot">[</span><span class="dv">2</span><span class="ot">,</span> <span class="dv">4</span><span class="ot">,</span> <span class="dv">6</span><span class="ot">]</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Filter</span> <span class="er">array</span> <span class="er">elements</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;filter&quot;</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;array&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">1</span><span class="ot">,</span> <span class="dv">2</span><span class="ot">,</span> <span class="dv">3</span><span class="ot">,</span> <span class="dv">4</span><span class="ot">,</span> <span class="dv">5</span><span class="ot">]</span><span class="fu">}</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;lambda&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;x&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;&gt;&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/x&quot;</span><span class="ot">],</span> <span class="dv">2</span><span class="ot">]]]</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Result:</span> <span class="ot">[</span><span class="dv">3</span><span class="ot">,</span> <span class="dv">4</span><span class="ot">,</span> <span class="dv">5</span><span class="ot">]</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Reduce</span> <span class="er">array</span> <span class="er">to</span> <span class="er">single</span> <span class="er">value</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;reduce&quot;</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;array&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">1</span><span class="ot">,</span> <span class="dv">2</span><span class="ot">,</span> <span class="dv">3</span><span class="ot">,</span> <span class="dv">4</span><span class="ot">]</span><span class="fu">}</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;lambda&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;acc&quot;</span><span class="ot">,</span> <span class="st">&quot;x&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;+&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/acc&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/x&quot;</span><span class="ot">]]],</span> <span class="dv">0</span><span class="ot">]</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Result:</span> <span class="er">10</span></span></code></pre></div>
+<h4 id="list-processing-with-carcdr">List Processing with car/cdr</h4>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Get</span> <span class="er">first</span> <span class="er">element</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;car&quot;</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;array&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">1</span><span class="ot">,</span> <span class="dv">2</span><span class="ot">,</span> <span class="dv">3</span><span class="ot">,</span> <span class="dv">4</span><span class="ot">]</span><span class="fu">}</span><span class="ot">]</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Result:</span> <span class="er">1</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Get</span> <span class="er">remaining</span> <span class="er">elements</span>  </span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;cdr&quot;</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;array&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">1</span><span class="ot">,</span> <span class="dv">2</span><span class="ot">,</span> <span class="dv">3</span><span class="ot">,</span> <span class="dv">4</span><span class="ot">]</span><span class="fu">}</span><span class="ot">]</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Result:</span> <span class="ot">[</span><span class="dv">2</span><span class="ot">,</span> <span class="dv">3</span><span class="ot">,</span> <span class="dv">4</span><span class="ot">]</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Composition:</span> <span class="er">get</span> <span class="er">second</span> <span class="er">element</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;car&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;cdr&quot;</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;array&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">1</span><span class="ot">,</span> <span class="dv">2</span><span class="ot">,</span> <span class="dv">3</span><span class="ot">,</span> <span class="dv">4</span><span class="ot">]</span><span class="fu">}</span><span class="ot">]]</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Result:</span> <span class="er">2</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Process</span> <span class="er">multiple</span> <span class="er">inputs</span> <span class="er">functionally</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;reduce&quot;</span><span class="ot">,</span> </span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;cdr&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">]],</span>                    <span class="er">//</span> <span class="er">All</span> <span class="er">patches</span> <span class="er">(skip</span> <span class="er">first</span> <span class="er">input)</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;lambda&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;state&quot;</span><span class="ot">,</span> <span class="st">&quot;patch&quot;</span><span class="ot">],</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;patch&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/state&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/patch&quot;</span><span class="ot">]]</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>  <span class="ot">],</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;car&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">]]</span>                     <span class="er">//</span> <span class="er">Initial</span> <span class="er">state</span> <span class="er">(first</span> <span class="er">input)</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Applies</span> <span class="er">all</span> <span class="er">patches</span> <span class="er">to</span> <span class="er">initial</span> <span class="er">state</span></span></code></pre></div>
+<h4 id="permuto-integration">Permuto Integration</h4>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Apply</span> <span class="er">Permuto</span> <span class="er">templates</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;permuto.apply&quot;</span><span class="ot">,</span> </span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span><span class="dt">&quot;greeting&quot;</span><span class="fu">:</span> <span class="st">&quot;Hello ${/user/name}!&quot;</span><span class="fu">,</span> <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;${/user/id}&quot;</span><span class="fu">}</span><span class="ot">,</span> </span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span><span class="dt">&quot;user&quot;</span><span class="fu">:</span> <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Alice&quot;</span><span class="fu">,</span> <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="dv">123</span><span class="fu">}}</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Result:</span> <span class="fu">{</span><span class="dt">&quot;greeting&quot;</span><span class="fu">:</span> <span class="st">&quot;Hello Alice!&quot;</span><span class="fu">,</span> <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="dv">123</span><span class="fu">}</span></span></code></pre></div>
+<h2 id="complete-operator-reference">Complete Operator Reference</h2>
+<h3 id="mathematical">Mathematical</h3>
+<ul>
+<li><code>["+", num1, num2]</code> - Addition</li>
+<li><code>["-", num1, num2]</code> - Subtraction<br />
+</li>
+<li><code>["*", num1, num2]</code> - Multiplication</li>
+<li><code>["/", num1, num2]</code> - Division</li>
+</ul>
+<h3 id="logical-comparison">Logical &amp; Comparison</h3>
+<ul>
+<li><code>["if", condition, then_value, else_value]</code> -
+Conditional</li>
+<li><code>["&gt;", a, b]</code>, <code>["&lt;", a, b]</code>,
+<code>["&gt;=", a, b]</code>, <code>["&lt;=", a, b]</code> -
+Comparisons</li>
+<li><code>["==", a, b]</code>, <code>["!=", a, b]</code> - Equality
+checks</li>
+<li><code>["approx", a, b, epsilon]</code> - Approximate equality for
+floats</li>
+</ul>
+<h3 id="data-access-input">Data Access &amp; Input</h3>
+<ul>
+<li><code>["$input"]</code> - Access entire input data (first input if
+multiple)</li>
+<li><code>["$inputs"]</code> - Access all input documents as array</li>
+<li><code>["$", "/path"]</code> - Access variable by path</li>
+<li><code>["get", object, "/json/pointer"]</code> - Extract data using
+JSON Pointer</li>
+<li><code>["let", bindings, body]</code> - Create variable scope</li>
+</ul>
+<h3 id="json-patch-operations-rfc-6902-1">JSON Patch Operations (RFC
+6902)</h3>
+<ul>
+<li><code>["diff", doc_a, doc_b]</code> - Generate JSON Patch between
+documents</li>
+<li><code>["patch", document, patch_array]</code> - Apply JSON Patch to
+document</li>
+</ul>
+<h3 id="data-construction-1">Data Construction</h3>
+<ul>
+<li><code>["obj", ["key1", val1], ["key2", val2], ...]</code> - Create
+object</li>
+<li><code>{"array": [item1, item2, ...]}</code> - Create array (literal
+syntax)</li>
+<li><code>["count", array]</code> - Get array length</li>
+</ul>
+<h3 id="array-operations">Array Operations</h3>
+<ul>
+<li><code>["map", array, lambda]</code> - Transform each element</li>
+<li><code>["filter", array, lambda]</code> - Keep elements matching
+condition</li>
+<li><code>["reduce", array, lambda, initial]</code> - Reduce to single
+value</li>
+<li><code>["find", array, lambda]</code> - Find first matching
+element</li>
+<li><code>["some", array, lambda]</code> - Test if any element
+matches</li>
+<li><code>["every", array, lambda]</code> - Test if all elements
+match</li>
+<li><code>["flatMap", array, lambda]</code> - Map and flatten
+results</li>
+</ul>
+<h3 id="list-processing-functional">List Processing (Functional)</h3>
+<ul>
+<li><code>["car", array]</code> - Get first element of array</li>
+<li><code>["cdr", array]</code> - Get all but first element of
+array</li>
+</ul>
+<h3 id="lambda-syntax">Lambda Syntax</h3>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;lambda&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;param1&quot;</span><span class="ot">,</span> <span class="st">&quot;param2&quot;</span><span class="ot">],</span> <span class="er">body_expression</span><span class="ot">]</span></span></code></pre></div>
+<h3 id="templates">Templates</h3>
+<ul>
+<li><code>["permuto.apply", template, context]</code> - Process Permuto
+templates</li>
+</ul>
+<h2 id="json-patch-workflow-examples">JSON Patch Workflow Examples</h2>
+<h3 id="basic-diff-and-patch">Basic Diff and Patch</h3>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Create transformation script</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&#39;[&quot;obj&quot;, [&quot;id&quot;, [&quot;get&quot;, [&quot;$input&quot;], &quot;/id&quot;]], [&quot;status&quot;, &quot;archived&quot;]]&#39;</span> <span class="op">&gt;</span> transform.json</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Generate patch from transformation</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&#39;{&quot;id&quot;: 123, &quot;status&quot;: &quot;active&quot;}&#39;</span> <span class="op">&gt;</span> original.json</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="ex">./build/computo</span> <span class="at">--diff</span> transform.json original.json <span class="op">&gt;</span> patch.json</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Generated patch.json contains:</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co"># [{&quot;op&quot;: &quot;replace&quot;, &quot;path&quot;: &quot;/status&quot;, &quot;value&quot;: &quot;archived&quot;}]</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: Create reusable patch application script</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&#39;[&quot;patch&quot;, [&quot;get&quot;, [&quot;$inputs&quot;], &quot;/0&quot;], [&quot;get&quot;, [&quot;$inputs&quot;], &quot;/1&quot;]]&#39;</span> <span class="op">&gt;</span> apply_patch.json</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 4: Apply patch to any document</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="ex">./build/computo</span> apply_patch.json original.json patch.json</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Result: {&quot;id&quot;: 123, &quot;status&quot;: &quot;archived&quot;}</span></span></code></pre></div>
+<h3 id="advanced-multi-document-processing">Advanced Multi-Document
+Processing</h3>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Script</span> <span class="er">to</span> <span class="er">merge</span> <span class="er">updates</span> <span class="er">from</span> <span class="er">multiple</span> <span class="er">sources</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;let&quot;</span><span class="ot">,</span> <span class="ot">[</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;original&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/0&quot;</span><span class="ot">]],</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;updates&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/1&quot;</span><span class="ot">]],</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;patch_ops&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;diff&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/original&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/updates&quot;</span><span class="ot">]]]</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="ot">],</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;obj&quot;</span><span class="ot">,</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;original_document&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/original&quot;</span><span class="ot">]],</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;updated_document&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/updates&quot;</span><span class="ot">]],</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;patch_operations&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/patch_ops&quot;</span><span class="ot">]],</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;can_apply_safely&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;==&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;count&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/patch_ops&quot;</span><span class="ot">]],</span> <span class="dv">1</span><span class="ot">]]</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<h3 id="document-versioning-and-rollback">Document Versioning and
+Rollback</h3>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Generate</span> <span class="er">rollback</span> <span class="er">patch</span> <span class="er">(reverse</span> <span class="er">diff)</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;diff&quot;</span><span class="ot">,</span> </span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/1&quot;</span><span class="ot">],</span>  <span class="er">//</span> <span class="er">new</span> <span class="er">version</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/0&quot;</span><span class="ot">]</span>   <span class="er">//</span> <span class="er">original</span> <span class="er">version</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">This</span> <span class="er">creates</span> <span class="er">a</span> <span class="er">patch</span> <span class="er">that</span> <span class="er">rolls</span> <span class="er">back</span> <span class="er">from</span> <span class="er">new</span> <span class="er">to</span> <span class="er">original</span></span></code></pre></div>
+<h2 id="multiple-input-processing">Multiple Input Processing</h2>
+<h3 id="accessing-multiple-inputs">Accessing Multiple Inputs</h3>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Working</span> <span class="er">with</span> <span class="er">multiple</span> <span class="er">data</span> <span class="er">sources</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;obj&quot;</span><span class="ot">,</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;user_data&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/0&quot;</span><span class="ot">]],</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;preferences&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/1&quot;</span><span class="ot">]],</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;session_info&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/2&quot;</span><span class="ot">]],</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;total_inputs&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;count&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">]]]</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<h3 id="data-merging-from-multiple-sources">Data Merging from Multiple
+Sources</h3>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Merge</span> <span class="er">user</span> <span class="er">profiles</span> <span class="er">from</span> <span class="er">different</span> <span class="er">systems</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;let&quot;</span><span class="ot">,</span> <span class="ot">[</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;profile1&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/0&quot;</span><span class="ot">]],</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;profile2&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/1&quot;</span><span class="ot">]]</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="ot">],</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;obj&quot;</span><span class="ot">,</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;user_id&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/profile1&quot;</span><span class="ot">],</span> <span class="st">&quot;/id&quot;</span><span class="ot">]],</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;name&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/profile1&quot;</span><span class="ot">],</span> <span class="st">&quot;/name&quot;</span><span class="ot">]],</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;email&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/profile2&quot;</span><span class="ot">],</span> <span class="st">&quot;/email&quot;</span><span class="ot">]],</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;preferences&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/profile2&quot;</span><span class="ot">],</span> <span class="st">&quot;/settings&quot;</span><span class="ot">]],</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;last_login&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/profile1&quot;</span><span class="ot">],</span> <span class="st">&quot;/last_seen&quot;</span><span class="ot">]]</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<h3 id="cross-document-validation">Cross-Document Validation</h3>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Compare</span> <span class="er">documents</span> <span class="er">for</span> <span class="er">consistency</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;let&quot;</span><span class="ot">,</span> <span class="ot">[</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;doc1&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/0&quot;</span><span class="ot">]],</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;doc2&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/1&quot;</span><span class="ot">]],</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;differences&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;diff&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/doc1&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/doc2&quot;</span><span class="ot">]]]</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="ot">],</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;obj&quot;</span><span class="ot">,</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;are_identical&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;==&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;count&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/differences&quot;</span><span class="ot">]],</span> <span class="dv">0</span><span class="ot">]],</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;difference_count&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;count&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/differences&quot;</span><span class="ot">]]],</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;changes_summary&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/differences&quot;</span><span class="ot">]]</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<h2 id="real-world-examples">Real-World Examples</h2>
+<h3 id="api-response-transformation">API Response Transformation</h3>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Transform</span> <span class="er">API</span> <span class="er">response</span> <span class="er">structure</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;obj&quot;</span><span class="ot">,</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;users&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;map&quot;</span><span class="ot">,</span> </span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$input&quot;</span><span class="ot">],</span> <span class="st">&quot;/data/users&quot;</span><span class="ot">],</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;lambda&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;user&quot;</span><span class="ot">],</span> </span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>      <span class="ot">[</span><span class="st">&quot;obj&quot;</span><span class="ot">,</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>        <span class="ot">[</span><span class="st">&quot;id&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/user&quot;</span><span class="ot">],</span> <span class="st">&quot;/user_id&quot;</span><span class="ot">]],</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>        <span class="ot">[</span><span class="st">&quot;name&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/user&quot;</span><span class="ot">],</span> <span class="st">&quot;/full_name&quot;</span><span class="ot">]],</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>        <span class="ot">[</span><span class="st">&quot;active&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;==&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/user&quot;</span><span class="ot">],</span> <span class="st">&quot;/status&quot;</span><span class="ot">],</span> <span class="st">&quot;active&quot;</span><span class="ot">]]</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>      <span class="ot">]</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    <span class="ot">]</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]],</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;total&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;count&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$input&quot;</span><span class="ot">],</span> <span class="st">&quot;/data/users&quot;</span><span class="ot">]]],</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;timestamp&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$input&quot;</span><span class="ot">],</span> <span class="st">&quot;/metadata/generated_at&quot;</span><span class="ot">]]</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<h3 id="configuration-synchronization">Configuration
+Synchronization</h3>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Sync</span> <span class="er">configuration</span> <span class="er">changes</span> <span class="er">between</span> <span class="er">environments</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;let&quot;</span><span class="ot">,</span> <span class="ot">[</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;prod_config&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/0&quot;</span><span class="ot">]],</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;staging_config&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/1&quot;</span><span class="ot">]],</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;sync_patch&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;diff&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/prod_config&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/staging_config&quot;</span><span class="ot">]]]</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="ot">],</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;obj&quot;</span><span class="ot">,</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;requires_sync&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;&gt;&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;count&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/sync_patch&quot;</span><span class="ot">]],</span> <span class="dv">0</span><span class="ot">]],</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;patch_operations&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/sync_patch&quot;</span><span class="ot">]],</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;staging_after_sync&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;if&quot;</span><span class="ot">,</span> </span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>      <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/requires_sync&quot;</span><span class="ot">],</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>      <span class="ot">[</span><span class="st">&quot;patch&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/staging_config&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/sync_patch&quot;</span><span class="ot">]],</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>      <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/staging_config&quot;</span><span class="ot">]</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    <span class="ot">]]</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<h3 id="data-migration-pipeline">Data Migration Pipeline</h3>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Transform</span> <span class="er">data</span> <span class="er">format</span> <span class="er">between</span> <span class="er">versions</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;let&quot;</span><span class="ot">,</span> <span class="ot">[</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;old_format&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/0&quot;</span><span class="ot">]],</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;migration_rules&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/1&quot;</span><span class="ot">]]</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="ot">],</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;permuto.apply&quot;</span><span class="ot">,</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;version&quot;</span><span class="fu">:</span> <span class="st">&quot;2.0&quot;</span><span class="fu">,</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;user_id&quot;</span><span class="fu">:</span> <span class="st">&quot;${/old_format/id}&quot;</span><span class="fu">,</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;profile&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;full_name&quot;</span><span class="fu">:</span> <span class="st">&quot;${/old_format/name}&quot;</span><span class="fu">,</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;contact&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;${/old_format/email_address}&quot;</span><span class="fu">,</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;phone&quot;</span><span class="fu">:</span> <span class="st">&quot;${/old_format/phone_number}&quot;</span></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>        <span class="fu">}</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>      <span class="fu">},</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;settings&quot;</span><span class="fu">:</span> <span class="st">&quot;${/migration_rules/default_settings}&quot;</span><span class="fu">,</span></span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;migrated_at&quot;</span><span class="fu">:</span> <span class="st">&quot;${/migration_rules/timestamp}&quot;</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;obj&quot;</span><span class="ot">,</span></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>      <span class="ot">[</span><span class="st">&quot;old_format&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/old_format&quot;</span><span class="ot">]],</span></span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>      <span class="ot">[</span><span class="st">&quot;migration_rules&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/migration_rules&quot;</span><span class="ot">]]</span></span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>    <span class="ot">]</span></span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<h3 id="conversation-diff-processing-with-carcdr">Conversation Diff
+Processing (with car/cdr)</h3>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Process</span> <span class="er">conversation</span> <span class="er">updates</span> <span class="er">using</span> <span class="er">functional</span> <span class="er">list</span> <span class="er">operations</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;let&quot;</span><span class="ot">,</span> <span class="ot">[</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;initial_state&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;car&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">]]],</span>           <span class="er">//</span> <span class="er">First</span> <span class="er">input:</span> <span class="er">initial</span> <span class="er">conversation</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;all_patches&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;cdr&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">]]],</span>             <span class="er">//</span> <span class="er">Remaining</span> <span class="er">inputs:</span> <span class="er">patches</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;final_state&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;reduce&quot;</span><span class="ot">,</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>      <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/all_patches&quot;</span><span class="ot">],</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>      <span class="ot">[</span><span class="st">&quot;lambda&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;conversation&quot;</span><span class="ot">,</span> <span class="st">&quot;patch&quot;</span><span class="ot">],</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>        <span class="ot">[</span><span class="st">&quot;patch&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/conversation&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/patch&quot;</span><span class="ot">]]</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>      <span class="ot">],</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>      <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/initial_state&quot;</span><span class="ot">]</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>    <span class="ot">]],</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;patch_count&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;count&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/all_patches&quot;</span><span class="ot">]]]</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>  <span class="ot">],</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;obj&quot;</span><span class="ot">,</span></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;conversation_id&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/final_state&quot;</span><span class="ot">],</span> <span class="st">&quot;/id&quot;</span><span class="ot">]],</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;message_count&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;count&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/final_state&quot;</span><span class="ot">],</span> <span class="st">&quot;/messages&quot;</span><span class="ot">]]],</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;patches_applied&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/patch_count&quot;</span><span class="ot">]],</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;final_conversation&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/final_state&quot;</span><span class="ot">]]</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Input:</span> <span class="er">initial_conversation.json</span> <span class="er">patch1.json</span> <span class="er">patch2.json</span> <span class="er">patch3.json</span></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Output:</span> <span class="fu">{</span><span class="dt">&quot;conversation_id&quot;</span><span class="fu">:</span> <span class="st">&quot;conv_001&quot;</span><span class="fu">,</span> <span class="dt">&quot;message_count&quot;</span><span class="fu">:</span> <span class="dv">3</span><span class="fu">,</span> <span class="dt">&quot;patches_applied&quot;</span><span class="fu">:</span> <span class="dv">3</span><span class="fu">,</span> <span class="dt">&quot;final_conversation&quot;</span><span class="fu">:</span> <span class="fu">{</span><span class="er">...</span><span class="fu">}}</span></span></code></pre></div>
+<h2 id="error-handling">Error Handling</h2>
+<p>Computo provides structured exceptions with debugging
+information:</p>
+<ul>
+<li><code>ComputoException</code> - Base exception class</li>
+<li><code>InvalidScriptException</code> - Malformed JSON scripts</li>
+<li><code>InvalidOperatorException</code> - Unknown operators</li>
+<li><code>InvalidArgumentException</code> - Wrong argument
+types/counts</li>
+<li><code>PatchFailedException</code> - JSON Patch application
+failures</li>
+</ul>
+<h3 id="json-patch-error-scenarios">JSON Patch Error Scenarios</h3>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">These</span> <span class="er">operations</span> <span class="er">may</span> <span class="er">throw</span> <span class="er">PatchFailedException:</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">1.</span> <span class="er">Invalid</span> <span class="er">patch</span> <span class="er">format</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;patch&quot;</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;a&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">}</span><span class="ot">,</span> <span class="st">&quot;not_an_array&quot;</span><span class="ot">]</span>  <span class="er">//</span> <span class="er">Throws:</span> <span class="er">patch</span> <span class="er">must</span> <span class="er">be</span> <span class="er">array</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">2.</span> <span class="er">Failed</span> <span class="er">test</span> <span class="er">operation</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;patch&quot;</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">}</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;array&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span><span class="dt">&quot;op&quot;</span><span class="fu">:</span> <span class="st">&quot;test&quot;</span><span class="fu">,</span> <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;/value&quot;</span><span class="fu">,</span> <span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="dv">99</span><span class="fu">}</span><span class="ot">,</span>  <span class="er">//</span> <span class="er">This</span> <span class="er">will</span> <span class="er">fail</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span><span class="dt">&quot;op&quot;</span><span class="fu">:</span> <span class="st">&quot;replace&quot;</span><span class="fu">,</span> <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;/value&quot;</span><span class="fu">,</span> <span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="dv">100</span><span class="fu">}</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span><span class="fu">}</span><span class="ot">]</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">3.</span> <span class="er">Invalid</span> <span class="er">path</span> <span class="er">in</span> <span class="er">patch</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;patch&quot;</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;a&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">}</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;array&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span><span class="dt">&quot;op&quot;</span><span class="fu">:</span> <span class="st">&quot;replace&quot;</span><span class="fu">,</span> <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;/nonexistent&quot;</span><span class="fu">,</span> <span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">}</span></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span><span class="fu">}</span><span class="ot">]</span></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">4.</span> <span class="er">Malformed</span> <span class="er">patch</span> <span class="er">operation</span></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;patch&quot;</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;a&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">}</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;array&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span><span class="dt">&quot;op&quot;</span><span class="fu">:</span> <span class="st">&quot;invalid_operation&quot;</span><span class="fu">,</span> <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;/a&quot;</span><span class="fu">,</span> <span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">}</span></span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span><span class="fu">}</span><span class="ot">]</span></span></code></pre></div>
+<h3 id="list-processing-error-scenarios">List Processing Error
+Scenarios</h3>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">These</span> <span class="er">operations</span> <span class="er">may</span> <span class="er">throw</span> <span class="er">InvalidArgumentException:</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">1.</span> <span class="er">car</span> <span class="er">on</span> <span class="er">empty</span> <span class="er">array</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;car&quot;</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;array&quot;</span><span class="fu">:</span> <span class="ot">[]</span><span class="fu">}</span><span class="ot">]</span>  <span class="er">//</span> <span class="er">Throws:</span> <span class="er">car</span> <span class="er">cannot</span> <span class="er">be</span> <span class="er">applied</span> <span class="er">to</span> <span class="er">empty</span> <span class="er">array</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">2.</span> <span class="er">car</span> <span class="er">on</span> <span class="er">non-array</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;car&quot;</span><span class="ot">,</span> <span class="st">&quot;not_an_array&quot;</span><span class="ot">]</span>  <span class="er">//</span> <span class="er">Throws:</span> <span class="er">car</span> <span class="er">expects</span> <span class="er">an</span> <span class="er">array</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">3.</span> <span class="er">cdr</span> <span class="er">on</span> <span class="er">non-array</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;cdr&quot;</span><span class="ot">,</span> <span class="dv">42</span><span class="ot">]</span>  <span class="er">//</span> <span class="er">Throws:</span> <span class="er">cdr</span> <span class="er">expects</span> <span class="er">an</span> <span class="er">array</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">4.</span> <span class="er">Wrong</span> <span class="er">argument</span> <span class="er">count</span></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;car&quot;</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;array&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">1</span><span class="ot">,</span> <span class="dv">2</span><span class="ot">]</span><span class="fu">}</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;array&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">3</span><span class="ot">,</span> <span class="dv">4</span><span class="ot">]</span><span class="fu">}</span><span class="ot">]</span>  <span class="er">//</span> <span class="er">Throws:</span> <span class="er">car</span> <span class="er">expects</span> <span class="er">exactly</span> <span class="er">1</span> <span class="er">argument</span></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Note:</span> <span class="er">cdr</span> <span class="er">on</span> <span class="er">empty</span> <span class="er">array</span> <span class="er">returns</span> <span class="ot">[]</span> <span class="er">(empty</span> <span class="er">array),</span> <span class="er">does</span> <span class="er">not</span> <span class="er">throw</span></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;cdr&quot;</span><span class="ot">,</span> <span class="fu">{</span><span class="dt">&quot;array&quot;</span><span class="fu">:</span> <span class="ot">[]</span><span class="fu">}</span><span class="ot">]</span>  <span class="er">//</span> <span class="er">Returns:</span> <span class="ot">[]</span></span></code></pre></div>
+<h2 id="cli-reference">CLI Reference</h2>
+<h3 id="basic-usage">Basic Usage</h3>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Single input transformation</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> script.json input.json</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Multiple input processing  </span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> script.json input1.json input2.json input3.json</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="co"># No input (script only)</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> script.json</span></code></pre></div>
+<h3 id="diff-mode">Diff Mode</h3>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate patch from transformation</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> <span class="at">--diff</span> transform_script.json original.json</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Error: --diff requires exactly one input</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> <span class="at">--diff</span> script.json input1.json input2.json  <span class="co"># ❌ Fails</span></span></code></pre></div>
+<h3 id="permuto-integration-1">Permuto Integration</h3>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Enable string interpolation</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> <span class="at">--interpolation</span> script.json input.json</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Permuto options</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> <span class="at">--missing-key</span><span class="op">=</span>error script.json input.json</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> <span class="at">--max-depth</span><span class="op">=</span>32 script.json input.json</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> <span class="at">--start</span><span class="op">=</span><span class="st">&quot;{{{&quot;</span> <span class="at">--end</span><span class="op">=</span><span class="st">&quot;}}}&quot;</span> script.json input.json</span></code></pre></div>
+<h3 id="output-formatting">Output Formatting</h3>
+<div class="sourceCode" id="cb29"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pretty print with indentation (N spaces)</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> <span class="at">--pretty</span><span class="op">=</span>2 script.json input.json</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> <span class="at">--pretty</span><span class="op">=</span>4 script.json input.json</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Compact output (default)</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> script.json input.json</span></code></pre></div>
+<h3 id="combined-options">Combined Options</h3>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Interpolation + diff mode</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> <span class="at">--interpolation</span> <span class="at">--diff</span> transform.json input.json</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Multiple flags</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> <span class="at">--interpolation</span> <span class="at">--missing-key</span><span class="op">=</span>error <span class="at">--max-depth</span><span class="op">=</span>16 script.json input.json</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Pretty printing with other options</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> <span class="at">--pretty</span><span class="op">=</span>2 <span class="at">--interpolation</span> script.json input.json</span></code></pre></div>
+<h2 id="performance-limits">Performance &amp; Limits</h2>
+<ul>
+<li><strong>Input Size</strong>: No hard limits, bounded by available
+memory</li>
+<li><strong>Nesting Depth</strong>: No stack overflow limits due to tail
+call optimization (TCO)</li>
+<li><strong>Recursion Depth</strong>: Configurable via Permuto options
+(default: 100)</li>
+<li><strong>Array Operations</strong>: Optimized for large datasets</li>
+<li><strong>JSON Patch</strong>: Supports all RFC 6902 operations</li>
+<li><strong>Memory Usage</strong>: Immutable operations create new
+objects, original data unchanged</li>
+</ul>
+<h3 id="tail-call-optimization">Tail Call Optimization</h3>
+<p>Computo uses tail call optimization to handle deeply nested control
+flow without stack overflow. This enables safe execution of scripts with
+arbitrary levels of <code>if</code> and <code>let</code> nesting, making
+the engine suitable for complex, programmatically-generated
+transformations.</p>
+<h2 id="dependencies">Dependencies</h2>
+<ul>
+<li><strong>nlohmann/json</strong> - Core JSON library with JSON Patch
+support</li>
+<li><strong>Permuto</strong> - Template processing library<br />
+</li>
+<li><strong>Google Test</strong> - Testing framework (for
+development)</li>
+</ul>
+<h2 id="project-structure">Project Structure</h2>
+<pre><code>computo/
+├── CMakeLists.txt           # Build configuration
+├── README.md               # This documentation
+├── CLAUDE.md                # AI development guidance
+├── TECHNICAL_DETAILS.md     # Implementation details
+├── PermutoREADME.md        # Permuto documentation
+├── book/                   # Learning guide
+│   └── 00_index.md
+├── cli/                    # Command-line tool
+├── include/computo/        # Public headers
+├── src/                    # Library implementation
+└── tests/                  # Test suite (153 tests, 100% passing)</code></pre>
+<h2 id="development-testing">Development &amp; Testing</h2>
+<ul>
+<li><strong>Test Coverage</strong>: 153 comprehensive tests covering all
+operators and edge cases</li>
+<li><strong>JSON Patch Compliance</strong>: Full RFC 6902 implementation
+with round-trip testing</li>
+<li><strong>Error Handling</strong>: Comprehensive exception testing for
+all failure modes</li>
+<li><strong>Multi-Input Support</strong>: Extensive testing of multiple
+input scenarios</li>
+<li><strong>Backward Compatibility</strong>: All existing scripts work
+unchanged</li>
+</ul>
+<h2 id="safety-security">Safety &amp; Security</h2>
+<ul>
+<li><strong>Sandboxed execution</strong>: No file system or network
+access</li>
+<li><strong>Memory safe</strong>: Built-in recursion limits and cycle
+detection</li>
+<li><strong>Input validation</strong>: All operator arguments are
+validated</li>
+<li><strong>Type preservation</strong>: Maintains JSON data types
+throughout transformations</li>
+<li><strong>Immutable operations</strong>: Original data never
+modified</li>
+<li><strong>RFC Compliance</strong>: JSON Patch operations follow
+standard specifications</li>
+</ul>
+<h2 id="migration-guide">Migration Guide</h2>
+<h3 id="from-single-input-to-multiple-inputs">From Single Input to
+Multiple Inputs</h3>
+<div class="sourceCode" id="cb32"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Old</span> <span class="er">way</span> <span class="er">(still</span> <span class="er">works)</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$input&quot;</span><span class="ot">],</span> <span class="st">&quot;/field&quot;</span><span class="ot">]</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">New</span> <span class="er">way</span> <span class="er">for</span> <span class="er">multiple</span> <span class="er">inputs</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/0/field&quot;</span><span class="ot">]</span>  <span class="er">//</span> <span class="er">First</span> <span class="er">input</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/1/field&quot;</span><span class="ot">]</span>  <span class="er">//</span> <span class="er">Second</span> <span class="er">input</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Backward</span> <span class="er">compatibility</span> <span class="er">guaranteed</span></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">$input</span> <span class="er">is</span> <span class="er">equivalent</span> <span class="er">to:</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/0&quot;</span><span class="ot">]</span></span></code></pre></div>
+<h3 id="adding-diffpatch-to-existing-workflows">Adding Diff/Patch to
+Existing Workflows</h3>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Before:</span> <span class="er">Direct</span> <span class="er">transformation</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;obj&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;status&quot;</span><span class="ot">,</span> <span class="st">&quot;processed&quot;</span><span class="ot">]]</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">After:</span> <span class="er">Generate</span> <span class="er">patch</span> <span class="er">for</span> <span class="er">the</span> <span class="er">same</span> <span class="er">transformation</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;diff&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$input&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;obj&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;status&quot;</span><span class="ot">,</span> <span class="st">&quot;processed&quot;</span><span class="ot">]]]</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Or</span> <span class="er">apply</span> <span class="er">external</span> <span class="er">patches</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;patch&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$input&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/1&quot;</span><span class="ot">]]</span>  <span class="er">//</span> <span class="er">Apply</span> <span class="er">patch</span> <span class="er">from</span> <span class="er">second</span> <span class="er">input</span></span></code></pre></div>
+<h3 id="using-carcdr-for-cleaner-multiple-input-processing">Using
+car/cdr for Cleaner Multiple Input Processing</h3>
+<div class="sourceCode" id="cb34"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Old</span> <span class="er">way:</span> <span class="er">Manual</span> <span class="er">indexing</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;let&quot;</span><span class="ot">,</span> <span class="ot">[</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;initial&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/0&quot;</span><span class="ot">]],</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;patch1&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/1&quot;</span><span class="ot">]],</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;patch2&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">],</span> <span class="st">&quot;/2&quot;</span><span class="ot">]]</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  <span class="ot">],</span></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;patch&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;patch&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/initial&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/patch1&quot;</span><span class="ot">]],</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/patch2&quot;</span><span class="ot">]]</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">New</span> <span class="er">way:</span> <span class="er">Functional</span> <span class="er">with</span> <span class="er">car/cdr</span></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;reduce&quot;</span><span class="ot">,</span> </span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;cdr&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">]],</span>                    <span class="er">//</span> <span class="er">All</span> <span class="er">patches</span> <span class="er">(skip</span> <span class="er">first</span> <span class="er">input)</span></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;lambda&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;state&quot;</span><span class="ot">,</span> <span class="st">&quot;patch&quot;</span><span class="ot">],</span></span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;patch&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/state&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/patch&quot;</span><span class="ot">]]</span></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>  <span class="ot">],</span></span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;car&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$inputs&quot;</span><span class="ot">]]</span>                     <span class="er">//</span> <span class="er">Initial</span> <span class="er">state</span> <span class="er">(first</span> <span class="er">input)</span></span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">Benefits:</span> <span class="er">Works</span> <span class="er">with</span> <span class="er">any</span> <span class="er">number</span> <span class="er">of</span> <span class="er">inputs,</span> <span class="er">more</span> <span class="er">readable,</span> <span class="er">functional</span> <span class="er">style</span></span></code></pre></div>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>ComputoPermuto Book - 01_why_transformation_matters</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">ComputoPermuto Book -
+01_why_transformation_matters</h1>
+</header>
+<h1
+id="computopermuto-a-practical-guide-to-json-transformations"><strong>Computo/Permuto:
+A Practical Guide to JSON Transformations</strong></h1>
+<h2 id="chapter-1-why-json-transformation-matters"><strong>Chapter 1:
+Why JSON Transformation Matters</strong></h2>
+<p>Welcome. If you’re reading this, you’re likely an experienced
+developer. You live and breathe APIs, configuration files, and data
+interchange. You know that JSON isn’t just a data format; it’s the
+lingua franca of the modern web. You also know that while creating and
+parsing JSON is a solved problem, <strong>transforming it</strong> can
+be surprisingly messy.</p>
+<p>That’s the gap this guide—and the Computo/Permuto toolkit—is designed
+to fill. We won’t waste your time explaining what a JSON object is or
+how a <code>map</code> function works. Instead, we’ll get straight to
+the point: giving you a powerful, safe, and elegant way to reshape JSON
+from one form to another.</p>
+<h3 id="the-problem-space-the-daily-grind-of-reshaping-json">The Problem
+Space: The Daily Grind of Reshaping JSON</h3>
+<p>Think about the last time you had to manipulate a JSON structure. Did
+it feel like one of these scenarios?</p>
+<ul>
+<li><p><strong>API Aggregation:</strong> You’re building a
+backend-for-frontend (BFF) and need to call three different
+microservices. Each returns a JSON object with a slightly different
+structure. Your job is to pick and choose fields from each, combine them
+into a single, clean JSON response, and send it to the client.</p></li>
+<li><p><strong>Configuration Management:</strong> You have a master
+configuration template for your application. You need to generate
+specific <code>config.json</code> files for your
+<code>development</code>, <code>staging</code>, and
+<code>production</code> environments, each with different database
+credentials, feature flags, and logging levels.</p></li>
+<li><p><strong>Data Normalization:</strong> You’re ingesting data from a
+third-party API. The data is messy: some keys are camelCase while others
+are snake_case, numbers are sometimes strings, and optional fields are
+sometimes <code>null</code> and other times omitted entirely. You need
+to sanitize and normalize this data into a consistent format for your
+own systems.</p></li>
+<li><p><strong>Dynamic Payloads:</strong> You’re integrating with
+multiple Large Language Model (LLM) providers. OpenAI wants a payload
+with a <code>messages</code> array, while Anthropic wants a single
+<code>prompt</code> string. You need to build these different JSON
+payloads from a single, canonical request object within your
+application.</p></li>
+</ul>
+<p>Traditionally, you’d solve these problems by writing imperative code
+in your language of choice—Python, JavaScript, Go, C++. You’d loop
+through arrays, check for the existence of keys, and manually build new
+objects. It works, but it’s often verbose, error-prone, and mixes
+transformation logic deep within your business logic.</p>
+<h3 id="introducing-the-computopermuto-solution">Introducing the
+Computo/Permuto Solution</h3>
+<p>Computo and Permuto offer a better way. They form a powerful,
+two-layer system designed specifically for JSON-to-JSON transformation,
+where each layer has a distinct responsibility.</p>
+<ol type="1">
+<li><p><strong>Permuto: The Declarative Templating Engine</strong> Think
+of Permuto as a smart, structure-aware “mail merge” for JSON. You
+provide it a template, and it fills in the blanks. It’s for simple,
+declarative substitutions. If you just need to map values from a context
+object into a new structure, Permuto is your tool. It’s fast, simple,
+and safe.</p>
+<p><em>A quick taste:</em>
+<code>{"user_id": "${/user/id}"}</code></p></li>
+<li><p><strong>Computo: The Programmatic Logic Engine</strong> Think of
+Computo as a safe, sandboxed Lisp or spreadsheet formula engine that
+lives inside JSON. It provides the programmatic logic that simple
+templating lacks: conditionals (<code>if</code>), iteration
+(<code>map</code>, <code>filter</code>, <code>reduce</code>),
+calculations (<code>+</code>, <code>*</code>), and variable bindings
+(<code>let</code>).</p>
+<p><em>A quick taste:</em>
+<code>["if", &lt;condition&gt;, &lt;then_expr&gt;, &lt;else_expr&gt;]</code></p></li>
+</ol>
+<h3 id="the-aha-moment-logic-driving-templates">The “Aha!” Moment: Logic
+Driving Templates</h3>
+<p>The real power emerges when you combine them. You use Computo’s logic
+to decide <em>how</em> and <em>if</em> to apply Permuto’s templates.</p>
+<p>Imagine our user summary problem again. If a user is active, we want
+to generate a full profile. If not, we want a simple error object.</p>
+<ul>
+<li><strong>Computo’s <code>if</code> operator</strong> handles the
+conditional logic.</li>
+<li>It checks a field, like <code>user.active</code>.</li>
+<li>If <code>true</code>, it calls <strong>Permuto</strong> with a
+<code>user_profile_template.json</code> to generate the rich
+object.</li>
+<li>If <code>false</code>, it constructs a simple
+<code>{"error": "User is inactive"}</code> object.</li>
+</ul>
+<p>The script for this transformation is a clean piece of data (a JSON
+file) that you can store, version, and execute safely, without
+intermingling complex string manipulation or loops in your core
+application code.</p>
+<h3 id="whats-ahead">What’s Ahead</h3>
+<p>In the following chapters, we will explore this toolkit from the
+ground up.</p>
+<ul>
+<li>We’ll start by <strong>setting up your environment</strong>.</li>
+<li>Then, we’ll master the fundamentals of <strong>Computo and Permuto
+individually</strong>.</li>
+<li>Finally, we will combine them to build <strong>sophisticated data
+pipelines</strong> that solve real-world problems like the ones
+mentioned above.</li>
+</ul>
+<p>By the end of this guide, you’ll have a new, powerful tool in your
+arsenal for one of the most common tasks in modern software development.
+Let’s get started.</p>
+</body>
+</html>

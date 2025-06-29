@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>ComputoPermuto Book - 13_error_handling_and_debugging</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">ComputoPermuto Book -
+13_error_handling_and_debugging</h1>
+</header>
+<h2 id="chapter-13-error-handling-and-debugging"><strong>Chapter 13:
+Error Handling and Debugging</strong></h2>
+<p>In an ideal world, all of our scripts would run perfectly on the
+first try. In the real world, data is often messier than we expect, and
+scripts can contain subtle bugs. A robust system isn’t just one that
+works when everything is perfect; it’s one that behaves predictably and
+provides clear feedback when things go wrong.</p>
+<p>This chapter covers how to handle errors gracefully within Computo
+and how to debug your scripts effectively.</p>
+<h3 id="types-of-errors">Types of Errors</h3>
+<p>When a Computo script fails, the engine will throw a structured
+exception. Understanding the different types of exceptions can help you
+quickly diagnose the problem. The main categories are:</p>
+<ul>
+<li><strong><code>InvalidScriptException</code>:</strong> There is a
+fundamental structural problem with your script’s JSON itself. This is
+rare if your JSON is well-formed.</li>
+<li><strong><code>InvalidOperatorException</code>:</strong> You’ve tried
+to use an operator that doesn’t exist. This is almost always a typo in
+the operator name (e.g., <code>["fliter", ...]</code> instead of
+<code>["filter", ...]</code>).</li>
+<li><strong><code>InvalidArgumentException</code>:</strong> This is the
+most common category of error. It means an operator was called with the
+wrong number or type of arguments. Examples include:
+<ul>
+<li><code>["+", 1]</code> (not enough arguments)</li>
+<li><code>["+", 1, "hello"]</code> (wrong argument type)</li>
+<li><code>["get", &lt;object&gt;, "/non/existent/path"]</code> (invalid
+JSON Pointer)</li>
+<li>A <code>lambda</code> expression with the wrong structure.</li>
+</ul></li>
+</ul>
+<p>When you run the <code>computo</code> CLI tool, it will catch these
+exceptions and print a descriptive error message to the console, which
+is your first and most important debugging tool.</p>
+<h3 id="defensive-programming-the-if-guard">Defensive Programming: The
+<code>if</code> Guard</h3>
+<p>The most common source of runtime errors is unexpected input data. A
+script that works perfectly with one input might fail on another if a
+key is missing or a value has a different type. The <code>if</code>
+operator is your primary tool for defensive programming.</p>
+<p><strong>Anti-Pattern: Assuming a Key Exists</strong></p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$input&quot;</span><span class="ot">],</span> <span class="st">&quot;/user/profile/name&quot;</span><span class="ot">]</span></span></code></pre></div>
+<p>This script will fail immediately if the <code>profile</code> key is
+missing from the <code>user</code> object.</p>
+<p><strong>Defensive Pattern: Checking for Existence</strong> A better
+approach is to check if the data exists before trying to access it.
+While Computo doesn’t have a dedicated <code>has_key</code> operator,
+you can often achieve the same result by checking the “truthiness” of a
+parent object.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;let&quot;</span><span class="ot">,</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;profile&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$input&quot;</span><span class="ot">],</span> <span class="st">&quot;/user/profile&quot;</span><span class="ot">]]</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="ot">],</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;if&quot;</span><span class="ot">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/profile&quot;</span><span class="ot">],</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/profile&quot;</span><span class="ot">],</span> <span class="st">&quot;/name&quot;</span><span class="ot">],</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Default Name&quot;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<p>This script is more robust. It first tries to get the entire
+<code>profile</code> object. The <code>if</code> condition then checks
+if <code>profile</code> is truthy (i.e., not <code>null</code> or an
+empty object). Only if it’s truthy does it attempt to get the
+<code>/name</code>. If not, it safely returns a default value.</p>
+<p><em>Note: This specific pattern doesn’t guard against a
+<code>profile</code> object that exists but is missing the
+<code>name</code> key. A true <code>has_key</code> or
+<code>get_with_default</code> operator might be added in future versions
+of Computo to make this even cleaner.</em></p>
+<h3 id="the-debug-by-deconstruction-technique">The “Debug by
+Deconstruction” Technique</h3>
+<p>When a complex script fails and the error message isn’t immediately
+obvious, the best way to debug is to <strong>deconstruct the
+problem</strong>.</p>
+<p>Imagine this complex script fails:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;reduce&quot;</span><span class="ot">,</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;map&quot;</span><span class="ot">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;filter&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$input&quot;</span><span class="ot">],</span> <span class="st">&quot;/items&quot;</span><span class="ot">],</span> <span class="er">&lt;lambda1&gt;</span><span class="ot">],</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="er">&lt;lambda2&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="ot">],</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="er">&lt;lambda3&gt;</span><span class="ot">,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<p>Instead of trying to fix the whole thing at once, test each part in
+isolation.</p>
+<ol type="1">
+<li><p><strong>Test the Innermost Part:</strong> Create a new script
+that <em>only</em> contains the <code>filter</code> expression.
+<code>["filter", ["get", ["$input"], "/items"], &lt;lambda1&gt;]</code>
+Does it work? Does it produce the array you expect? If not, the problem
+is in your <code>filter</code> logic.</p></li>
+<li><p><strong>Test the Next Layer:</strong> Once the
+<code>filter</code> works, wrap it in the <code>map</code>.
+<code>["map", [&lt;working_filter_expression&gt;], &lt;lambda2&gt;]</code>
+Does this produce the correct transformed array? If not, the bug is in
+your <code>map</code>’s lambda.</p></li>
+<li><p><strong>Test the Final Layer:</strong> Once the <code>map</code>
+and <code>filter</code> produce the correct array, use that result as
+the input for your <code>reduce</code> operation.</p></li>
+</ol>
+<p>By breaking the problem down and verifying the output of each stage
+of your pipeline, you can methodically isolate the source of the error.
+Using <code>let</code> can also help here, as you can bind the result of
+each stage to a variable and then output that variable directly to see
+the intermediate data.</p>
+<h3 id="using-permuto.apply-for-debug-output">Using
+<code>permuto.apply</code> for Debug Output</h3>
+<p>Sometimes, the easiest way to see what’s happening inside a script is
+to print out the state. The <code>permuto.apply</code> operator with
+string interpolation is a surprisingly effective debugging tool.</p>
+<p>Let’s say you’re inside a <code>map</code> and you’re not sure what
+the <code>user</code> variable contains at each step. You can insert a
+debugging string.</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;map&quot;</span><span class="ot">,</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;get&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;$input&quot;</span><span class="ot">],</span> <span class="st">&quot;/users&quot;</span><span class="ot">],</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;lambda&quot;</span><span class="ot">,</span> <span class="ot">[</span><span class="st">&quot;user&quot;</span><span class="ot">],</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span><span class="st">&quot;permuto.apply&quot;</span><span class="ot">,</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">{</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;debug_message&quot;</span><span class="fu">:</span> <span class="st">&quot;Processing user: ${/name} with plan: ${/plan}&quot;</span><span class="fu">,</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;original_user_obj&quot;</span><span class="fu">:</span> <span class="st">&quot;${/}&quot;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>      <span class="ot">[</span><span class="st">&quot;$&quot;</span><span class="ot">,</span> <span class="st">&quot;/user&quot;</span><span class="ot">]</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="ot">]</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<p>Running this with the <code>--interpolation</code> flag will produce
+an array of objects, where each object is a snapshot of the
+<code>user</code> variable at that point in the iteration. This can be
+invaluable for understanding why a filter isn’t working or why a value
+isn’t what you expect. The <code>${/}</code> pointer is particularly
+useful, as it resolves to the entire context object.</p>
+<h3 id="in-this-chapter">In This Chapter</h3>
+<p>You’ve learned practical strategies for making your scripts robust
+and easier to debug. * You can diagnose issues by understanding
+Computo’s <strong>structured exception types</strong>. * You can write
+<strong>defensive scripts</strong> that anticipate missing data by using
+<code>if</code> guards. * You know how to use the <strong>“Debug by
+Deconstruction”</strong> technique to methodically isolate bugs in
+complex pipelines. * You can use <strong><code>permuto.apply</code> as a
+“print statement”</strong> to inspect the state of your variables during
+execution.</p>
+<p>Writing code that handles failure gracefully is just as important as
+writing code that handles success. These techniques will help you build
+reliable, production-grade transformations.</p>
+</body>
+</html>

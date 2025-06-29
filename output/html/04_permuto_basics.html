@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>ComputoPermuto Book - 04_permuto_basics</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">ComputoPermuto Book - 04_permuto_basics</h1>
+</header>
+<h2 id="chapter-4-permuto-basics---templates"><strong>Chapter 4: Permuto
+Basics - Templates</strong></h2>
+<p>In the last chapter, we used Computo’s <code>obj</code> operator to
+manually construct a new JSON object piece by piece. This is perfect for
+when you need fine-grained logical control over every field. But often,
+your goal is simpler: you have a well-defined output structure and you
+just need to “fill in the blanks” with data from an input object.</p>
+<p>This is a job for <strong>templating</strong>, and it’s where
+<strong>Permuto</strong> shines.</p>
+<p>Permuto is Computo’s declarative partner. While Computo handles
+programmatic logic (<code>if</code>, <code>map</code>, etc.), Permuto
+handles declarative data shaping. Think of it as a smart,
+structure-aware “mail merge” for JSON.</p>
+<h3 id="the-core-idea-template-context-result">The Core Idea: Template +
+Context = Result</h3>
+<p>The Permuto workflow is simple and always involves two pieces of
+JSON:</p>
+<ol type="1">
+<li><strong>The Template:</strong> A JSON document that defines the
+desired output structure. It contains placeholders for where the dynamic
+data should go.</li>
+<li><strong>The Context:</strong> A JSON document that provides the data
+to fill in the placeholders.</li>
+</ol>
+<p>Permuto takes the template, substitutes the values from the context,
+and produces the final result.</p>
+<h3 id="placeholders-and-json-pointers">Placeholders and JSON
+Pointers</h3>
+<p>Permuto’s placeholders use a simple <code>${...}</code> syntax.
+Inside the curly braces, you put the exact same <strong>JSON
+Pointer</strong> path that you used with Computo’s <code>get</code>
+operator.</p>
+<p>Let’s revisit the user example from the previous chapter.</p>
+<ol type="1">
+<li><p>First, create the <strong>context</strong> data. This is the same
+<code>input.json</code> we’ve been using, which provides the source
+data.</p>
+<p><strong><code>input.json</code>:</strong></p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;user&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;u-123&quot;</span><span class="fu">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Alice&quot;</span><span class="fu">,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;plan&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;premium&quot;</span><span class="fu">,</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;monthly_cost&quot;</span><span class="fu">:</span> <span class="dv">20</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;last_login_ts&quot;</span><span class="fu">:</span> <span class="dv">1672531200</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div></li>
+<li><p>Next, create the <strong>template</strong> file. This file
+defines the shape of our desired output.</p>
+<p><strong><code>user_template.json</code>:</strong></p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;profile_id&quot;</span><span class="fu">:</span> <span class="st">&quot;${/user/id}&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;full_name&quot;</span><span class="fu">:</span> <span class="st">&quot;${/user/name}&quot;</span><span class="fu">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;plan_type&quot;</span><span class="fu">:</span> <span class="st">&quot;${/user/plan/name}&quot;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Notice this template is just a plain JSON file. There are no
+operators, no arrays-as-actions. It’s just a passive structure.</p></li>
+</ol>
+<h3 id="running-a-permuto-template-with-permuto.apply">Running a Permuto
+Template with <code>permuto.apply</code></h3>
+<p>To use a Permuto template from within our Computo-driven workflow, we
+use the <code>permuto.apply</code> operator. This is the bridge between
+the two systems.</p>
+<p><code>["permuto.apply", &lt;template&gt;, &lt;context&gt;]</code></p>
+<ol type="1">
+<li><p>Create a script that uses this operator. Let’s call it
+<code>apply_template.json</code>. It will use the
+<code>user_template.json</code> as the template and our
+<code>input.json</code> as the context.</p>
+<p><strong><code>apply_template.json</code>:</strong></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="st">&quot;permuto.apply&quot;</span><span class="ot">,</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;profile_id&quot;</span><span class="fu">:</span> <span class="st">&quot;${/user/id}&quot;</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;full_name&quot;</span><span class="fu">:</span> <span class="st">&quot;${/user/name}&quot;</span><span class="fu">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;plan_type&quot;</span><span class="fu">:</span> <span class="st">&quot;${/user/plan/name}&quot;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;$input&quot;</span><span class="ot">]</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<p><em>Note: For simplicity, we’ve embedded the template directly in our
+script. We could also load it from a file if it were more
+complex.</em></p></li>
+<li><p>Now, run the script:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> apply_template.json input.json</span></code></pre></div></li>
+</ol>
+<p>The output is a new JSON object, perfectly matching the template’s
+structure:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;full_name&quot;</span><span class="fu">:</span> <span class="st">&quot;Alice&quot;</span><span class="fu">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;plan_type&quot;</span><span class="fu">:</span> <span class="st">&quot;premium&quot;</span><span class="fu">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;profile_id&quot;</span><span class="fu">:</span> <span class="st">&quot;u-123&quot;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>This is significantly more concise and readable than building the
+same object with
+<code>["obj", ["profile_id", ["get", ...]], ...]</code>.</p>
+<h3 id="type-preservation">Type Preservation</h3>
+<p>A key feature of Permuto is that it preserves data types. If a
+placeholder resolves to a number, boolean, or even a complex object or
+array, that’s what gets inserted into the final result.</p>
+<p>Consider this template:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;plan_details&quot;</span><span class="fu">:</span> <span class="st">&quot;${/user/plan}&quot;</span><span class="fu">,</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;cost&quot;</span><span class="fu">:</span> <span class="st">&quot;${/user/plan/monthly_cost}&quot;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>When applied to our <code>input.json</code>, this would produce:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;cost&quot;</span><span class="fu">:</span> <span class="dv">20</span><span class="fu">,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;plan_details&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;premium&quot;</span><span class="fu">,</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;monthly_cost&quot;</span><span class="fu">:</span> <span class="dv">20</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>The <code>plan_details</code> key was populated with the entire plan
+sub-object, and <code>cost</code> was populated with the JSON number
+<code>20</code>, not the string <code>"20"</code>.</p>
+<h3 id="string-interpolation">String Interpolation</h3>
+<p>Permuto can also substitute placeholders inside of strings, a feature
+known as string interpolation. <strong>This feature is disabled by
+default</strong> and must be explicitly enabled with a command-line
+flag.</p>
+<ol type="1">
+<li><p>Create a new template, <code>greeting_template.json</code>:
+<code>json     {       "message": "Hello ${/user/name}! Your plan is ${/user/plan/name}."     }</code></p></li>
+<li><p>Create a new script, <code>apply_greeting.json</code>, using this
+template:
+<code>json     ["permuto.apply",       {         "message": "Hello ${/user/name}! Your plan is ${/user/plan/name}."       },       ["$input"]     ]</code></p></li>
+<li><p>Run it with the <code>--interpolation</code> flag:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">computo</span> <span class="at">--interpolation</span> apply_greeting.json input.json</span></code></pre></div></li>
+</ol>
+<p>The output shows the values correctly substituted within the
+string:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;message&quot;</span><span class="fu">:</span> <span class="st">&quot;Hello Alice! Your plan is premium.&quot;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="in-this-chapter">In This Chapter</h3>
+<p>You’ve now seen the other half of the toolkit. You’ve learned: * How
+Permuto uses a <strong>template</strong> and a <strong>context</strong>
+to produce a result. * How to define placeholders using the
+<strong><code>${/json/pointer}</code></strong> syntax. * How to invoke
+Permuto from a Computo script using the
+<strong><code>permuto.apply</code></strong> operator. * How to enable
+<strong>string interpolation</strong> for more complex string
+construction.</p>
+<p>You now have a clear understanding of the two distinct tools at your
+disposal:</p>
+<ul>
+<li><strong>Computo:</strong> For programmatic logic, calculations, and
+step-by-step construction.</li>
+<li><strong>Permuto:</strong> For declarative, whole-structure
+templating.</li>
+</ul>
+<p>In the next part of this guide, we will dive deeper into Computo’s
+more advanced features, starting with control flow and conditionals. You
+will see how to use Computo’s logic to make intelligent decisions about
+which templates to apply and how to build the context for them.</p>
+</body>
+</html>
