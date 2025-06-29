@@ -12,10 +12,10 @@ The `$inputs` variable returns an array containing all input documents provided 
 
 ```bash
 # Single input (traditional)
-./build/computo script.json input1.json
+computo script.json input1.json
 
 # Multiple inputs (new capability)
-./build/computo script.json input1.json input2.json input3.json
+computo script.json input1.json input2.json input3.json
 ```
 
 ```json
@@ -83,7 +83,7 @@ Let's say you have user data from two different systems that need to be merged:
 
 **Usage:**
 ```bash
-./build/computo merge_profiles.json profile1.json profile2.json
+computo --pretty=2 merge_profiles.json profile1.json profile2.json
 ```
 
 **Output:**
@@ -198,7 +198,7 @@ Let's walk through a complete workflow that demonstrates document versioning and
 
 **Generate the patch:**
 ```bash
-./build/computo --diff archive_user.json original_user.json > archive_patch.json
+computo --diff archive_user.json original_user.json > archive_patch.json
 ```
 
 **archive_patch.json (generated):**
@@ -222,7 +222,7 @@ Let's walk through a complete workflow that demonstrates document versioning and
 #### Step 4: Apply the Patch
 
 ```bash
-./build/computo apply_patch.json original_user.json archive_patch.json
+computo --pretty=2 apply_patch.json original_user.json archive_patch.json
 ```
 
 **Output:**
@@ -341,10 +341,10 @@ Generate patches directly from transformations without modifying your scripts:
 
 ```bash
 # Traditional transformation
-./build/computo transform.json input.json
+computo transform.json input.json
 
 # Generate patch from same transformation
-./build/computo --diff transform.json input.json
+computo --diff transform.json input.json
 ```
 
 This is particularly useful for:
@@ -357,11 +357,95 @@ This is particularly useful for:
 Remember that `--diff` only works with a single input file:
 
 ```bash
-# ✅ Valid: Single input with --diff
-./build/computo --diff script.json input.json
+# Valid: Single input with --diff
+computo --diff script.json input.json
 
-# ❌ Invalid: Multiple inputs with --diff
-./build/computo --diff script.json input1.json input2.json
+# Invalid: Multiple inputs with --diff
+computo --diff script.json input1.json input2.json
+```
+
+## Functional List Processing with car and cdr
+
+Computo includes functional programming operators `car` and `cdr` inspired by Lisp, which provide elegant ways to work with arrays and multiple inputs.
+
+### Understanding car and cdr
+
+```json
+// car: Get the first element
+["car", {"array": [1, 2, 3, 4]}]
+// Result: 1
+
+// cdr: Get everything except the first element
+["cdr", {"array": [1, 2, 3, 4]}]
+// Result: [2, 3, 4]
+
+// Composition: Get the second element
+["car", ["cdr", {"array": [1, 2, 3, 4]}]]
+// Result: 2
+```
+
+### Functional Multiple Input Processing
+
+The `car` and `cdr` operators are particularly powerful for processing multiple inputs in a functional style:
+
+#### Example: Applying Multiple Patches
+
+**Traditional approach:**
+```json
+["let", [
+    ["initial", ["get", ["$inputs"], "/0"]],
+    ["patch1", ["get", ["$inputs"], "/1"]],
+    ["patch2", ["get", ["$inputs"], "/2"]]
+  ],
+  ["patch", ["patch", ["$", "/initial"], ["$", "/patch1"]], ["$", "/patch2"]]
+]
+```
+
+**Functional approach with car/cdr:**
+```json
+["reduce", 
+  ["cdr", ["$inputs"]],                    // All patches (skip first input)
+  ["lambda", ["state", "patch"],
+    ["patch", ["$", "/state"], ["$", "/patch"]]
+  ],
+  ["car", ["$inputs"]]                     // Initial state (first input)
+]
+```
+
+**Benefits of the functional approach:**
+- Works with any number of patches (not just 2)
+- More readable and declarative
+- Follows functional programming principles
+- Easier to test and reason about
+
+#### Example: Processing Conversation Updates
+
+```json
+// Process conversation updates using functional list operations
+["let", [
+    ["initial_conversation", ["car", ["$inputs"]]],     // First input
+    ["all_patches", ["cdr", ["$inputs"]]],              // Remaining inputs
+    ["final_state", ["reduce",
+      ["$", "/all_patches"],
+      ["lambda", ["conversation", "patch"],
+        ["patch", ["$", "/conversation"], ["$", "/patch"]]
+      ],
+      ["$", "/initial_conversation"]
+    ]],
+    ["patch_count", ["count", ["$", "/all_patches"]]]
+  ],
+  ["obj",
+    ["conversation_id", ["get", ["$", "/final_state"], "/id"]],
+    ["message_count", ["count", ["get", ["$", "/final_state"], "/messages"]]],
+    ["patches_applied", ["$", "/patch_count"]],
+    ["final_conversation", ["$", "/final_state"]]
+  ]
+]
+```
+
+**Usage:**
+```bash
+computo --pretty=2 conversation_processor.json initial_conversation.json patch1.json patch2.json patch3.json
 ```
 
 ### Best Practices for Multiple Input Processing
@@ -371,6 +455,8 @@ Remember that `--diff` only works with a single input file:
 3. **Handle missing inputs gracefully** with conditional logic
 4. **Document input order requirements** in your scripts
 5. **Use patch operations for incremental updates** rather than full replacements
+6. **Consider car/cdr for functional processing** when dealing with variable numbers of inputs
+7. **Use car/cdr with reduce** for applying operations across multiple inputs
 
 ### Chapter Summary
 
@@ -380,6 +466,8 @@ In this chapter, you learned:
 - The difference between `$input` (first document) and `$inputs` (all documents)
 - How to generate standardized JSON patches using the `diff` operator
 - How to apply patches using the `patch` operator  
+- **Functional list processing** with `car` and `cdr` operators for elegant array manipulation
+- **Functional patterns** for processing variable numbers of inputs
 - Complete workflows for document versioning and change management
 - Advanced patterns for multi-document processing
 - Error handling strategies for patch operations

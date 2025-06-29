@@ -70,13 +70,33 @@ cmake --build build
 ```
 This command compiles the Computo library and the `computo` CLI tool. The final executable will be placed in the `build/` directory.
 
+#### 2c. Install Computo
+For convenience, install the `computo` CLI tool to a standard system location so you can run it from anywhere without specifying the full path.
+
+```bash
+# From within the 'computo' directory
+sudo cmake --install build
+```
+
+Alternatively, for a stripped (smaller) binary:
+```bash
+sudo cmake --install build --strip
+```
+
+This installs the `computo` executable to `/usr/local/bin` (or your system's standard binary location), making it available system-wide.
+
 ### Step 3: Verify the Installation
 
 You can verify that everything works by running the CLI tool or its test suite.
 
 **To check the CLI:**
-The executable is named `computo` and resides in the `build` directory. Try running it with no arguments to see the usage message.
+If you installed computo system-wide, you can now run it from anywhere. Try running it with no arguments to see the usage message.
 
+```bash
+computo
+```
+
+If you haven't installed it yet, you can still test it from the build directory:
 ```bash
 ./build/computo
 ```
@@ -89,7 +109,7 @@ The project includes a comprehensive set of tests. Running them confirms that Co
 cd build
 ctest --verbose
 ```
-You should see output indicating that all 103 tests have passed.
+You should see output indicating that all 153 tests have passed.
 
 ### Your Workspace
 
@@ -97,10 +117,14 @@ You are now ready to start writing transformations. Your typical workflow will i
 
 1.  Creating a `script.json` file containing your Computo logic.
 2.  Creating an `input.json` file with the data you want to transform.
-3.  Running the transformation from the root of your `computo` project directory:
+3.  Running the transformation from anywhere on your system (assuming you installed computo):
 
     ```bash
-    ./build/computo script.json input.json
+    # Basic usage (compact output)
+    computo script.json input.json
+    
+    # Pretty-printed output (recommended for development)
+    computo --pretty=2 script.json input.json
     ```
 
 In the next chapter, we will write our first Computo script and explore its fundamental concepts.

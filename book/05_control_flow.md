@@ -65,7 +65,7 @@ Let's build a script that generates a different output based on whether a user i
 3.  Run the script:
 
     ```bash
-    ./build/computo conditional_user.json users_input.json
+    computo conditional_user.json users_input.json
     ```
 
 The output will be:
@@ -146,7 +146,7 @@ Now, we can write a script that uses `if` to choose which template to apply.
 Run this script (with the `--interpolation` flag to handle the strings):
 
 ```bash
-./build/computo --interpolation template_selector.json users_input.json
+computo --interpolation template_selector.json users_input.json
 ```
 
 **Output for Alice (user 0):**

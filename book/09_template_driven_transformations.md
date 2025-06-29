@@ -110,7 +110,7 @@ Let's imagine we're receiving a product data object from a backend service, and 
 
 Run it with the `--interpolation` flag for the price string:
 ```bash
-./build/computo --interpolation build_card_context.json product_input.json
+computo --interpolation build_card_context.json product_input.json
 ```
 
 **Final Output:**

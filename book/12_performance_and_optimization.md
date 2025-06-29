@@ -108,6 +108,40 @@ This version is dramatically better. The `filter` operator runs first on the raw
 
 **Always filter as early as you can to reduce the amount of data that later stages in your pipeline need to process.**
 
+### Tail Call Optimization: No Stack Overflow Worries
+
+Computo implements tail call optimization (TCO), which means you don't need to worry about stack overflow errors from deeply nested control flow structures. This makes Computo suitable for complex, programmatically-generated transformations.
+
+#### What This Means for You
+
+Traditional recursive programs can cause stack overflow if they nest too deeply. Computo eliminates this concern:
+
+```json
+// This would cause stack overflow in many languages, but not in Computo
+["if", ["count", ["$input"]], 
+  ["if", [">", ["get", ["$input"], "/score"], 90],
+    ["if", ["==", ["get", ["$input"], "/status"], "active"],
+      ["if", ["!=", ["get", ["$input"], "/role"], "admin"],
+        "Process user",
+        "Skip admin"
+      ],
+      "Inactive user"
+    ],
+    "Low score"
+  ],
+  "Empty input"
+]
+```
+
+#### Practical Benefits
+
+1. **Complex conditional trees**: You can nest `if` statements arbitrarily deep without performance degradation
+2. **Deep `let` scoping**: Nested variable scopes don't consume stack space
+3. **Programmatic generation**: Generated scripts with deep nesting work reliably
+4. **No configuration needed**: TCO is automatic and always enabled
+
+This optimization makes Computo robust for complex business logic and machine-generated transformations where nesting depth might be unpredictable.
+
 ### In This Chapter
 
 You've learned the core principles of writing high-performance Computo scripts:
@@ -115,5 +149,6 @@ You've learned the core principles of writing high-performance Computo scripts:
 *   Leverage the **lazy evaluation** of the `if` operator to defer expensive work.
 *   Understand the relative performance costs of different operators.
 *   Structure your array pipelines to **`filter` early and `map` late**.
+*   Take advantage of **tail call optimization** for deeply nested control flow without stack overflow concerns.
 
 By applying these principles, you can ensure that your transformations are not only correct but also fast and efficient enough for production workloads. The final chapters will cover error handling and best practices to round out your expertise.

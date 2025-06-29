@@ -76,7 +76,7 @@ Let's imagine our application has default settings, but we want to allow a user 
 3.  Run the script:
 
     ```bash
-    ./build/computo merge_settings.json settings_input.json
+    computo merge_settings.json settings_input.json
     ```
 
 **Output:**

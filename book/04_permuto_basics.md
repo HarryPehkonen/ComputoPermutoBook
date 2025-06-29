@@ -74,7 +74,7 @@ To use a Permuto template from within our Computo-driven workflow, we use the `p
 2.  Now, run the script:
 
     ```bash
-    ./build/computo apply_template.json input.json
+    computo apply_template.json input.json
     ```
 
 The output is a new JSON object, perfectly matching the template's structure:
@@ -135,7 +135,7 @@ Permuto can also substitute placeholders inside of strings, a feature known as s
 3.  Run it with the `--interpolation` flag:
 
     ```bash
-    ./build/computo --interpolation apply_greeting.json input.json
+    computo --interpolation apply_greeting.json input.json
     ```
 
 The output shows the values correctly substituted within the string:

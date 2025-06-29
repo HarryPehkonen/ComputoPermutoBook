@@ -42,13 +42,58 @@ Let's start with the simplest possible script.
 3.  Now, run it from your terminal:
 
     ```bash
-    ./build/computo add.json input.json
+    computo add.json input.json
     ```
 
 The output will be:
-```json
+```
 150
 ```
+
+By default, Computo outputs JSON in compact form. For development and learning, you might prefer pretty-printed output:
+
+```bash
+computo --pretty=2 add.json input.json
+```
+
+This produces the same result but with proper indentation when dealing with complex structures.
+
+### Understanding Output Formatting
+
+The `--pretty=N` option controls how Computo formats its JSON output:
+
+- **No flag (default)**: Compact output - `{"name":"Alice","age":30}`
+- **`--pretty=2`**: Pretty-printed with 2-space indentation
+- **`--pretty=4`**: Pretty-printed with 4-space indentation
+
+For learning and development, we recommend using `--pretty=2` to make complex JSON structures easier to read. In production scripts or pipelines, you might prefer the compact default format for efficiency.
+
+### Adding Comments to Scripts (CLI Only)
+
+When working with complex transformations, you might want to add comments to your script files for documentation. The CLI tool supports this with the `--comments` flag:
+
+```bash
+# Enable comment parsing in script files
+computo --comments --pretty=2 script_with_comments.json input.json
+```
+
+**Important**: Comments are only supported in **script files**, not input files, and only when using the CLI tool (not the C++ library API).
+
+Example commented script:
+```json
+[
+  // This creates a user profile object
+  "obj", // obj creates a JSON object
+  /* Extract the user's name from input data
+     and format it for display */
+  ["name", ["get", ["$input"], "/user/name"]],
+  ["greeting", "Welcome!"] // Static greeting message
+]
+```
+
+Supported comment styles:
+- `// Single line comments`
+- `/* Multi-line comments */`
 
 The Computo engine evaluated the expression and printed the resulting JSON to your console. Now let's try nesting. Change `add.json` to:
 
@@ -58,9 +103,104 @@ The Computo engine evaluated the expression and printed the resulting JSON to yo
 
 Run it again. The output is `150`. The engine first evaluated the inner expression `["*", 5, 10]` to get `50`, then evaluated the outer expression `["+", 100, 50]`.
 
+### Creating Objects and Arrays
+
+After experimenting with basic arithmetic, you might wonder how to create more complex JSON structures. Computo provides specific syntax for constructing objects and arrays.
+
+#### Creating Objects with `obj`
+
+To create a JSON object, use the `obj` operator with key-value pairs:
+
+```json
+["obj", ["key1", "value1"], ["key2", "value2"]]
+```
+
+Let's try this. Create a script called `make_object.json`:
+
+```json
+["obj", 
+  ["name", "Alice"], 
+  ["age", 30], 
+  ["score", ["+", 85, 15]]
+]
+```
+
+Run it:
+```bash
+computo --pretty=2 make_object.json input.json
+```
+
+Output:
+```json
+{
+  "name": "Alice",
+  "age": 30,
+  "score": 100
+}
+```
+
+Note: We're using `--pretty=2` to format the output with 2-space indentation for readability. Without this flag, the output would be compact: `{"name":"Alice","age":30,"score":100}`
+
+Notice how the `score` value is computed from the nested arithmetic expression `["+", 85, 15]`.
+
+#### Creating Arrays
+
+For arrays, use the special `{"array": [...]}` syntax:
+
+```json
+{"array": [1, 2, ["*", 3, 4]]}
+```
+
+Create a script called `make_array.json`:
+
+```json
+{"array": [
+  "hello",
+  42,
+  ["+", 10, 5],
+  ["obj", ["type", "computed"], ["value", true]]
+]}
+```
+
+Run it:
+```bash
+computo --pretty=2 make_array.json input.json
+```
+
+Output:
+```json
+[
+  "hello",
+  42,
+  15,
+  {
+    "type": "computed",
+    "value": true
+  }
+]
+```
+
+This array contains:
+- A literal string `"hello"`
+- A literal number `42`
+- A computed number `15` from `["+", 10, 5]`
+- A computed object from the `obj` operator
+
+### **A Note on Syntax: Why `{"array": [...]}`?**
+
+You may wonder why literal arrays are written as `{"array": [...]}` instead of a simpler `["arr", ...]` operator. This was a deliberate design choice for one critical reason: **to eliminate ambiguity**.
+
+In Computo, a JSON array like `["operator", ...]` is always an action. But what about a simple array of strings, like `["red", "green", "blue"]`? Without a special rule, the interpreter would see `"red"` and think it's an invalid operator.
+
+The `{"array": [...]}` syntax provides a clear, unambiguous signal to the interpreter: "Treat this as a literal piece of data, not an action to perform."
+
+This allows the core rule—**arrays are for actions, objects are for data**—to hold true, making the language robust and predictable. It trades a small amount of verbosity for absolute clarity.
+
+Now that you know how to construct basic data structures, let's learn how to work with dynamic input data.
+
 ### Accessing Input Data with `$input` and `get`
 
-Static scripts are only so useful. The real power comes from transforming dynamic input data. Computo makes the entire contents of your `input.json` file available through a special, zero-argument operator: `$input`.
+Static scripts are only so useful. The real power comes from transforming dynamic input data. Computo makes the entire contents of your `input.json` file available through a special, zero-argument operator: `$input`.  Please note that the name of the operator has nothing to do with the filename.
 
 Let's create a more realistic scenario.
 
@@ -93,13 +233,15 @@ Let's create a more realistic scenario.
 3.  Run the script:
 
     ```bash
-    ./build/computo get_plan.json input.json
+    computo get_plan.json input.json
     ```
 
 The output will be:
-```json
+```
 "premium"
 ```
+
+For simple values like strings, the `--pretty` flag doesn't make much difference, but it's helpful for complex structures.
 The engine first evaluated `["$input"]` to get the entire input object, then `get` extracted the value at `/user/plan/name`.
 
 ### Storing Intermediate Values with `let` and `$`
@@ -122,18 +264,17 @@ Let's build a new user object containing just the name and monthly cost.
         ["user_plan", ["get", ["$input"], "/user/plan"]],
         ["user_name", ["get", ["$input"], "/user/name"]]
       ],
-      {
-        "name": ["$", "/user_name"],
-        "cost": ["get", ["$", "/user_plan"], "/monthly_cost"]
-      }
+      ["obj",
+        ["name", ["$", "/user_name"]],
+        ["cost", ["get", ["$", "/user_plan"], "/monthly_cost"]]
+      ]
     ]
     ```
-    [CRITIQUE NEEDED]: The final object construction `{ "name": ..., "cost": ... }` uses a plain JSON object. While this works because the *values* are Computo expressions, it might be confusing. The `["obj", ...]` operator is more explicit. Should we introduce `obj` here for clarity, or save it for the dedicated "Objects" chapter and keep this simpler for now?
 
 2.  Run the script with our previous `input.json`:
 
     ```bash
-    ./build/computo build_user.json input.json
+    computo --pretty=2 build_user.json input.json
     ```
 
 The output is a completely new JSON object, built from pieces of the input:
@@ -155,8 +296,12 @@ Here's the flow:
 
 You've learned the fundamental building blocks of Computo:
 *   The **syntax** of operators `["op", ...]` and literal values.
+*   How to **create objects** using the `obj` operator with key-value pairs.
+*   How to **create arrays** using the `{"array": [...]}` syntax.
+*   How to **format output** using the `--pretty=N` CLI option for readable JSON.
+*   How to **add comments** to script files using the `--comments` CLI flag.
 *   How to access the entire input document with **`$input`**.
 *   How to extract specific data with **`get`** and JSON Pointers.
 *   How to create temporary variables with **`let`** and access them with **`$`**.
 
-These few operators are already enough to perform some powerful data extraction and reshaping. In the next chapter, we'll switch gears and look at Permuto, the templating engine that complements Computo's logic.
+These fundamental operators give you the power to construct new JSON structures and perform data extraction and reshaping. In the next chapter, we'll switch gears and look at Permuto, the templating engine that complements Computo's logic.

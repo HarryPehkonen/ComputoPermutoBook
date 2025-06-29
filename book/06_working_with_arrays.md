@@ -50,7 +50,7 @@ Let's use the same `users_input.json` from the last chapter. Our goal is to prod
 2.  Run the script:
 
     ```bash
-    ./build/computo get_names.json users_input.json
+    computo get_names.json users_input.json
     ```
 
 The output is a new array containing just the transformed items:
@@ -144,7 +144,7 @@ Let's generate a status message for each user. Active users get a welcome messag
 
 Run this with the `--interpolation` flag:
 ```bash
-./build/computo --interpolation user_statuses.json users_input.json
+computo --interpolation user_statuses.json users_input.json
 ```
 
 The output is an array of conditionally generated objects:

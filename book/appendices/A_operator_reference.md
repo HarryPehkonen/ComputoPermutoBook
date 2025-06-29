@@ -1,6 +1,6 @@
 ## **Appendix A: Complete Operator Reference**
 
-This appendix provides a quick reference for all 25 operators available in Computo.
+This appendix provides a quick reference for all 27 operators available in Computo.
 
 ### Data Access & Scoping
 
@@ -145,14 +145,22 @@ Like `map`, but if a lambda returns an array, its items are flattened into the r
 
 ---
 #### `count`
-Returns the number of items in an array. *(Note: this was proposed in a pattern but is not a formally implemented operator in the C++ code. I am assuming it should exist based on the context of the book.)*
+Returns the number of items in an array.
 *   **Syntax:** `["count", <array_expr>]`
 *   **Example:** `["count", {"array": [1, 2, 3]}]` -> `3`
 
+### List Processing (Functional)
+
 ---
-[CRITIQUE NEEDED]: I noticed that the `count` operator was used in Chapter 10's Aggregation Pipeline pattern, but it's not actually defined in the C++ implementation (`src/computo.cpp`) or tested in `tests/test_operators.cpp`.
+#### `car`
+Returns the first element of an array. Inspired by Lisp's car function.
+*   **Syntax:** `["car", <array_expr>]`
+*   **Example:** `["car", {"array": [1, 2, 3]}]` -> `1`
+*   **Note:** Throws `InvalidArgumentException` if array is empty or argument is not an array
 
-1.  Was this an oversight, and should we add `count` to the implementation? It's a very useful and simple addition.
-2.  Or should I remove `count` from the book and rewrite the example in Chapter 10 to use a different method (e.g., `["reduce", ..., 1]]` which is much clunkier)?
-
-My recommendation is to add the `count` operator. For now, I will leave it in this reference.
+---
+#### `cdr` 
+Returns all elements except the first from an array. Inspired by Lisp's cdr function.
+*   **Syntax:** `["cdr", <array_expr>]`
+*   **Example:** `["cdr", {"array": [1, 2, 3]}]` -> `[2, 3]`
+*   **Note:** Returns empty array `[]` if input array is empty; throws `InvalidArgumentException` if argument is not an array
