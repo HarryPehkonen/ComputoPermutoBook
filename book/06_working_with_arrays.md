@@ -162,6 +162,146 @@ The output is an array of conditionally generated objects:
 ]
 ```
 
+### Lambda Variable Resolution: Reusable Functions
+
+As your transformations become more complex, you'll often find yourself writing the same lambda expressions multiple times. Computo provides a powerful feature called **lambda variable resolution** that allows you to store lambda functions in variables using `let` bindings and reuse them throughout your script.
+
+#### Basic Lambda Variable Storage
+
+You can store a lambda function in a variable and then reference it using the `$` operator:
+
+```json
+["let", [["function_name", ["lambda", ["param"], <transformation>]]],
+  ["map", <array>, ["$", "/function_name"]]
+]
+```
+
+#### Simple Example: Reusable Double Function
+
+Let's start with a basic example that doubles numbers. Instead of writing the same lambda twice, we'll store it once and reuse it:
+
+**`reusable_double.json`:**
+```json
+["let", [["double", ["lambda", ["x"], ["*", ["$", "/x"], 2]]]],
+  ["obj",
+    ["list1", ["map", {"array": [1, 2, 3]}, ["$", "/double"]]],
+    ["list2", ["map", {"array": [4, 5, 6]}, ["$", "/double"]]]
+  ]
+]
+```
+
+**Output:**
+```json
+{
+  "list1": [2, 4, 6],
+  "list2": [8, 10, 12]
+}
+```
+
+The `double` function is defined once and used twice, making the code more maintainable and readable.
+
+#### Multiple Lambda Variables
+
+You can define multiple lambda functions in the same `let` binding and use them together:
+
+**`multiple_functions.json`:**
+```json
+["let", [
+    ["increment", ["lambda", ["x"], ["+", ["$", "/x"], 1]]],
+    ["is_large", ["lambda", ["x"], [">", ["$", "/x"], 3]]]
+  ],
+  ["map", 
+    ["filter", {"array": [1, 2, 3, 4, 5]}, ["$", "/is_large"]], 
+    ["$", "/increment"]
+  ]
+]
+```
+
+**Output:**
+```json
+[5, 6]
+```
+
+This example:
+1. Defines two functions: `increment` (adds 1) and `is_large` (checks if > 3)
+2. First filters the array to keep only large numbers: `[4, 5]`
+3. Then increments each remaining number: `[5, 6]`
+
+#### Real-World Example: User Processing Pipeline
+
+Let's apply this to our user data with more complex, reusable transformations:
+
+**`user_pipeline_with_functions.json`:**
+```json
+["let", [
+    ["is_active", ["lambda", ["user"], ["get", ["$", "/user"], "/active"]]],
+    ["is_premium", ["lambda", ["user"], ["==", ["get", ["$", "/user"], "/plan"], "premium"]]],
+    ["extract_name", ["lambda", ["user"], ["get", ["$", "/user"], "/name"]]],
+    ["format_user_summary", ["lambda", ["user"], 
+      ["obj",
+        ["name", ["get", ["$", "/user"], "/name"]],
+        ["status", ["if", 
+          ["get", ["$", "/user"], "/active"], 
+          "ACTIVE", 
+          "INACTIVE"
+        ]],
+        ["plan_type", ["get", ["$", "/user"], "/plan"]]
+      ]
+    ]]
+  ],
+  ["obj",
+    ["active_users", ["filter", ["get", ["$input"], "/users"], ["$", "/is_active"]]],
+    ["premium_users", ["filter", ["get", ["$input"], "/users"], ["$", "/is_premium"]]],
+    ["active_names", ["map", 
+      ["filter", ["get", ["$input"], "/users"], ["$", "/is_active"]], 
+      ["$", "/extract_name"]
+    ]],
+    ["user_summaries", ["map", 
+      ["get", ["$input"], "/users"], 
+      ["$", "/format_user_summary"]
+    ]]
+  ]
+]
+```
+
+Using our familiar `users_input.json`, this produces:
+
+**Output:**
+```json
+{
+  "active_users": [
+    { "name": "Alice", "active": true, "plan": "premium" },
+    { "name": "Charlie", "active": true, "plan": "basic" }
+  ],
+  "premium_users": [
+    { "name": "Alice", "active": true, "plan": "premium" }
+  ],
+  "active_names": ["Alice", "Charlie"],
+  "user_summaries": [
+    { "name": "Alice", "status": "ACTIVE", "plan_type": "premium" },
+    { "name": "Bob", "status": "INACTIVE", "plan_type": "basic" },
+    { "name": "Charlie", "status": "ACTIVE", "plan_type": "basic" }
+  ]
+}
+```
+
+#### Benefits of Lambda Variable Resolution
+
+1. **Code Reuse**: Define complex transformations once, use them multiple times
+2. **Readability**: Give descriptive names to your functions for self-documenting code
+3. **Maintainability**: Change the logic in one place and it updates everywhere
+4. **Performance**: Avoid redefining identical lambda functions
+5. **Composition**: Build complex data pipelines by combining simple, named functions
+
+#### Important Notes
+
+- Lambda variables must be used with array operators (`map`, `filter`, etc.)
+- They follow normal `let` scoping rules
+- Parameters are still accessed using `["$", "/parameter_name"]` syntax
+- You can mix stored lambdas with inline lambdas in the same script
+
+This feature transforms Computo from a simple transformation tool into a powerful functional programming environment where you can build libraries of reusable transformation functions.
+
 ### In This Chapter
 
 You've added array processing to your skillset. You have learned:
@@ -169,5 +309,7 @@ You've added array processing to your skillset. You have learned:
 *   The syntax for **`lambda`** expressions to define the per-item transformation.
 *   The special **`{"array": [...]}`** syntax for representing literal arrays.
 *   How to combine `map` with `obj`, `if`, and `permuto.apply` for complex list transformations.
+*   **Lambda variable resolution** for storing and reusing lambda functions in `let` bindings.
+*   How to build complex, maintainable data processing pipelines with named, reusable functions.
 
 `map` is the first of several array operators. In the next chapters, we will explore others like `filter` and `reduce` to further refine our data pipelines.

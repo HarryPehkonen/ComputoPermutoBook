@@ -165,6 +165,14 @@ Defines an anonymous function for use with array operators. **Used ONLY with arr
 *   **Two Parameter Example (for `reduce`):** 
     `["lambda", ["acc", "item"], ["+", ["$", "/acc"], ["$", "/item"]]]` - adds `item` to accumulator `acc`
 
+*   **Lambda Variable Resolution:** Lambdas can be stored in variables using `let` and reused:
+    ```json
+    ["let", [["double", ["lambda", ["x"], ["*", ["$", "/x"], 2]]]],
+      ["map", {"array": [1, 2, 3]}, ["$", "/double"]]
+    ]
+    ```
+    Result: `[2, 4, 6]` - The `double` function is stored once and can be reused multiple times
+
 ### Array Operators
 
 *Note: For all array operators, literal arrays must be specified using `{"array": [...]}` syntax.*

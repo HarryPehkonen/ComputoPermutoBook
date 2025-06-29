@@ -41,7 +41,7 @@
 **[Chapter 6: Working with Arrays](06_working_with_arrays.html)**
 - Array literals and basic operations
 - Introduction to functional programming concepts
-- Lambda expressions
+- Lambda expressions and lambda variable resolution for reusable functions
 - **Operators introduced:** `map`, `lambda`
 
 **[Chapter 7: Object Manipulation](07_object_manipulation.html)**
