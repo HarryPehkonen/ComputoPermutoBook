@@ -251,9 +251,7 @@ generate_html() {
     # Create main index
     create_index_html
     
-    # Convert README files
-    convert_md_to_html "ComputoREADME.md" "$OUTPUT_DIR/ComputoREADME.html" "Computo README"
-    convert_md_to_html "PermutoREADME.md" "$OUTPUT_DIR/PermutoREADME.html" "Permuto README"
+    # Note: README files are linked directly to GitHub repositories for latest information
     
     print_status "HTML generation complete!"
 }
@@ -303,8 +301,8 @@ create_index_html() {
         
         <h3>Reference Documents</h3>
         <ul>
-            <li><a href="../ComputoREADME.html">Computo Technical README</a></li>
-            <li><a href="../PermutoREADME.html">Permuto Technical README</a></li>
+            <li><a href="https://github.com/HarryPehkonen/Computo/blob/main/README.md" target="_blank">Computo Technical README</a></li>
+            <li><a href="https://github.com/HarryPehkonen/Permuto/blob/main/README.md" target="_blank">Permuto Technical README</a></li>
         </ul>
     </div>
     
