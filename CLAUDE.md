@@ -12,10 +12,10 @@ This is **ComputoPermutoBook** - a comprehensive documentation project that crea
 
 ```bash
 # Quick HTML build using Python markdown (minimal dependencies)
-./simple-build.sh
+./build.sh
 
 # Generate HTML and open in browser  
-./simple-build.sh --open
+./build.sh --open
 ```
 
 ### Full Build with pandoc (Requires pandoc installation)
@@ -36,10 +36,10 @@ This is **ComputoPermutoBook** - a comprehensive documentation project that crea
 
 ### Prerequisites
 
-For `simple-build.sh` (recommended):
+For `build.sh` (recommended):
 - Python 3 with `markdown` library (auto-installed if missing)
 
-For `build.sh` (full features):
+For `build_old.sh` (full features):
 - pandoc
 - LaTeX distribution (for PDF output)
 
@@ -53,13 +53,13 @@ For `build.sh` (full features):
   - `appendices/A_operator_reference.md` - Reference documentation
   
 - **Build System**
-  - `simple-build.sh` - Lightweight Python-based HTML generator
-  - `build.sh` - Full pandoc-based build system (HTML + PDF)
+  - `build.sh` - Lightweight Python-based HTML generator
+  - `build_old.sh` - Full pandoc-based build system (HTML + PDF)
   - `BUILD.md` - Detailed build documentation
 
 - **Output Structure** (`output/` directory)
   - `html/` - Generated HTML files with navigation
-  - `pdf/` - Combined PDF book (when using build.sh --pdf)
+  - `pdf/` - Combined PDF book (when using build_old.sh --pdf)
   - `*.html` - README file conversions
 
 ### Documentation Ecosystem
@@ -72,13 +72,13 @@ Content covers practical usage patterns, from basic syntax to complex real-world
 
 ### Build Script Architecture
 
-**simple-build.sh** features:
+**build.sh** features:
 - Pure Python markdown conversion with minimal dependencies
 - Self-contained CSS generation
 - Automatic dependency installation
 - Cross-platform browser opening
 
-**build.sh** features:  
+**build_old.sh** features:  
 - pandoc-based conversion with advanced formatting
 - PDF generation via LaTeX
 - Professional styling and layout
@@ -87,14 +87,14 @@ Content covers practical usage patterns, from basic syntax to complex real-world
 ## Development Workflow
 
 1. Edit markdown files in `book/` directory
-2. Run build script to generate output: `./simple-build.sh --open`
+2. Run build script to generate output: `./build.sh --open`
 3. Refresh browser to see changes
-4. For final PDF: `./build.sh --pdf`
+4. For final PDF: `./build_old.sh --pdf`
 
 ## Key Files
 
 - **Content**: Files in `book/` directory are the source of truth
-- **Build Config**: Chapter ordering defined in `build.sh` script's `chapter_files` array
+- **Build Config**: Chapter ordering defined in `build_old.sh` script's `chapter_files` array
 - **Styling**: CSS embedded in build scripts (not separate files)
 - **Output**: All generated files go to `output/` directory
 
@@ -196,8 +196,8 @@ When adding/updating operators, verify:
 
 ```bash
 # Linux
-while inotifywait -e modify -r book/; do ./simple-build.sh; done
+while inotifywait -e modify -r book/; do ./build.sh; done
 
 # macOS  
-fswatch -o book/ | xargs -n1 -I{} ./simple-build.sh
+fswatch -o book/ | xargs -n1 -I{} ./build.sh
 ```

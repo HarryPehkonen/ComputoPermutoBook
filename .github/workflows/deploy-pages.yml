@@ -6,10 +6,8 @@ on:
     branches: [ main ]
     paths: 
       - 'book/**'
-      - 'ComputoREADME.md'
-      - 'PermutoREADME.md'
-      - 'simple-build.sh'
       - 'build.sh'
+      - 'build_old.sh'
   
   # Allow manual triggering
   workflow_dispatch:
@@ -44,10 +42,10 @@ jobs:
         pip install markdown
         
     - name: Make build script executable
-      run: chmod +x simple-build.sh
+      run: chmod +x build.sh
       
     - name: Build for GitHub Pages
-      run: ./simple-build.sh --github-pages
+      run: ./build.sh --github-pages
       
     - name: Setup Pages
       uses: actions/configure-pages@v5

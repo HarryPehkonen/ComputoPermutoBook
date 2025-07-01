@@ -6,16 +6,16 @@ This directory contains a complete build system for converting the markdown book
 
 ```bash
 # Generate HTML for browser viewing
-./build.sh
+./build_old.sh
 
 # Generate HTML and open in browser
-./build.sh --open
+./build_old.sh --open
 
 # Generate HTML + PDF
-./build.sh --pdf
+./build_old.sh --pdf
 
 # Generate everything and open browser
-./build.sh --all
+./build_old.sh --all
 ```
 
 ## Prerequisites
@@ -92,14 +92,14 @@ output/
 ## Development Workflow
 
 1. **Edit markdown files** in the `book/` directory
-2. **Run build script** to see changes: `./build.sh --open`
+2. **Run build script** to see changes: `./build_old.sh --open`
 3. **Refresh browser** to see updates
-4. **Generate PDF** when ready: `./build.sh --pdf`
+4. **Generate PDF** when ready: `./build_old.sh --pdf`
 
 ## Customization
 
 ### Styling
-Edit `build.sh` and modify the CSS generation section to customize appearance.
+Edit `build_old.sh` and modify the CSS generation section to customize appearance.
 
 ### PDF Layout
 Modify the pandoc PDF generation options in the `generate_pdf()` function.
@@ -116,7 +116,7 @@ Install pandoc using your system's package manager (see Prerequisites above).
 Install a LaTeX distribution. PDF generation will be skipped if LaTeX is not available.
 
 ### Permission Denied
-Make sure the build script is executable: `chmod +x build.sh`
+Make sure the build script is executable: `chmod +x build_old.sh`
 
 ### Browser doesn't open automatically
 The script will print the file path. Manually open `output/html/index.html` in your browser.
@@ -131,10 +131,10 @@ sudo apt-get install inotify-tools  # Linux
 brew install fswatch                # macOS
 
 # Watch for changes and rebuild (Linux)
-while inotifywait -e modify -r book/; do ./build.sh; done
+while inotifywait -e modify -r book/; do ./build_old.sh; done
 
 # Watch for changes and rebuild (macOS)
-fswatch -o book/ | xargs -n1 -I{} ./build.sh
+fswatch -o book/ | xargs -n1 -I{} ./build_old.sh
 ```
 
 This will automatically regenerate the HTML whenever you save changes to any markdown file.
