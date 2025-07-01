@@ -124,13 +124,7 @@ These examples demonstrate the debugging concepts covered in this chapter. Each 
 
 **Computo Script**:
 ```json
-[
-  "obj",
-  [
-    "message",
-    "Hello World"
-  ]
-]
+["obj", ["message", "Hello World"]]
 ```
 
 **How to Run**:
@@ -171,13 +165,7 @@ run.bat     # Windows
 
 **Computo Script**:
 ```json
-[
-  "obj",
-  [
-    "status",
-    "installed"
-  ]
-]
+["obj", ["status", "installed"]]
 ```
 
 **How to Run**:
@@ -218,23 +206,7 @@ run.bat     # Windows
 
 **Computo Script**:
 ```json
-[
-  "obj",
-  [
-    "result",
-    "success"
-  ],
-  [
-    "timestamp",
-    [
-      "get",
-      [
-        "$input"
-      ],
-      "/when"
-    ]
-  ]
-]
+["obj", ["result", "success"], ["timestamp", ["get", ["$input"], "/when"]]]
 ```
 
 **Input Data** (`input.json`):

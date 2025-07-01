@@ -235,28 +235,12 @@ computo --profile --pretty=2 script.json input.json
 <p><strong>Purpose</strong>: Basic execution tracing to see operation flow</p>
 <p><strong>Computo Script</strong>:</p>
 <pre><code class="language-json">[
-  &quot;let&quot;,
+  &quot;let&quot;, 
   [
-    [
-      &quot;x&quot;,
-      10
-    ],
-    [
-      &quot;y&quot;,
-      32
-    ]
+    [&quot;x&quot;, 10],
+    [&quot;y&quot;, 32]
   ],
-  [
-    &quot;+&quot;,
-    [
-      &quot;$&quot;,
-      &quot;/x&quot;
-    ],
-    [
-      &quot;$&quot;,
-      &quot;/y&quot;
-    ]
-  ]
+  [&quot;+&quot;, [&quot;$&quot;, &quot;/x&quot;], [&quot;$&quot;, &quot;/y&quot;]]
 ]
 </code></pre>
 <p><strong>How to Run</strong>:</p>
@@ -287,28 +271,8 @@ run.bat     # Windows
 <p><strong>Computo Script</strong>:</p>
 <pre><code class="language-json">[
   &quot;map&quot;,
-  {
-    &quot;array&quot;: [
-      1,
-      2,
-      3,
-      4
-    ]
-  },
-  [
-    &quot;lambda&quot;,
-    [
-      &quot;x&quot;
-    ],
-    [
-      &quot;*&quot;,
-      [
-        &quot;$&quot;,
-        &quot;/x&quot;
-      ],
-      2
-    ]
-  ]
+  {&quot;array&quot;: [1, 2, 3, 4]},
+  [&quot;lambda&quot;, [&quot;x&quot;], [&quot;*&quot;, [&quot;$&quot;, &quot;/x&quot;], 2]]
 ]
 </code></pre>
 <p><strong>How to Run</strong>:</p>
@@ -343,45 +307,8 @@ run.bat     # Windows
 <p><strong>Computo Script</strong>:</p>
 <pre><code class="language-json">[
   &quot;reduce&quot;,
-  {
-    &quot;array&quot;: [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10
-    ]
-  },
-  [
-    &quot;lambda&quot;,
-    [
-      &quot;acc&quot;,
-      &quot;x&quot;
-    ],
-    [
-      &quot;+&quot;,
-      [
-        &quot;$&quot;,
-        &quot;/acc&quot;
-      ],
-      [
-        &quot;*&quot;,
-        [
-          &quot;$&quot;,
-          &quot;/x&quot;
-        ],
-        [
-          &quot;$&quot;,
-          &quot;/x&quot;
-        ]
-      ]
-    ]
-  ],
+  {&quot;array&quot;: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]},
+  [&quot;lambda&quot;, [&quot;acc&quot;, &quot;x&quot;], [&quot;+&quot;, [&quot;$&quot;, &quot;/acc&quot;], [&quot;*&quot;, [&quot;$&quot;, &quot;/x&quot;], [&quot;$&quot;, &quot;/x&quot;]]]],
   0
 ]
 </code></pre>
@@ -414,44 +341,13 @@ run.bat     # Windows
 <pre><code class="language-json">[
   &quot;let&quot;,
   [
-    [
-      &quot;numbers&quot;,
-      {
-        &quot;array&quot;: [
-          5,
-          10,
-          15
-        ]
-      }
-    ],
-    [
-      &quot;multiplier&quot;,
-      3
-    ]
+    [&quot;numbers&quot;, {&quot;array&quot;: [5, 10, 15]}],
+    [&quot;multiplier&quot;, 3]
   ],
   [
     &quot;map&quot;,
-    [
-      &quot;$&quot;,
-      &quot;/numbers&quot;
-    ],
-    [
-      &quot;lambda&quot;,
-      [
-        &quot;n&quot;
-      ],
-      [
-        &quot;*&quot;,
-        [
-          &quot;$&quot;,
-          &quot;/n&quot;
-        ],
-        [
-          &quot;$&quot;,
-          &quot;/multiplier&quot;
-        ]
-      ]
-    ]
+    [&quot;$&quot;, &quot;/numbers&quot;],
+    [&quot;lambda&quot;, [&quot;n&quot;], [&quot;*&quot;, [&quot;$&quot;, &quot;/n&quot;], [&quot;$&quot;, &quot;/multiplier&quot;]]]
   ]
 ]
 </code></pre>
@@ -487,18 +383,8 @@ run.bat     # Windows
 <p><strong>Computo Script</strong>:</p>
 <pre><code class="language-json">[
   &quot;obj&quot;,
-  [
-    &quot;safe_value&quot;,
-    [
-      &quot;+&quot;,
-      20,
-      22
-    ]
-  ],
-  [
-    &quot;message&quot;,
-    &quot;This works fine&quot;
-  ]
+  [&quot;safe_value&quot;, [&quot;+&quot;, 20, 22]],
+  [&quot;message&quot;, &quot;This works fine&quot;]
 ]
 </code></pre>
 <p><strong>How to Run</strong>:</p>
@@ -531,88 +417,13 @@ run.bat     # Windows
 <p><strong>Computo Script</strong>:</p>
 <pre><code class="language-json">[
   &quot;obj&quot;,
-  [
-    &quot;total&quot;,
-    [
-      &quot;reduce&quot;,
-      [
-        &quot;filter&quot;,
-        {
-          &quot;array&quot;: [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6
-          ]
-        },
-        [
-          &quot;lambda&quot;,
-          [
-            &quot;x&quot;
-          ],
-          [
-            &quot;&gt;&quot;,
-            [
-              &quot;$&quot;,
-              &quot;/x&quot;
-            ],
-            3
-          ]
-        ]
-      ],
-      [
-        &quot;lambda&quot;,
-        [
-          &quot;sum&quot;,
-          &quot;x&quot;
-        ],
-        [
-          &quot;+&quot;,
-          [
-            &quot;$&quot;,
-            &quot;/sum&quot;
-          ],
-          [
-            &quot;$&quot;,
-            &quot;/x&quot;
-          ]
-        ]
-      ],
-      0
-    ]
-  ],
-  [
-    &quot;count&quot;,
-    [
-      &quot;filter&quot;,
-      {
-        &quot;array&quot;: [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6
-        ]
-      },
-      [
-        &quot;lambda&quot;,
-        [
-          &quot;x&quot;
-        ],
-        [
-          &quot;&gt;&quot;,
-          [
-            &quot;$&quot;,
-            &quot;/x&quot;
-          ],
-          3
-        ]
-      ]
-    ]
-  ]
+  [&quot;total&quot;, [
+    &quot;reduce&quot;,
+    [&quot;filter&quot;, {&quot;array&quot;: [1, 2, 3, 4, 5, 6]}, [&quot;lambda&quot;, [&quot;x&quot;], [&quot;&gt;&quot;, [&quot;$&quot;, &quot;/x&quot;], 3]]],
+    [&quot;lambda&quot;, [&quot;sum&quot;, &quot;x&quot;], [&quot;+&quot;, [&quot;$&quot;, &quot;/sum&quot;], [&quot;$&quot;, &quot;/x&quot;]]],
+    0
+  ]],
+  [&quot;count&quot;, [&quot;filter&quot;, {&quot;array&quot;: [1, 2, 3, 4, 5, 6]}, [&quot;lambda&quot;, [&quot;x&quot;], [&quot;&gt;&quot;, [&quot;$&quot;, &quot;/x&quot;], 3]]]]
 ]
 </code></pre>
 <p><strong>How to Run</strong>:</p>

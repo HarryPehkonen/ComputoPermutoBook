@@ -206,18 +206,17 @@ class BookChapterGenerator:
         # Script section
         parts.append("**Computo Script**:")
         parts.append("```json")
-        if isinstance(example['script'], str):
-            # If script is stored as a string, parse it first
-            try:
-                import json
-                script_obj = json.loads(example['script'])
-                parts.append(json.dumps(script_obj, indent=2))
-            except:
-                parts.append(example['script'])
+        
+        # Preserve original formatting from TOML - don't auto-format
+        script_content = example['script']
+        if isinstance(script_content, str):
+            # Script is stored as a string - preserve exact formatting
+            parts.append(script_content)
         else:
-            # Script is already an object
+            # Script is already parsed as object - use compact formatting
             import json
-            parts.append(json.dumps(example['script'], indent=2))
+            parts.append(json.dumps(script_content, separators=(',', ': ')))
+            
         parts.append("```")
         parts.append("")
         

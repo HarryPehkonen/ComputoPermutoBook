@@ -214,13 +214,7 @@ ctest --verbose
 <h3 id="help-command">🔧 Help Command</h3>
 <p><strong>Purpose</strong>: Display help information to verify CLI is working</p>
 <p><strong>Computo Script</strong>:</p>
-<pre><code class="language-json">[
-  &quot;obj&quot;,
-  [
-    &quot;message&quot;,
-    &quot;Hello World&quot;
-  ]
-]
+<pre><code class="language-json">[&quot;obj&quot;, [&quot;message&quot;, &quot;Hello World&quot;]]
 </code></pre>
 <p><strong>How to Run</strong>:</p>
 <pre><code class="language-bash"># Navigate to the example directory
@@ -249,13 +243,7 @@ run.bat     # Windows
 <h3 id="version-check">🔧 Version Check</h3>
 <p><strong>Purpose</strong>: Check Computo version to verify installation</p>
 <p><strong>Computo Script</strong>:</p>
-<pre><code class="language-json">[
-  &quot;obj&quot;,
-  [
-    &quot;status&quot;,
-    &quot;installed&quot;
-  ]
-]
+<pre><code class="language-json">[&quot;obj&quot;, [&quot;status&quot;, &quot;installed&quot;]]
 </code></pre>
 <p><strong>How to Run</strong>:</p>
 <pre><code class="language-bash"># Navigate to the example directory
@@ -284,23 +272,7 @@ run.bat     # Windows
 <h3 id="basic-usage">🔧 Basic Usage</h3>
 <p><strong>Purpose</strong>: Basic script execution to verify end-to-end functionality</p>
 <p><strong>Computo Script</strong>:</p>
-<pre><code class="language-json">[
-  &quot;obj&quot;,
-  [
-    &quot;result&quot;,
-    &quot;success&quot;
-  ],
-  [
-    &quot;timestamp&quot;,
-    [
-      &quot;get&quot;,
-      [
-        &quot;$input&quot;
-      ],
-      &quot;/when&quot;
-    ]
-  ]
-]
+<pre><code class="language-json">[&quot;obj&quot;, [&quot;result&quot;, &quot;success&quot;], [&quot;timestamp&quot;, [&quot;get&quot;, [&quot;$input&quot;], &quot;/when&quot;]]]
 </code></pre>
 <p><strong>Input Data</strong> (<code>input.json</code>):</p>
 <pre><code class="language-json">{

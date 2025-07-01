@@ -150,28 +150,12 @@ These examples demonstrate the debugging concepts covered in this chapter. Each 
 **Computo Script**:
 ```json
 [
-  "let",
+  "let", 
   [
-    [
-      "x",
-      10
-    ],
-    [
-      "y",
-      32
-    ]
+    ["x", 10],
+    ["y", 32]
   ],
-  [
-    "+",
-    [
-      "$",
-      "/x"
-    ],
-    [
-      "$",
-      "/y"
-    ]
-  ]
+  ["+", ["$", "/x"], ["$", "/y"]]
 ]
 ```
 
@@ -214,28 +198,8 @@ run.bat     # Windows
 ```json
 [
   "map",
-  {
-    "array": [
-      1,
-      2,
-      3,
-      4
-    ]
-  },
-  [
-    "lambda",
-    [
-      "x"
-    ],
-    [
-      "*",
-      [
-        "$",
-        "/x"
-      ],
-      2
-    ]
-  ]
+  {"array": [1, 2, 3, 4]},
+  ["lambda", ["x"], ["*", ["$", "/x"], 2]]
 ]
 ```
 
@@ -282,45 +246,8 @@ run.bat     # Windows
 ```json
 [
   "reduce",
-  {
-    "array": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10
-    ]
-  },
-  [
-    "lambda",
-    [
-      "acc",
-      "x"
-    ],
-    [
-      "+",
-      [
-        "$",
-        "/acc"
-      ],
-      [
-        "*",
-        [
-          "$",
-          "/x"
-        ],
-        [
-          "$",
-          "/x"
-        ]
-      ]
-    ]
-  ],
+  {"array": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]},
+  ["lambda", ["acc", "x"], ["+", ["$", "/acc"], ["*", ["$", "/x"], ["$", "/x"]]]],
   0
 ]
 ```
@@ -365,44 +292,13 @@ run.bat     # Windows
 [
   "let",
   [
-    [
-      "numbers",
-      {
-        "array": [
-          5,
-          10,
-          15
-        ]
-      }
-    ],
-    [
-      "multiplier",
-      3
-    ]
+    ["numbers", {"array": [5, 10, 15]}],
+    ["multiplier", 3]
   ],
   [
     "map",
-    [
-      "$",
-      "/numbers"
-    ],
-    [
-      "lambda",
-      [
-        "n"
-      ],
-      [
-        "*",
-        [
-          "$",
-          "/n"
-        ],
-        [
-          "$",
-          "/multiplier"
-        ]
-      ]
-    ]
+    ["$", "/numbers"],
+    ["lambda", ["n"], ["*", ["$", "/n"], ["$", "/multiplier"]]]
   ]
 ]
 ```
@@ -450,18 +346,8 @@ run.bat     # Windows
 ```json
 [
   "obj",
-  [
-    "safe_value",
-    [
-      "+",
-      20,
-      22
-    ]
-  ],
-  [
-    "message",
-    "This works fine"
-  ]
+  ["safe_value", ["+", 20, 22]],
+  ["message", "This works fine"]
 ]
 ```
 
@@ -506,88 +392,13 @@ run.bat     # Windows
 ```json
 [
   "obj",
-  [
-    "total",
-    [
-      "reduce",
-      [
-        "filter",
-        {
-          "array": [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6
-          ]
-        },
-        [
-          "lambda",
-          [
-            "x"
-          ],
-          [
-            ">",
-            [
-              "$",
-              "/x"
-            ],
-            3
-          ]
-        ]
-      ],
-      [
-        "lambda",
-        [
-          "sum",
-          "x"
-        ],
-        [
-          "+",
-          [
-            "$",
-            "/sum"
-          ],
-          [
-            "$",
-            "/x"
-          ]
-        ]
-      ],
-      0
-    ]
-  ],
-  [
-    "count",
-    [
-      "filter",
-      {
-        "array": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6
-        ]
-      },
-      [
-        "lambda",
-        [
-          "x"
-        ],
-        [
-          ">",
-          [
-            "$",
-            "/x"
-          ],
-          3
-        ]
-      ]
-    ]
-  ]
+  ["total", [
+    "reduce",
+    ["filter", {"array": [1, 2, 3, 4, 5, 6]}, ["lambda", ["x"], [">", ["$", "/x"], 3]]],
+    ["lambda", ["sum", "x"], ["+", ["$", "/sum"], ["$", "/x"]]],
+    0
+  ]],
+  ["count", ["filter", {"array": [1, 2, 3, 4, 5, 6]}, ["lambda", ["x"], [">", ["$", "/x"], 3]]]]
 ]
 ```
 
