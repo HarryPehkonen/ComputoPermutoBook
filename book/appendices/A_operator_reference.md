@@ -1,6 +1,6 @@
 ## **Appendix A: Complete Operator Reference**
 
-This appendix provides a quick reference for all 33 operators available in Computo.
+This appendix provides a quick reference for all 40 operators available in Computo.
 
 ### Data Access & Scoping
 
@@ -75,6 +75,18 @@ Logical OR operator with short-circuit evaluation. Returns `true` if any argumen
 *   **Short-circuit:** Stops evaluating at first truthy value
 
 ---
+#### `not`
+Logical NOT operator that negates the truthiness of its argument.
+
+*   **Syntax:** `["not", <expr>]`
+
+*   **Example:** `["not", true]` -> `false`
+
+*   **Example:** `["not", ["==", 5, 10]]` -> `true`
+
+*   **Truthiness:** Follows Computo's standard truthiness rules
+
+---
 #### `==`, `!=`, `>`, `<`, `>=`, `<=`
 Perform a comparison between two values. Math comparisons require numbers.
 
@@ -118,6 +130,18 @@ Applies a Permuto template to a context object.
 
 *   **Example:** `["permuto.apply", {"id": "${/user_id}"}, {"user_id": 123}]` -> `{"id": 123}`
 
+### String Operations
+
+---
+#### `str_concat`
+Concatenates multiple strings into a single string. Automatically converts non-string values to strings.
+
+*   **Syntax:** `["str_concat", <string1_expr>, <string2_expr>, <string3_expr>, ...]`
+
+*   **Example:** `["str_concat", "Hello, ", "World", "!"]` -> `"Hello, World!"`
+
+*   **Type conversion:** Numbers, booleans, and other values are automatically converted to strings
+
 ### JSON Patch Operations (RFC 6902)
 
 ---
@@ -139,12 +163,22 @@ Applies an RFC 6902 JSON Patch array to a document, returning the modified docum
 ### Mathematical
 
 ---
-#### `+`, `-`, `*`, `/`
+#### `+`, `-`, `*`, `/`, `%`
 Performs a mathematical operation on two numbers.
 
 *   **Syntax:** `["<op>", <num1_expr>, <num2_expr>]`
 
 *   **Example:** `["*", 5, 10]` -> `50`
+
+---
+#### `%`
+Calculates the remainder (modulo) when dividing two numbers.
+
+*   **Syntax:** `["%", <dividend_expr>, <divisor_expr>]`
+
+*   **Example:** `["%", 17, 5]` -> `2`
+
+*   **Use cases:** Checking even/odd numbers, cyclic operations, validation
 
 ### Lambda Functions
 
@@ -240,6 +274,42 @@ Returns the number of items in an array.
 *   **Syntax:** `["count", <array_expr>]`
 
 *   **Example:** `["count", {"array": [1, 2, 3]}]` -> `3`
+
+---
+#### `zip`
+Combines two arrays element-wise into an array of pairs.
+
+*   **Syntax:** `["zip", <array1_expr>, <array2_expr>]`
+
+*   **Example:** `["zip", {"array": ["A", "B"]}, {"array": [1, 2]}]` -> `[["A", 1], ["B", 2]]`
+
+*   **Length:** Stops at the shorter array if lengths differ
+
+---
+#### `zipWith`
+Combines two arrays element-wise using a custom function.
+
+*   **Syntax:** `["zipWith", <array1_expr>, <array2_expr>, ["lambda", ["item1", "item2"], <expr>]]`
+
+*   **Example:** `["zipWith", {"array": [1, 2]}, {"array": [10, 20]}, ["lambda", ["a", "b"], ["+", ["$", "/a"], ["$", "/b"]]]]` -> `[11, 22]`
+
+---
+#### `mapWithIndex`
+Maps over an array with access to both element and its index position.
+
+*   **Syntax:** `["mapWithIndex", <array_expr>, ["lambda", ["item", "index"], <transform_expr>]]`
+
+*   **Example:** `["mapWithIndex", {"array": ["a", "b"]}, ["lambda", ["item", "idx"], ["obj", ["pos", ["$", "/idx"]], ["val", ["$", "/item"]]]]]` -> `[{"pos": 0, "val": "a"}, {"pos": 1, "val": "b"}]`
+
+---
+#### `enumerate`
+Transforms an array into [index, value] pairs.
+
+*   **Syntax:** `["enumerate", <array_expr>]`
+
+*   **Example:** `["enumerate", {"array": ["red", "blue"]}]` -> `[[0, "red"], [1, "blue"]]`
+
+*   **Index:** Uses 0-based indexing
 
 ### List Processing (Functional)
 

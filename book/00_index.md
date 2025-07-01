@@ -22,7 +22,7 @@
 - Understanding the "code as data" philosophy
 - Basic syntax and operators
 - Your first transformations
-- **Operators introduced:** `+`, `-`, `*`, `/`, `obj`, `{"array": [...]}`, `$input`, `get`, `let`, `$`
+- **Operators introduced:** `+`, `-`, `*`, `/`, `%`, `obj`, `{"array": [...]}`, `$input`, `get`, `let`, `$`
 
 **[Chapter 4: Permuto Basics - Template Processing](04_permuto_basics.html)**
 - Declarative templating with `${path}` syntax
@@ -36,13 +36,14 @@
 - Conditional expressions with `if`
 - Comparison operators
 - Building decision trees
-- **Operators introduced:** `if`, `>`, `<`, `>=`, `<=`, `==`, `!=`, `&&`, `||`, `approx` (plus truthiness rules and short-circuit evaluation)
+- **Operators introduced:** `if`, `>`, `<`, `>=`, `<=`, `==`, `!=`, `&&`, `||`, `not`, `approx` (plus truthiness rules and short-circuit evaluation)
 
 **[Chapter 6: Working with Arrays](06_working_with_arrays.html)**
 - Array literals and basic operations
 - Introduction to functional programming concepts
 - Lambda expressions and lambda variable resolution for reusable functions
-- **Operators introduced:** `map`, `lambda`
+- String manipulation with concatenation
+- **Operators introduced:** `map`, `lambda`, `str_concat`
 
 **[Chapter 7: Object Manipulation](07_object_manipulation.html)**
 - Creating and merging objects
@@ -53,8 +54,9 @@
 **[Chapter 8: Advanced Array Operations](08_advanced_array_ops.html)**
 - Functional programming with `map`, `filter`, and `reduce`
 - Complex data transformations
+- Array pairing and indexing operations
 - Performance considerations
-- **Operators introduced:** `filter`, `reduce`, `find`, `some`, `every`, `flatMap`
+- **Operators introduced:** `filter`, `reduce`, `find`, `some`, `every`, `flatMap`, `zip`, `zipWith`, `mapWithIndex`, `enumerate`
 
 ### **Part III: Advanced Techniques**
 
@@ -100,7 +102,7 @@
 ### **Appendices**
 
 **[Appendix A: Complete Operator Reference](appendices/A_operator_reference.html)**
-- Comprehensive reference for all 33 operators
+- Comprehensive reference for all 40 operators
 - Syntax examples and use cases
 - Quick lookup guide
 - **All operators now covered:** Complete documentation in chapters and appendix

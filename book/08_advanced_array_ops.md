@@ -338,6 +338,258 @@ These operators work beautifully together for complex queries:
 }
 ```
 
+### Array Pairing and Indexing Operations
+
+Beyond filtering and aggregation, Computo provides specialized operators for working with multiple arrays simultaneously and for accessing positional information within arrays. These operators are essential for complex data correlation and position-aware transformations.
+
+#### `zip`: Combining Arrays Element-Wise
+
+The `zip` operator takes two arrays and combines them into an array of pairs (two-element arrays). Each pair contains corresponding elements from the two input arrays.
+
+`["zip", <array1_expression>, <array2_expression>]`
+
+**Example: Pairing names with scores**
+
+```json
+["zip",
+  {"array": ["Alice", "Bob", "Charlie"]},
+  {"array": [95, 87, 92]}
+]
+```
+
+**Output:**
+```json
+[
+  ["Alice", 95],
+  ["Bob", 87], 
+  ["Charlie", 92]
+]
+```
+
+If the arrays have different lengths, `zip` stops at the shorter array:
+
+```json
+["zip",
+  {"array": ["Alice", "Bob", "Charlie"]},
+  {"array": [95, 87]}
+]
+```
+
+**Output:**
+```json
+[
+  ["Alice", 95],
+  ["Bob", 87]
+]
+```
+
+**Practical Example: Correlating data from different sources**
+
+**`correlate_data.json`:**
+```json
+["let",
+  [
+    ["user_names", ["map", ["get", ["$input"], "/users"], ["lambda", ["u"], ["get", ["$", "/u"], "/name"]]]],
+    ["user_scores", ["map", ["get", ["$input"], "/users"], ["lambda", ["u"], ["get", ["$", "/u"], "/score"]]]]
+  ],
+  ["map",
+    ["zip", ["$", "/user_names"], ["$", "/user_scores"]],
+    ["lambda", ["pair"], 
+      ["obj",
+        ["name", ["get", ["$", "/pair"], "/0"]],
+        ["score", ["get", ["$", "/pair"], "/1"]],
+        ["grade", ["if", [">", ["get", ["$", "/pair"], "/1"], 90], "A", "B"]]
+      ]
+    ]
+  ]
+]
+```
+
+#### `zipWith`: Custom Array Combination
+
+While `zip` creates pairs, `zipWith` allows you to specify a custom function for combining corresponding elements from two arrays.
+
+`["zipWith", <array1_expression>, <array2_expression>, ["lambda", ["item1", "item2"], <combination_expression>]]`
+
+**Example: Adding corresponding numbers**
+
+```json
+["zipWith",
+  {"array": [1, 2, 3]},
+  {"array": [10, 20, 30]},
+  ["lambda", ["a", "b"], ["+", ["$", "/a"], ["$", "/b"]]]
+]
+```
+
+**Output:**
+```json
+[11, 22, 33]
+```
+
+**Practical Example: Calculating weighted scores**
+
+```json
+["let",
+  [
+    ["scores", {"array": [85, 92, 78]}],
+    ["weights", {"array": [0.4, 0.3, 0.3]}]
+  ],
+  ["reduce",
+    ["zipWith", 
+      ["$", "/scores"], 
+      ["$", "/weights"],
+      ["lambda", ["score", "weight"], ["*", ["$", "/score"], ["$", "/weight"]]]
+    ],
+    ["lambda", ["total", "weighted"], ["+", ["$", "/total"], ["$", "/weighted"]]],
+    0
+  ]
+]
+```
+
+This calculates a weighted average: (85×0.4) + (92×0.3) + (78×0.3) = 84.2
+
+#### `mapWithIndex`: Position-Aware Transformation
+
+The `mapWithIndex` operator is like `map`, but the lambda function receives both the item and its index position within the array.
+
+`["mapWithIndex", <array_expression>, ["lambda", ["item", "index"], <transform_expression>]]`
+
+**Example: Creating numbered items**
+
+```json
+["mapWithIndex",
+  {"array": ["apple", "banana", "cherry"]},
+  ["lambda", ["fruit", "index"],
+    ["obj",
+      ["position", ["+", ["$", "/index"], 1]],  // 1-based numbering
+      ["name", ["$", "/fruit"]]
+    ]
+  ]
+]
+```
+
+**Output:**
+```json
+[
+  {"position": 1, "name": "apple"},
+  {"position": 2, "name": "banana"},
+  {"position": 3, "name": "cherry"}
+]
+```
+
+**Practical Example: Processing data with position-dependent logic**
+
+```json
+["mapWithIndex",
+  ["get", ["$input"], "/daily_temperatures"],
+  ["lambda", ["temp", "day"],
+    ["obj",
+      ["day", ["+", ["$", "/day"], 1]],
+      ["temperature", ["$", "/temp"]],
+      ["day_type", ["if", 
+        ["==", ["%", ["$", "/day"], 7], 6],  // Check if day % 7 == 6 (Sunday, 0-based)
+        "weekend",
+        "weekday"
+      ]],
+      ["temperature_trend", ["if",
+        ["==", ["$", "/day"], 0],
+        "baseline",
+        ["if", [">", ["$", "/temp"], 75], "above_average", "normal"]
+      ]]
+    ]
+  ]
+]
+```
+
+#### `enumerate`: Creating Index-Value Pairs
+
+The `enumerate` operator transforms an array into an array of `[index, value]` pairs, making it easy to work with both the position and content of each element.
+
+`["enumerate", <array_expression>]`
+
+**Example: Basic enumeration**
+
+```json
+["enumerate", {"array": ["red", "green", "blue"]}]
+```
+
+**Output:**
+```json
+[
+  [0, "red"],
+  [1, "green"], 
+  [2, "blue"]
+]
+```
+
+**Practical Example: Processing with position awareness**
+
+```json
+["map",
+  ["enumerate", ["get", ["$input"], "/tasks"]],
+  ["lambda", ["indexed_task"],
+    ["obj",
+      ["task_id", ["get", ["$", "/indexed_task"], "/0"]],
+      ["task_name", ["get", ["get", ["$", "/indexed_task"], "/1"], "/name"]],
+      ["priority", ["if",
+        ["<", ["get", ["$", "/indexed_task"], "/0"], 3],
+        "high",
+        "normal"
+      ]],
+      ["status", ["get", ["get", ["$", "/indexed_task"], "/1"], "/status"]]
+    ]
+  ]
+]
+```
+
+This creates task objects where the first 3 tasks (indices 0, 1, 2) are marked as high priority.
+
+#### Combining Indexing Operations
+
+These operators work well together for complex data processing:
+
+**`complex_array_processing.json`:**
+```json
+["let",
+  [
+    ["data", {"array": [10, 25, 15, 30, 20]}],
+    ["weights", {"array": [0.1, 0.2, 0.3, 0.2, 0.2]}]
+  ],
+  ["obj",
+    // Create indexed data points
+    ["indexed_data", ["enumerate", ["$", "/data"]]],
+    
+    // Calculate weighted values using zipWith
+    ["weighted_values", ["zipWith",
+      ["$", "/data"],
+      ["$", "/weights"], 
+      ["lambda", ["value", "weight"], ["*", ["$", "/value"], ["$", "/weight"]]]
+    ]],
+    
+    // Apply position-dependent transformations
+    ["processed_data", ["mapWithIndex",
+      ["$", "/data"],
+      ["lambda", ["value", "index"],
+        ["obj",
+          ["original_value", ["$", "/value"]],
+          ["position", ["$", "/index"]],
+          ["is_first_half", ["<", ["$", "/index"], 3]],
+          ["relative_to_average", ["-", ["$", "/value"], 20]]
+        ]
+      ]
+    ]],
+    
+    // Pair original data with processed data using zip
+    ["comparison", ["zip",
+      ["$", "/data"],
+      ["map", ["$", "/processed_data"], ["lambda", ["item"], ["get", ["$", "/item"], "/relative_to_average"]]]
+    ]]
+  ]
+]
+```
+
+This demonstrates how the indexing operators enable sophisticated data analysis patterns that would be difficult to achieve with basic `map`, `filter`, and `reduce` alone.
+
 ### In This Chapter
 
 You have now completed the comprehensive functional toolkit for array processing.
@@ -347,6 +599,9 @@ You have now completed the comprehensive functional toolkit for array processing
 *   You combined all three operators—**`filter`, `map`, and `reduce`**—to answer a complex question about a data set in a single, expressive script.
 *   You discovered specialized query operators: **`find`** for locating items, **`some`** for existence checks, and **`every`** for universal validation.
 *   You explored **`flatMap`** for transforming and flattening nested data structures.
-*   You saw how these operators combine to create comprehensive data analysis reports.
+*   You mastered array pairing operations: **`zip`** for element-wise combination and **`zipWith`** for custom combining functions.
+*   You learned position-aware transformations with **`mapWithIndex`** for accessing both element and index.
+*   You discovered **`enumerate`** for creating index-value pairs and processing with position awareness.
+*   You saw how these operators combine to create comprehensive data analysis reports and sophisticated correlation patterns.
 
 You are now equipped to handle a vast range of data transformation challenges. The following chapters will build on this foundation, exploring how to apply these patterns to real-world integration scenarios.

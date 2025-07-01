@@ -302,6 +302,186 @@ Using our familiar `users_input.json`, this produces:
 
 This feature transforms Computo from a simple transformation tool into a powerful functional programming environment where you can build libraries of reusable transformation functions.
 
+### String Concatenation with `str_concat`
+
+When working with array transformations, you'll often need to build strings from multiple values. The `str_concat` operator allows you to concatenate (join together) multiple strings into a single string.
+
+`["str_concat", <string1>, <string2>, <string3>, ...]`
+
+The `str_concat` operator accepts any number of arguments and converts them to strings before joining them. This makes it perfect for building formatted messages, labels, or identifiers within your array transformations.
+
+#### Basic String Concatenation
+
+**Simple example:**
+```json
+["str_concat", "Hello, ", "World", "!"]
+```
+**Result:** `"Hello, World!"`
+
+#### String Concatenation in Array Transformations
+
+Let's apply this to our user data to create formatted user descriptions:
+
+**`user_descriptions.json`:**
+```json
+["map",
+  ["get", ["$input"], "/users"],
+  ["lambda", ["user"],
+    ["str_concat",
+      ["get", ["$", "/user"], "/name"],
+      " (",
+      ["get", ["$", "/user"], "/plan"],
+      " plan) - ",
+      ["if",
+        ["get", ["$", "/user"], "/active"],
+        "ACTIVE",
+        "INACTIVE"
+      ]
+    ]
+  ]
+]
+```
+
+Using our familiar `users_input.json`, this produces:
+
+**Output:**
+```json
+[
+  "Alice (premium plan) - ACTIVE",
+  "Bob (basic plan) - INACTIVE", 
+  "Charlie (basic plan) - ACTIVE"
+]
+```
+
+#### Type Conversion with `str_concat`
+
+The `str_concat` operator automatically converts non-string values to strings, making it useful for combining different data types:
+
+**`format_with_numbers.json`:**
+```json
+["let", [
+    ["format_item", ["lambda", ["item"],
+      ["str_concat",
+        "Item #",
+        ["get", ["$", "/item"], "/id"],
+        ": ",
+        ["get", ["$", "/item"], "/name"],
+        " ($",
+        ["get", ["$", "/item"], "/price"],
+        ")"
+      ]
+    ]]
+  ],
+  ["map",
+    {
+      "array": [
+        {"id": 1, "name": "Widget", "price": 25.99},
+        {"id": 2, "name": "Gadget", "price": 15.50}
+      ]
+    },
+    ["$", "/format_item"]
+  ]
+]
+```
+
+**Output:**
+```json
+[
+  "Item #1: Widget ($25.99)",
+  "Item #2: Gadget ($15.50)"
+]
+```
+
+#### Practical Example: Building URLs
+
+String concatenation is particularly useful for building URLs or paths:
+
+**`build_user_urls.json`:**
+```json
+["map",
+  ["get", ["$input"], "/users"],
+  ["lambda", ["user"],
+    ["obj",
+      ["name", ["get", ["$", "/user"], "/name"]],
+      ["profile_url", ["str_concat", 
+        "/users/",
+        ["get", ["$", "/user"], "/name"],
+        "/profile"
+      ]],
+      ["api_endpoint", ["str_concat",
+        "https://api.example.com/v1/users/",
+        ["get", ["$", "/user"], "/name"],
+        "?plan=",
+        ["get", ["$", "/user"], "/plan"]
+      ]]
+    ]
+  ]
+]
+```
+
+**Output:**
+```json
+[
+  {
+    "name": "Alice",
+    "profile_url": "/users/Alice/profile",
+    "api_endpoint": "https://api.example.com/v1/users/Alice?plan=premium"
+  },
+  {
+    "name": "Bob",
+    "profile_url": "/users/Bob/profile", 
+    "api_endpoint": "https://api.example.com/v1/users/Bob?plan=basic"
+  },
+  {
+    "name": "Charlie",
+    "profile_url": "/users/Charlie/profile",
+    "api_endpoint": "https://api.example.com/v1/users/Charlie?plan=basic"
+  }
+]
+```
+
+#### Combining with Lambda Variables
+
+String concatenation works well with lambda variable resolution for creating reusable formatting functions:
+
+**`reusable_formatters.json`:**
+```json
+["let", [
+    ["full_name_formatter", ["lambda", ["person"],
+      ["str_concat",
+        ["get", ["$", "/person"], "/first_name"],
+        " ",
+        ["get", ["$", "/person"], "/last_name"]
+      ]
+    ]],
+    ["email_formatter", ["lambda", ["person"],
+      ["str_concat",
+        ["get", ["$", "/person"], "/first_name"],
+        ".",
+        ["get", ["$", "/person"], "/last_name"],
+        "@company.com"
+      ]
+    ]]
+  ],
+  ["map",
+    {
+      "array": [
+        {"first_name": "John", "last_name": "Doe"},
+        {"first_name": "Jane", "last_name": "Smith"}
+      ]
+    },
+    ["lambda", ["person"],
+      ["obj",
+        ["full_name", ["$", "/full_name_formatter"]], // This applies the lambda stored in the variable
+        ["email", ["$", "/email_formatter"]]           // This applies the lambda stored in the variable
+      ]
+    ]
+  ]
+]
+```
+
+**Note:** In this example, the lambda variables contain lambda functions that will be applied to the current `person` item in the map operation.
+
 ### In This Chapter
 
 You've added array processing to your skillset. You have learned:
@@ -311,5 +491,6 @@ You've added array processing to your skillset. You have learned:
 *   How to combine `map` with `obj`, `if`, and `permuto.apply` for complex list transformations.
 *   **Lambda variable resolution** for storing and reusing lambda functions in `let` bindings.
 *   How to build complex, maintainable data processing pipelines with named, reusable functions.
+*   The **`str_concat`** operator for combining multiple strings and building formatted text within transformations.
 
 `map` is the first of several array operators. In the next chapters, we will explore others like `filter` and `reduce` to further refine our data pipelines.

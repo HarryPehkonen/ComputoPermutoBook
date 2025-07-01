@@ -421,6 +421,135 @@ Consider this problematic scenario without `approx`:
 
 The `approx` operator provides a robust solution for real-world applications where perfect precision isn't possible or necessary.
 
+### Logical NOT: The `not` Operator
+
+Sometimes you need to negate a boolean value or invert the truthiness of an expression. The `not` operator provides this functionality.
+
+`["not", <expression>]`
+
+The `not` operator evaluates its argument and returns the logical opposite:
+- If the argument is truthy, `not` returns `false`
+- If the argument is falsy, `not` returns `true`
+
+**Examples:**
+
+```json
+// Basic boolean negation
+["not", true]        // Result: false
+["not", false]       // Result: true
+
+// Negating comparison results
+["not", [">", 5, 10]]    // Result: true (because 5 > 10 is false)
+["not", ["==", "a", "a"]] // Result: false (because "a" == "a" is true)
+```
+
+#### Practical Use Cases
+
+**Checking for empty collections:**
+
+```json
+// Check if an array is NOT empty
+["not", ["==", ["count", ["$", "/items"]], 0]]
+
+// Check if a string is NOT empty  
+["not", ["==", ["$", "/message"], ""]]
+
+// Check if an object is NOT empty
+["not", ["==", ["$", "/config"], {}]]
+```
+
+**Inverting complex conditions:**
+
+```json
+["let",
+  [
+    ["user", ["get", ["$input"], "/user"]]
+  ],
+  ["if",
+    ["not", 
+      ["&&",
+        ["get", ["$", "/user"], "/active"],
+        [">=", ["get", ["$", "/user"], "/age"], 18]
+      ]
+    ],
+    {
+      "access": "denied",
+      "reason": "User must be active and 18 or older"
+    },
+    {
+      "access": "granted",
+      "user_data": ["$", "/user"]
+    }
+  ]
+]
+```
+
+This script denies access if the user is NOT (active AND 18+), which is equivalent to saying the user is either inactive OR under 18.
+
+#### Understanding Truthiness with `not`
+
+The `not` operator follows Computo's truthiness rules:
+
+```json
+// These evaluate to true (because the inputs are falsy)
+["not", 0]           // true (0 is falsy)
+["not", ""]          // true (empty string is falsy)
+["not", []]          // true (empty array is falsy)
+["not", {}]          // true (empty object is falsy)
+["not", null]        // true (null is falsy)
+
+// These evaluate to false (because the inputs are truthy)
+["not", 42]          // false (non-zero number is truthy)
+["not", "hello"]     // false (non-empty string is truthy)
+["not", {"a": 1}]    // false (non-empty object is truthy)
+```
+
+#### Combining `not` with Other Logical Operators
+
+The `not` operator works well with other logical operators to create complex expressions:
+
+```json
+// Check if user is NOT an admin AND NOT a moderator
+["&&",
+  ["not", ["==", ["get", ["$", "/user"], "/role"], "admin"]],
+  ["not", ["==", ["get", ["$", "/user"], "/role"], "moderator"]]
+]
+
+// Alternative using De Morgan's law - this is equivalent to the above
+["not", 
+  ["||",
+    ["==", ["get", ["$", "/user"], "/role"], "admin"],
+    ["==", ["get", ["$", "/user"], "/role"], "moderator"]
+  ]
+]
+```
+
+**Validation example:**
+
+```json
+["let",
+  [
+    ["email", ["get", ["$input"], "/email"]],
+    ["password", ["get", ["$input"], "/password"]]
+  ],
+  ["if",
+    ["||",
+      ["not", ["$", "/email"]],           // Email is falsy (missing/empty)
+      ["not", ["$", "/password"]],        // Password is falsy (missing/empty)
+      ["<", ["count", ["$", "/password"]], 8]  // Password too short
+    ],
+    {
+      "valid": false,
+      "error": "Email and password are required, password must be 8+ characters"
+    },
+    {
+      "valid": true,
+      "message": "Credentials accepted"
+    }
+  ]
+]
+```
+
 ### In This Chapter
 
 You've learned how to add decision-making to your transformations:
@@ -431,6 +560,7 @@ You've learned how to add decision-making to your transformations:
 *   The **`&&` (logical AND)** and **`||` (logical OR)** operators for complex conditional logic.
 *   How **short-circuit evaluation** improves performance and safety.
 *   Combining logical operators to create readable business rule expressions.
+*   The **`not`** operator for negating boolean values and inverting truthiness.
 *   The **`approx`** operator for robust floating-point number comparisons with tolerance.
 *   Practical applications of approximate equality in financial and scientific calculations.
 

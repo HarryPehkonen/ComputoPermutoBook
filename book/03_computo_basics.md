@@ -103,6 +103,31 @@ The Computo engine evaluated the expression and printed the resulting JSON to yo
 
 Run it again. The output is `150`. The engine first evaluated the inner expression `["*", 5, 10]` to get `50`, then evaluated the outer expression `["+", 100, 50]`.
 
+### Mathematical Operations
+
+Computo supports all standard arithmetic operations. In addition to the `+`, `-`, `*`, and `/` operators you've seen, there's also the modulo operator `%` for finding remainders:
+
+```json
+["%", 17, 5]
+```
+
+This would return `2` (the remainder when 17 is divided by 5).
+
+The modulo operator is particularly useful for tasks like:
+- **Determining even/odd numbers**: `["%", number, 2]` returns `0` for even, `1` for odd
+- **Cyclic operations**: Creating repeating patterns or rotations
+- **Validation**: Checking if numbers are divisible by specific values
+
+**Example: Checking if a number is even**
+
+Create a script `check_even.json`:
+
+```json
+["==", ["%", ["get", ["$input"], "/number"], 2], 0]
+```
+
+With input `{"number": 42}`, this returns `true` because 42 is even.
+
 ### Creating Objects and Arrays
 
 After experimenting with basic arithmetic, you might wonder how to create more complex JSON structures. Computo provides specific syntax for constructing objects and arrays.
