@@ -21,7 +21,7 @@ from pathlib import Path
 def main():
     parser = argparse.ArgumentParser(description="Generate HTML from markdown files")
     parser.add_argument("--input-dir", default="new_way", help="Input directory with markdown files")
-    parser.add_argument("--output-dir", default="html", help="Output directory for HTML files")
+    parser.add_argument("--output-dir", default="docs", help="Output directory for HTML files")
     
     args = parser.parse_args()
     

@@ -206,10 +206,21 @@ def main():
     # Create unified downloads
     builder.create_unified_downloads()
     
-    # HTML generation placeholder
+    # HTML generation
     if args.html:
-        print("\nHTML generation not yet implemented")
-        print("Future: Convert markdown files to HTML using pandoc or similar")
+        print("\nGenerating HTML files...")
+        import subprocess
+        result = subprocess.run([
+            sys.executable, "scripts/generate_html.py",
+            "--input-dir", str(args.output_dir),
+            "--output-dir", "docs"
+        ], capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            print("HTML generation completed successfully!")
+        else:
+            print(f"HTML generation failed: {result.stderr}")
+            success = False
     
     # Create build summary
     success = builder.create_build_summary(results)
