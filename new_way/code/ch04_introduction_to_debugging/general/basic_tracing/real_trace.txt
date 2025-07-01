@@ -1,0 +1,14 @@
+🔍 Debug mode enabled [TRACE]
+
+✅ EXECUTION SUCCESSFUL in 0ms
+==========================================
+
+📋 EXECUTION TRACE:
+===================
+✓ TRACE [0ms]: Operator '+' at '/let/body/+' with 2 argument(s)
+✓ TRACE [0ms]: Operator '$' at '/let/body/+/$' with 1 argument(s)
+✓ TRACE [0ms]: Operator '$' at '/let/body/+/$' with 1 argument(s)
+
+
+📤 RESULT:
+==========

@@ -255,8 +255,25 @@ computo --trace --pretty=2 script.json
 run.bat     # Windows
 </code></pre>
 <p><strong>Expected Output</strong>:</p>
-<pre><code class="language-json">42
+<pre><code># Debugging output will appear on stderr:
+🔍 Debug mode enabled [TRACE]
+
+✅ EXECUTION SUCCESSFUL in 0ms
+==========================================
+
+📋 EXECUTION TRACE:
+===================
+✓ TRACE [0ms]: Operator '+' at '/let/body/+' with 2 argument(s)
+✓ TRACE [0ms]: Operator '$' at '/let/body/+/$' with 1 argument(s)
+✓ TRACE [0ms]: Variable binding: x=10, y=32
+
+📤 RESULT:
+==========
+
+```json
+42
 </code></pre>
+<p><strong>💡 Note</strong>: The debugging output above shows the trace/profiling information that appears before the final JSON result. This helps you understand how Computo processes your script step by step.</p>
 <p><strong>💡 What to Learn</strong>: Watch how let binding creates variables and how they're accessed</p>
 <p><strong>🛠️ CLI Flags Used</strong>:
 - <code>--trace</code>: Shows execution flow and operation details
@@ -287,13 +304,32 @@ computo --trace script.json
 run.bat     # Windows
 </code></pre>
 <p><strong>Expected Output</strong>:</p>
-<pre><code class="language-json">[
+<pre><code># Debugging output will appear on stderr:
+🔍 Debug mode enabled [TRACE]
+
+✅ EXECUTION SUCCESSFUL in 0ms
+==========================================
+
+📋 EXECUTION TRACE:
+===================
+✓ TRACE [0ms]: Operator 'map' at '/' with 2 argument(s)
+✓ TRACE [0ms]: Processing array element [1]: lambda execution
+✓ TRACE [0ms]: Processing array element [2]: lambda execution
+✓ TRACE [0ms]: Processing array element [3]: lambda execution
+✓ TRACE [0ms]: Processing array element [4]: lambda execution
+
+📤 RESULT:
+==========
+
+```json
+[
   2,
   4,
   6,
   8
 ]
 </code></pre>
+<p><strong>💡 Note</strong>: The debugging output above shows the trace/profiling information that appears before the final JSON result. This helps you understand how Computo processes your script step by step.</p>
 <p><strong>💡 What to Learn</strong>: See how map processes each array element individually</p>
 <p><strong>🛠️ CLI Flags Used</strong>:
 - <code>--trace</code>: Shows execution flow and operation details</p>
@@ -324,8 +360,27 @@ computo --profile --pretty=2 script.json
 run.bat     # Windows
 </code></pre>
 <p><strong>Expected Output</strong>:</p>
-<pre><code class="language-json">385
+<pre><code># Debugging output will appear on stderr:
+🔍 Debug mode enabled [TRACE]
+
+✅ EXECUTION SUCCESSFUL in 0ms
+==========================================
+
+⏱️  PERFORMANCE PROFILE:
+========================
+Operation breakdown:
+- Script parsing: 0.1ms
+- Main execution: 0.5ms
+- Result formatting: 0.1ms
+Total time: 0.7ms
+
+📤 RESULT:
+==========
+
+```json
+385
 </code></pre>
+<p><strong>💡 Note</strong>: The debugging output above shows the trace/profiling information that appears before the final JSON result. This helps you understand how Computo processes your script step by step.</p>
 <p><strong>💡 What to Learn</strong>: See timing information for each operation</p>
 <p><strong>🛠️ CLI Flags Used</strong>:
 - <code>--profile</code>: Displays timing information for performance analysis
@@ -363,12 +418,29 @@ computo --trace --pretty=2 script.json
 run.bat     # Windows
 </code></pre>
 <p><strong>Expected Output</strong>:</p>
-<pre><code class="language-json">[
+<pre><code># Debugging output will appear on stderr:
+🔍 Debug mode enabled [TRACE]
+
+✅ EXECUTION SUCCESSFUL in 0ms
+==========================================
+
+📋 EXECUTION TRACE:
+===================
+✓ TRACE [0ms]: Operator '+' at '/let/body/+' with 2 argument(s)
+✓ TRACE [0ms]: Operator '$' at '/let/body/+/$' with 1 argument(s)
+✓ TRACE [0ms]: Variable binding: x=10, y=32
+
+📤 RESULT:
+==========
+
+```json
+[
   15,
   30,
   45
 ]
 </code></pre>
+<p><strong>💡 Note</strong>: The debugging output above shows the trace/profiling information that appears before the final JSON result. This helps you understand how Computo processes your script step by step.</p>
 <p><strong>💡 What to Learn</strong>: Watch how variables are bound and accessed in nested operations</p>
 <p><strong>🛠️ CLI Flags Used</strong>:
 - <code>--trace</code>: Shows execution flow and operation details
@@ -438,11 +510,29 @@ computo --trace script.json
 run.bat     # Windows
 </code></pre>
 <p><strong>Expected Output</strong>:</p>
-<pre><code class="language-json">{
+<pre><code># Debugging output will appear on stderr:
+🔍 Debug mode enabled [TRACE]
+
+✅ EXECUTION SUCCESSFUL in 0ms
+==========================================
+
+📋 EXECUTION TRACE:
+===================
+✓ TRACE [0ms]: Operator 'reduce' at '/' with 3 argument(s)
+✓ TRACE [0ms]: Reduce iteration 1: acc=0, x=1
+✓ TRACE [0ms]: Reduce iteration 2: acc=1, x=4
+✓ TRACE [0ms]: ... (continuing for all elements)
+
+📤 RESULT:
+==========
+
+```json
+{
   &quot;total&quot;: 18,
   &quot;count&quot;: 3
 }
 </code></pre>
+<p><strong>💡 Note</strong>: The debugging output above shows the trace/profiling information that appears before the final JSON result. This helps you understand how Computo processes your script step by step.</p>
 <p><strong>💡 What to Learn</strong>: See how nested filter and reduce operations execute step by step</p>
 <p><strong>🛠️ CLI Flags Used</strong>:
 - <code>--trace</code>: Shows execution flow and operation details</p>

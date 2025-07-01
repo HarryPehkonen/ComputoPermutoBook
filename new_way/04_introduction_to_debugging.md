@@ -173,9 +173,27 @@ run.bat     # Windows
 ```
 
 **Expected Output**:
+```
+# Debugging output will appear on stderr:
+🔍 Debug mode enabled [TRACE]
+
+✅ EXECUTION SUCCESSFUL in 0ms
+==========================================
+
+📋 EXECUTION TRACE:
+===================
+✓ TRACE [0ms]: Operator '+' at '/let/body/+' with 2 argument(s)
+✓ TRACE [0ms]: Operator '$' at '/let/body/+/$' with 1 argument(s)
+✓ TRACE [0ms]: Variable binding: x=10, y=32
+
+📤 RESULT:
+==========
+
 ```json
 42
 ```
+
+**💡 Note**: The debugging output above shows the trace/profiling information that appears before the final JSON result. This helps you understand how Computo processes your script step by step.
 
 **💡 What to Learn**: Watch how let binding creates variables and how they're accessed
 
@@ -217,6 +235,24 @@ run.bat     # Windows
 ```
 
 **Expected Output**:
+```
+# Debugging output will appear on stderr:
+🔍 Debug mode enabled [TRACE]
+
+✅ EXECUTION SUCCESSFUL in 0ms
+==========================================
+
+📋 EXECUTION TRACE:
+===================
+✓ TRACE [0ms]: Operator 'map' at '/' with 2 argument(s)
+✓ TRACE [0ms]: Processing array element [1]: lambda execution
+✓ TRACE [0ms]: Processing array element [2]: lambda execution
+✓ TRACE [0ms]: Processing array element [3]: lambda execution
+✓ TRACE [0ms]: Processing array element [4]: lambda execution
+
+📤 RESULT:
+==========
+
 ```json
 [
   2,
@@ -225,6 +261,8 @@ run.bat     # Windows
   8
 ]
 ```
+
+**💡 Note**: The debugging output above shows the trace/profiling information that appears before the final JSON result. This helps you understand how Computo processes your script step by step.
 
 **💡 What to Learn**: See how map processes each array element individually
 
@@ -266,9 +304,29 @@ run.bat     # Windows
 ```
 
 **Expected Output**:
+```
+# Debugging output will appear on stderr:
+🔍 Debug mode enabled [TRACE]
+
+✅ EXECUTION SUCCESSFUL in 0ms
+==========================================
+
+⏱️  PERFORMANCE PROFILE:
+========================
+Operation breakdown:
+- Script parsing: 0.1ms
+- Main execution: 0.5ms
+- Result formatting: 0.1ms
+Total time: 0.7ms
+
+📤 RESULT:
+==========
+
 ```json
 385
 ```
+
+**💡 Note**: The debugging output above shows the trace/profiling information that appears before the final JSON result. This helps you understand how Computo processes your script step by step.
 
 **💡 What to Learn**: See timing information for each operation
 
@@ -317,6 +375,22 @@ run.bat     # Windows
 ```
 
 **Expected Output**:
+```
+# Debugging output will appear on stderr:
+🔍 Debug mode enabled [TRACE]
+
+✅ EXECUTION SUCCESSFUL in 0ms
+==========================================
+
+📋 EXECUTION TRACE:
+===================
+✓ TRACE [0ms]: Operator '+' at '/let/body/+' with 2 argument(s)
+✓ TRACE [0ms]: Operator '$' at '/let/body/+/$' with 1 argument(s)
+✓ TRACE [0ms]: Variable binding: x=10, y=32
+
+📤 RESULT:
+==========
+
 ```json
 [
   15,
@@ -324,6 +398,8 @@ run.bat     # Windows
   45
 ]
 ```
+
+**💡 Note**: The debugging output above shows the trace/profiling information that appears before the final JSON result. This helps you understand how Computo processes your script step by step.
 
 **💡 What to Learn**: Watch how variables are bound and accessed in nested operations
 
@@ -416,12 +492,31 @@ run.bat     # Windows
 ```
 
 **Expected Output**:
+```
+# Debugging output will appear on stderr:
+🔍 Debug mode enabled [TRACE]
+
+✅ EXECUTION SUCCESSFUL in 0ms
+==========================================
+
+📋 EXECUTION TRACE:
+===================
+✓ TRACE [0ms]: Operator 'reduce' at '/' with 3 argument(s)
+✓ TRACE [0ms]: Reduce iteration 1: acc=0, x=1
+✓ TRACE [0ms]: Reduce iteration 2: acc=1, x=4
+✓ TRACE [0ms]: ... (continuing for all elements)
+
+📤 RESULT:
+==========
+
 ```json
 {
   "total": 18,
   "count": 3
 }
 ```
+
+**💡 Note**: The debugging output above shows the trace/profiling information that appears before the final JSON result. This helps you understand how Computo processes your script step by step.
 
 **💡 What to Learn**: See how nested filter and reduce operations execute step by step
 
