@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>01 Why Transformation Matters - ComputoPermutoBook</title>
+    <style>
+/* ComputoPermutoBook Styling */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #333;
+    background-color: #fff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #2c3e50;
+    margin-top: 2em;
+    margin-bottom: 0.5em;
+}
+
+h1 {
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 0.3em;
+}
+
+h2 {
+    border-bottom: 1px solid #bdc3c7;
+    padding-bottom: 0.2em;
+}
+
+code {
+    background-color: #f8f9fa;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    font-size: 0.9em;
+}
+
+pre {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+    padding: 15px;
+    overflow-x: auto;
+    margin: 1em 0;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+    font-size: 0.85em;
+}
+
+.navigation {
+    background-color: #ecf0f1;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 2em;
+}
+
+.navigation h3 {
+    margin-top: 0;
+    color: #2c3e50;
+}
+
+.navigation ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.navigation li {
+    margin: 0.5em 0;
+}
+
+.navigation a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.navigation a:hover {
+    text-decoration: underline;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+}
+
+th, td {
+    border: 1px solid #bdc3c7;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+th {
+    background-color: #ecf0f1;
+    font-weight: bold;
+}
+
+.footer {
+    margin-top: 3em;
+    padding-top: 2em;
+    border-top: 1px solid #bdc3c7;
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 0.9em;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    pre {
+        padding: 10px;
+        font-size: 0.8em;
+    }
+}
+</style>
+</head>
+<body>
+    
+        <div class="navigation">
+            <h3>📖 Book Navigation</h3>
+            <ul>
+                <li><a href="01_why_transformation_matters.html">**Chapter 1: Why JSON Transformation Matters**</a></li>
+<li><a href="02_setting_up_environment.html">**Chapter 2: Setting Up Your Environment**</a></li>
+<li><a href="03_computo_basics.html">**Chapter 3: Computo Basics - Data and Logic**</a></li>
+<li><a href="04_introduction_to_debugging.html">**Chapter 4: Introduction to Debugging**</a></li>
+            </ul>
+        </div>
+        
+    <main>
+        <h2 id="chapter-1-why-json-transformation-matters"><strong>Chapter 1: Why JSON Transformation Matters</strong></h2>
+<h3 id="the-problem-space-the-daily-grind-of-reshaping-json">The Problem Space: The Daily Grind of Reshaping JSON</h3>
+<p>Think about the last time you had to manipulate a JSON structure. Did it feel like one of these scenarios?</p>
+<p><strong>API Aggregation:</strong> You're building a backend-for-frontend (BFF) and need to call three different microservices. Each returns a JSON object with a slightly different structure. Your job is to pick and choose fields from each, combine them into a single, clean JSON response, and send it to the client.</p>
+<p><strong>Configuration Management:</strong> You have a master configuration template for your application. You need to generate specific <code>config.json</code> files for your <code>development</code>, <code>staging</code>, and <code>production</code> environments, each with different database credentials, feature flags, and logging levels.</p>
+<p><strong>Data Normalization:</strong> You're ingesting data from a third-party API. The data is messy: some keys are camelCase while others are snake_case, numbers are sometimes strings, and optional fields are sometimes <code>null</code> and other times omitted entirely. You need to sanitize and normalize this data into a consistent format for your own systems.</p>
+<p><strong>Dynamic Payloads:</strong> You're integrating with multiple Large Language Model (LLM) providers. OpenAI wants a payload with a <code>messages</code> array, while Anthropic wants a single <code>prompt</code> string. You need to build these different JSON payloads from a single, canonical request object within your application.</p>
+<p>Traditionally, you'd solve these problems by writing imperative code in your language of choice—Python, JavaScript, Go, C++. You'd loop through arrays, check for the existence of keys, and manually build new objects. It works, but it's often verbose, error-prone, and mixes transformation logic deep within your business logic.</p>
+<h3 id="introducing-the-computopermuto-solution">Introducing the Computo/Permuto Solution</h3>
+<p>Computo and Permuto offer a better way. They form a powerful, two-layer system designed specifically for JSON-to-JSON transformation, where each layer has a distinct responsibility.</p>
+<p><strong>1. Permuto: The Declarative Templating Engine</strong>
+Think of Permuto as a smart, structure-aware "mail merge" for JSON. You provide it a template, and it fills in the blanks. It's for simple, declarative substitutions. If you just need to map values from a context object into a new structure, Permuto is your tool. It's fast, simple, and safe.</p>
+<p><em>A quick taste:</em> <code>{"user_id": "${/user/id}"}</code></p>
+<p><strong>2. Computo: The Programmatic Logic Engine</strong>
+Think of Computo as a safe, sandboxed Lisp or spreadsheet formula engine that lives inside JSON. It provides the programmatic logic that simple templating lacks: conditionals (<code>if</code>), iteration (<code>map</code>, <code>filter</code>, <code>reduce</code>), calculations (<code>+</code>, <code>*</code>), and variable bindings (<code>let</code>).</p>
+<p><em>A quick taste:</em> <code>["if", &lt;condition&gt;, &lt;then_expr&gt;, &lt;else_expr&gt;]</code></p>
+<h3 id="the-aha-moment-logic-driving-templates">The "Aha!" Moment: Logic Driving Templates</h3>
+<p>The real power emerges when you combine them. You use Computo's logic to decide <em>how</em> and <em>if</em> to apply Permuto's templates.</p>
+<p>Imagine our user summary problem again. If a user is active, we want to generate a full profile. If not, we want a simple error object.</p>
+<ul>
+<li><strong>Computo's <code>if</code> operator</strong> handles the conditional logic.</li>
+<li>It checks a field, like <code>user.active</code>.</li>
+<li>If <code>true</code>, it calls <strong>Permuto</strong> with a <code>user_profile_template.json</code> to generate the rich object.</li>
+<li>If <code>false</code>, it constructs a simple <code>{"error": "User is inactive"}</code> object.</li>
+</ul>
+<p>The script for this transformation is a clean piece of data (a JSON file) that you can store, version, and execute safely, without intermingling complex string manipulation or loops in your core application code.</p>
+<h3 id="whats-ahead">What's Ahead</h3>
+<p>In the following chapters, we will explore this toolkit from the ground up.</p>
+<ul>
+<li>We'll start by <strong>setting up your environment</strong>.</li>
+<li>Then, we'll master the fundamentals of <strong>Computo and Permuto individually</strong>.</li>
+<li>Finally, we will combine them to build <strong>sophisticated data pipelines</strong> that solve real-world problems like the ones mentioned above.</li>
+</ul>
+<p>By the end of this guide, you'll have a new, powerful tool in your arsenal for one of the most common tasks in modern software development. Let's get started.</p>
+    </main>
+    <div class="footer">
+        <p>Generated from <strong>ComputoPermutoBook</strong> | <a href="index.html">📖 Table of Contents</a></p>
+    </div>
+</body>
+</html>

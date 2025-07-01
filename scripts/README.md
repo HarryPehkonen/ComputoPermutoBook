@@ -1,4 +1,4 @@
-# Book Generation Scripts
+# Build Generation Scripts
 
 This directory contains Python scripts for generating the ComputoPermutoBook from TOML source files.
 
@@ -20,7 +20,7 @@ The book uses a single-source-of-truth approach where all content is stored in s
 
 - `generate_book_chapter.py` - Generate markdown chapter from TOML source
 - `generate_html.py` - Convert markdown to HTML with styling
-- `build_all_chapters.py` - Build all chapters and create ZIP files
+- `build_all_chapters.py` - Build all chapters and create HTML files (recommended)
 
 ## Requirements
 
@@ -29,7 +29,7 @@ The book uses a single-source-of-truth approach where all content is stored in s
 
 ## Usage
 
-### Quick Start
+### Quick Start (Recommended)
 
 From the project root directory:
 
@@ -37,27 +37,40 @@ From the project root directory:
 # Activate the virtual environment
 source venv/bin/activate
 
+# Build everything (markdown + HTML + downloads)
+python scripts/build_all_chapters.py
+
+# Build with example validation
+python scripts/build_all_chapters.py --validate
+
+# Build only markdown (skip HTML)
+python scripts/build_all_chapters.py --no-html
+```
+
+### Individual Commands
+
+```bash
 # Generate a single chapter
 python scripts/generate_book_chapter.py book-source/ch03_complete.toml
 
-# Generate HTML from markdown
-python scripts/generate_html.py new_way/03_complete.md
+# Generate HTML from existing markdown
+python scripts/generate_html.py
 
-# Build all chapters and HTML files
-python scripts/build_all_chapters.py
+# Generate HTML to custom directory
+python scripts/generate_html.py --input-dir new_way --output-dir docs
 ```
 
 ### Workflow
 
 1. **Edit TOML files** in `book-source/` - these are your source of truth
-2. **Generate markdown** using `generate_book_chapter.py`
-3. **Generate HTML** using `generate_html.py` or `build_all_chapters.py`
-4. **Review output** in `new_way/` (markdown) and `docs/` (HTML)
+2. **Run build script**: `python scripts/build_all_chapters.py`
+3. **Review output** in `new_way/` (markdown) and `docs/` (HTML)
+4. **Open in browser**: `docs/index.html`
 
 ### Output Structure
 
 - **Markdown files** → `new_way/`
-- **HTML files** → `docs/`
+- **HTML files** → `docs/` (with navigation and styling)
 - **Example code** → `new_way/code/` and `new_way/examples/`
 - **ZIP downloads** → `new_way/*.zip`
 

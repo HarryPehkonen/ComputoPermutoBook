@@ -186,7 +186,8 @@ def main():
     parser.add_argument("--output-dir", default="new_way", help="Output directory")
     parser.add_argument("--computo-path", default="computo", help="Path to computo executable")
     parser.add_argument("--validate", action="store_true", help="Validate all examples")
-    parser.add_argument("--html", action="store_true", help="Generate HTML output (future)")
+    parser.add_argument("--html", action="store_true", default=True, help="Generate HTML output")
+    parser.add_argument("--no-html", action="store_true", help="Skip HTML generation")
     
     args = parser.parse_args()
     
@@ -206,8 +207,8 @@ def main():
     # Create unified downloads
     builder.create_unified_downloads()
     
-    # HTML generation
-    if args.html:
+    # HTML generation (enabled by default unless --no-html is specified)
+    if args.html and not args.no_html:
         print("\nGenerating HTML files...")
         import subprocess
         result = subprocess.run([

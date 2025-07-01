@@ -1,0 +1,8 @@
+{
+  "name": "simple_addition",
+  "description": "Basic addition demonstrating core Computo syntax",
+  "section": "first_transformation",
+  "cli_flags": [],
+  "chapter": 3,
+  "chapter_title": "Computo Basics - Data and Logic"
+}

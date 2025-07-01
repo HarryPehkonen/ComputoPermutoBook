@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>04 Introduction To Debugging - ComputoPermutoBook</title>
+    <style>
+/* ComputoPermutoBook Styling */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #333;
+    background-color: #fff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #2c3e50;
+    margin-top: 2em;
+    margin-bottom: 0.5em;
+}
+
+h1 {
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 0.3em;
+}
+
+h2 {
+    border-bottom: 1px solid #bdc3c7;
+    padding-bottom: 0.2em;
+}
+
+code {
+    background-color: #f8f9fa;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    font-size: 0.9em;
+}
+
+pre {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+    padding: 15px;
+    overflow-x: auto;
+    margin: 1em 0;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+    font-size: 0.85em;
+}
+
+.navigation {
+    background-color: #ecf0f1;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 2em;
+}
+
+.navigation h3 {
+    margin-top: 0;
+    color: #2c3e50;
+}
+
+.navigation ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.navigation li {
+    margin: 0.5em 0;
+}
+
+.navigation a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.navigation a:hover {
+    text-decoration: underline;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+}
+
+th, td {
+    border: 1px solid #bdc3c7;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+th {
+    background-color: #ecf0f1;
+    font-weight: bold;
+}
+
+.footer {
+    margin-top: 3em;
+    padding-top: 2em;
+    border-top: 1px solid #bdc3c7;
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 0.9em;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    pre {
+        padding: 10px;
+        font-size: 0.8em;
+    }
+}
+</style>
+</head>
+<body>
+    
+        <div class="navigation">
+            <h3>📖 Book Navigation</h3>
+            <ul>
+                <li><a href="01_why_transformation_matters.html">**Chapter 1: Why JSON Transformation Matters**</a></li>
+<li><a href="02_setting_up_environment.html">**Chapter 2: Setting Up Your Environment**</a></li>
+<li><a href="03_computo_basics.html">**Chapter 3: Computo Basics - Data and Logic**</a></li>
+<li><a href="04_introduction_to_debugging.html">**Chapter 4: Introduction to Debugging**</a></li>
+            </ul>
+        </div>
+        
+    <main>
+        <h2 id="chapter-4-introduction-to-debugging"><strong>Chapter 4: Introduction to Debugging</strong></h2>
+<h3 id="why-debugging-matters">Why Debugging Matters</h3>
+<p>As you start building more complex Computo transformations, you'll quickly want to "see inside" what's happening. Unlike traditional programming languages where you can add print statements, Computo scripts are pure JSON expressions. This is where Computo's powerful debugging features become essential.</p>
+<p>Think of debugging not as something you do when things go wrong, but as a learning tool that helps you:</p>
+<ul>
+<li><strong>Understand execution flow</strong> - See exactly how your script processes data</li>
+<li><strong>Verify your logic</strong> - Confirm each step produces what you expect  </li>
+<li><strong>Learn performance characteristics</strong> - Identify which operations are expensive</li>
+<li><strong>Build confidence</strong> - Experiment with complex operations safely</li>
+<li><strong>Troubleshoot efficiently</strong> - Quickly identify issues when they occur</li>
+</ul>
+<p>Computo provides professional-grade debugging tools that make complex transformations transparent and understandable.</p>
+<h3 id="basic-execution-tracing">Basic Execution Tracing</h3>
+<p>The most fundamental debugging tool is <strong>execution tracing</strong>. This shows you exactly which operations are being executed and in what order.</p>
+<p><strong>Basic Usage:</strong></p>
+<pre><code class="language-bash">computo --trace script.json input.json
+</code></pre>
+<p>The trace output goes to stderr (error stream), while your JSON result still goes to stdout. This means you can see the debugging information while still capturing clean output.</p>
+<p><strong>What You'll See:</strong>
+- Each operator call with its arguments
+- The result of each operation
+- Nested operation flow with indentation
+- Variable bindings and lookups</p>
+<p>This is invaluable when learning how <code>map</code>, <code>filter</code>, <code>reduce</code>, and other operations actually work under the hood.</p>
+<h3 id="performance-awareness">Performance Awareness</h3>
+<p>Even simple scripts can have performance implications. Computo's <strong>profiling</strong> helps you understand which operations are taking time.</p>
+<p><strong>Basic Profiling:</strong></p>
+<pre><code class="language-bash">computo --profile script.json input.json
+</code></pre>
+<p><strong>What to Look For:</strong>
+- Operations that take significantly longer than others
+- Repeated expensive operations that could be optimized
+- Memory-intensive operations with large datasets</p>
+<p><strong>Performance Tips:</strong>
+- <code>reduce</code> operations are generally faster than multiple <code>map</code> calls
+- Avoid deeply nested operations when possible
+- Consider the size of your datasets with operations like <code>filter</code> and <code>map</code></p>
+<p>You don't need to optimize everything, but understanding where time is spent helps you make informed decisions as your scripts grow in complexity.</p>
+<h3 id="reading-error-messages">Reading Error Messages</h3>
+<p>Computo provides detailed error messages that pinpoint exactly where issues occur. Learning to read these messages efficiently will save you significant debugging time.</p>
+<p><strong>Common Error Types:</strong>
+- <strong>Path errors</strong>: When JSON pointers don't exist (<code>/user/name</code> but <code>user</code> is null)
+- <strong>Type errors</strong>: Wrong data types for operations (trying to add a string and number)
+- <strong>Operator errors</strong>: Invalid arguments to operators
+- <strong>Structure errors</strong>: Malformed JSON or incorrect operator syntax</p>
+<p><strong>Error Message Components:</strong>
+- <strong>Location</strong>: Which part of your script caused the error
+- <strong>Context</strong>: What data was being processed
+- <strong>Suggestion</strong>: Often includes hints about what went wrong</p>
+<p>The key is to read the full error message - Computo's errors are designed to be helpful, not cryptic.</p>
+<h3 id="variable-watching-and-data-flow">Variable Watching and Data Flow</h3>
+<p>One of the most powerful debugging techniques is watching how data flows through your transformations, especially with <code>let</code> expressions and complex nested operations.</p>
+<p><strong>Variable Inspection:</strong>
+When using <code>let</code> bindings, you can see exactly what values are assigned to each variable and how they're used throughout the expression.</p>
+<p><strong>Data Flow Tracing:</strong>
+- Watch how arrays are transformed step by step
+- See intermediate results in complex calculations
+- Understand how nested operations pass data between levels</p>
+<p><strong>Best Practices:</strong>
+- Use meaningful variable names in <code>let</code> expressions
+- Break complex operations into smaller, named steps
+- Watch how data changes shape through transformations</p>
+<p>This becomes especially valuable when working with real-world data that might have unexpected structure or missing fields.</p>
+<h3 id="output-formatting-for-development">Output Formatting for Development</h3>
+<p>While debugging, readable output is crucial. Computo provides several formatting options to make development easier.</p>
+<p><strong>Pretty Printing:</strong></p>
+<pre><code class="language-bash">computo --pretty=2 script.json input.json
+</code></pre>
+<p>The number after <code>--pretty</code> controls indentation depth. Use 2 or 4 for most development work.</p>
+<p><strong>Combining Debugging Flags:</strong></p>
+<pre><code class="language-bash"># Trace execution with pretty output
+computo --trace --pretty=2 script.json input.json
+
+# Profile performance with readable results  
+computo --profile --pretty=2 script.json input.json
+</code></pre>
+<p><strong>Development Workflow:</strong>
+1. Start with basic execution and pretty output
+2. Add tracing when you need to understand flow
+3. Add profiling when performance matters
+4. Use plain output for production scripts</p>
+<p>Remember: debugging flags are for development. Production scripts should typically run without them for best performance.</p>
+<h3 id="next-steps-advanced-debugging">Next Steps: Advanced Debugging</h3>
+<p>This chapter covered the essential debugging skills you'll use every day. As you progress through the book and tackle more complex transformations, you'll encounter advanced debugging techniques including:</p>
+<ul>
+<li><strong>Interactive debugging sessions</strong> for step-through analysis</li>
+<li><strong>Conditional breakpoints</strong> for specific scenarios  </li>
+<li><strong>Advanced performance optimization</strong> strategies</li>
+<li><strong>Complex error diagnosis</strong> for production systems</li>
+<li><strong>Debugging multi-input transformations</strong> and pipelines</li>
+</ul>
+<p>For now, practice using these basic debugging tools with the examples in this chapter. The more comfortable you become with tracing and profiling, the more confident you'll be tackling advanced Computo transformations.</p>
+<p><strong>Key Takeaway:</strong> Debugging isn't just for fixing problems - it's a learning tool that makes you a better Computo developer.</p>
+<h2 id="hands-on-examples">💻 Hands-On Examples</h2>
+<p>These examples demonstrate the debugging concepts covered in this chapter. Each example includes the complete script, expected output, and instructions for running it yourself.</p>
+<h3 id="basic-tracing">🔧 Basic Tracing</h3>
+<p><strong>Purpose</strong>: Basic execution tracing to see operation flow</p>
+<p><strong>Computo Script</strong>:</p>
+<pre><code class="language-json">[
+  &quot;let&quot;,
+  [
+    [
+      &quot;x&quot;,
+      10
+    ],
+    [
+      &quot;y&quot;,
+      32
+    ]
+  ],
+  [
+    &quot;+&quot;,
+    [
+      &quot;$&quot;,
+      &quot;/x&quot;
+    ],
+    [
+      &quot;$&quot;,
+      &quot;/y&quot;
+    ]
+  ]
+]
+</code></pre>
+<p><strong>How to Run</strong>:</p>
+<pre><code class="language-bash"># Navigate to the example directory
+cd code/ch04_introduction_to_debugging/general/basic_tracing/
+
+# Run the example
+computo --trace --pretty=2 script.json
+
+# Or use the provided script
+./run.sh    # Linux/Mac
+run.bat     # Windows
+</code></pre>
+<p><strong>Expected Output</strong>:</p>
+<pre><code class="language-json">42
+</code></pre>
+<p><strong>💡 What to Learn</strong>: Watch how let binding creates variables and how they're accessed</p>
+<p><strong>🛠️ CLI Flags Used</strong>:
+- <code>--trace</code>: Shows execution flow and operation details
+- <code>--pretty=2</code>: Formats output with proper indentation for readability</p>
+<p><strong>📁 Download</strong>:
+- <a href="code/ch04_introduction_to_debugging/general/basic_tracing/">📂 This example's files</a>
+- <a href="code/ch04_examples.zip">📦 Chapter 4 examples</a>
+- <a href="download_all_examples.zip">📚 All book examples</a></p>
+<hr />
+<h3 id="array-operation-tracing">🔧 Array Operation Tracing</h3>
+<p><strong>Purpose</strong>: Trace array operations to understand iteration</p>
+<p><strong>Computo Script</strong>:</p>
+<pre><code class="language-json">[
+  &quot;map&quot;,
+  {
+    &quot;array&quot;: [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  [
+    &quot;lambda&quot;,
+    [
+      &quot;x&quot;
+    ],
+    [
+      &quot;*&quot;,
+      [
+        &quot;$&quot;,
+        &quot;/x&quot;
+      ],
+      2
+    ]
+  ]
+]
+</code></pre>
+<p><strong>How to Run</strong>:</p>
+<pre><code class="language-bash"># Navigate to the example directory
+cd code/ch04_introduction_to_debugging/general/array_operation_tracing/
+
+# Run the example
+computo --trace script.json
+
+# Or use the provided script
+./run.sh    # Linux/Mac
+run.bat     # Windows
+</code></pre>
+<p><strong>Expected Output</strong>:</p>
+<pre><code class="language-json">[
+  2,
+  4,
+  6,
+  8
+]
+</code></pre>
+<p><strong>💡 What to Learn</strong>: See how map processes each array element individually</p>
+<p><strong>🛠️ CLI Flags Used</strong>:
+- <code>--trace</code>: Shows execution flow and operation details</p>
+<p><strong>📁 Download</strong>:
+- <a href="code/ch04_introduction_to_debugging/general/array_operation_tracing/">📂 This example's files</a>
+- <a href="code/ch04_examples.zip">📦 Chapter 4 examples</a>
+- <a href="download_all_examples.zip">📚 All book examples</a></p>
+<hr />
+<h3 id="performance-profiling">🔧 Performance Profiling</h3>
+<p><strong>Purpose</strong>: Basic performance profiling to identify slow operations</p>
+<p><strong>Computo Script</strong>:</p>
+<pre><code class="language-json">[
+  &quot;reduce&quot;,
+  {
+    &quot;array&quot;: [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ]
+  },
+  [
+    &quot;lambda&quot;,
+    [
+      &quot;acc&quot;,
+      &quot;x&quot;
+    ],
+    [
+      &quot;+&quot;,
+      [
+        &quot;$&quot;,
+        &quot;/acc&quot;
+      ],
+      [
+        &quot;*&quot;,
+        [
+          &quot;$&quot;,
+          &quot;/x&quot;
+        ],
+        [
+          &quot;$&quot;,
+          &quot;/x&quot;
+        ]
+      ]
+    ]
+  ],
+  0
+]
+</code></pre>
+<p><strong>How to Run</strong>:</p>
+<pre><code class="language-bash"># Navigate to the example directory
+cd code/ch04_introduction_to_debugging/general/performance_profiling/
+
+# Run the example
+computo --profile --pretty=2 script.json
+
+# Or use the provided script
+./run.sh    # Linux/Mac
+run.bat     # Windows
+</code></pre>
+<p><strong>Expected Output</strong>:</p>
+<pre><code class="language-json">385
+</code></pre>
+<p><strong>💡 What to Learn</strong>: See timing information for each operation</p>
+<p><strong>🛠️ CLI Flags Used</strong>:
+- <code>--profile</code>: Displays timing information for performance analysis
+- <code>--pretty=2</code>: Formats output with proper indentation for readability</p>
+<p><strong>📁 Download</strong>:
+- <a href="code/ch04_introduction_to_debugging/general/performance_profiling/">📂 This example's files</a>
+- <a href="code/ch04_examples.zip">📦 Chapter 4 examples</a>
+- <a href="download_all_examples.zip">📚 All book examples</a></p>
+<hr />
+<h3 id="variable-watching">🔧 Variable Watching</h3>
+<p><strong>Purpose</strong>: Watch variable creation and usage in complex expressions</p>
+<p><strong>Computo Script</strong>:</p>
+<pre><code class="language-json">[
+  &quot;let&quot;,
+  [
+    [
+      &quot;numbers&quot;,
+      {
+        &quot;array&quot;: [
+          5,
+          10,
+          15
+        ]
+      }
+    ],
+    [
+      &quot;multiplier&quot;,
+      3
+    ]
+  ],
+  [
+    &quot;map&quot;,
+    [
+      &quot;$&quot;,
+      &quot;/numbers&quot;
+    ],
+    [
+      &quot;lambda&quot;,
+      [
+        &quot;n&quot;
+      ],
+      [
+        &quot;*&quot;,
+        [
+          &quot;$&quot;,
+          &quot;/n&quot;
+        ],
+        [
+          &quot;$&quot;,
+          &quot;/multiplier&quot;
+        ]
+      ]
+    ]
+  ]
+]
+</code></pre>
+<p><strong>How to Run</strong>:</p>
+<pre><code class="language-bash"># Navigate to the example directory
+cd code/ch04_introduction_to_debugging/general/variable_watching/
+
+# Run the example
+computo --trace --pretty=2 script.json
+
+# Or use the provided script
+./run.sh    # Linux/Mac
+run.bat     # Windows
+</code></pre>
+<p><strong>Expected Output</strong>:</p>
+<pre><code class="language-json">[
+  15,
+  30,
+  45
+]
+</code></pre>
+<p><strong>💡 What to Learn</strong>: Watch how variables are bound and accessed in nested operations</p>
+<p><strong>🛠️ CLI Flags Used</strong>:
+- <code>--trace</code>: Shows execution flow and operation details
+- <code>--pretty=2</code>: Formats output with proper indentation for readability</p>
+<p><strong>📁 Download</strong>:
+- <a href="code/ch04_introduction_to_debugging/general/variable_watching/">📂 This example's files</a>
+- <a href="code/ch04_examples.zip">📦 Chapter 4 examples</a>
+- <a href="download_all_examples.zip">📚 All book examples</a></p>
+<hr />
+<h3 id="error-demonstration">🔧 Error Demonstration</h3>
+<p><strong>Purpose</strong>: Demonstrate clear error messages for common mistakes</p>
+<p><strong>Computo Script</strong>:</p>
+<pre><code class="language-json">[
+  &quot;obj&quot;,
+  [
+    &quot;safe_value&quot;,
+    [
+      &quot;+&quot;,
+      20,
+      22
+    ]
+  ],
+  [
+    &quot;message&quot;,
+    &quot;This works fine&quot;
+  ]
+]
+</code></pre>
+<p><strong>How to Run</strong>:</p>
+<pre><code class="language-bash"># Navigate to the example directory
+cd code/ch04_introduction_to_debugging/general/error_demonstration/
+
+# Run the example
+computo --pretty=2 script.json
+
+# Or use the provided script
+./run.sh    # Linux/Mac
+run.bat     # Windows
+</code></pre>
+<p><strong>Expected Output</strong>:</p>
+<pre><code class="language-json">{
+  &quot;safe_value&quot;: 42,
+  &quot;message&quot;: &quot;This works fine&quot;
+}
+</code></pre>
+<p><strong>💡 What to Learn</strong>: Example of successful execution - compare with error cases you encounter</p>
+<p><strong>🛠️ CLI Flags Used</strong>:
+- <code>--pretty=2</code>: Formats output with proper indentation for readability</p>
+<p><strong>📁 Download</strong>:
+- <a href="code/ch04_introduction_to_debugging/general/error_demonstration/">📂 This example's files</a>
+- <a href="code/ch04_examples.zip">📦 Chapter 4 examples</a>
+- <a href="download_all_examples.zip">📚 All book examples</a></p>
+<hr />
+<h3 id="nested-operation-flow">🔧 Nested Operation Flow</h3>
+<p><strong>Purpose</strong>: Trace complex nested operations to understand execution order</p>
+<p><strong>Computo Script</strong>:</p>
+<pre><code class="language-json">[
+  &quot;obj&quot;,
+  [
+    &quot;total&quot;,
+    [
+      &quot;reduce&quot;,
+      [
+        &quot;filter&quot;,
+        {
+          &quot;array&quot;: [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        },
+        [
+          &quot;lambda&quot;,
+          [
+            &quot;x&quot;
+          ],
+          [
+            &quot;&gt;&quot;,
+            [
+              &quot;$&quot;,
+              &quot;/x&quot;
+            ],
+            3
+          ]
+        ]
+      ],
+      [
+        &quot;lambda&quot;,
+        [
+          &quot;sum&quot;,
+          &quot;x&quot;
+        ],
+        [
+          &quot;+&quot;,
+          [
+            &quot;$&quot;,
+            &quot;/sum&quot;
+          ],
+          [
+            &quot;$&quot;,
+            &quot;/x&quot;
+          ]
+        ]
+      ],
+      0
+    ]
+  ],
+  [
+    &quot;count&quot;,
+    [
+      &quot;filter&quot;,
+      {
+        &quot;array&quot;: [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      [
+        &quot;lambda&quot;,
+        [
+          &quot;x&quot;
+        ],
+        [
+          &quot;&gt;&quot;,
+          [
+            &quot;$&quot;,
+            &quot;/x&quot;
+          ],
+          3
+        ]
+      ]
+    ]
+  ]
+]
+</code></pre>
+<p><strong>How to Run</strong>:</p>
+<pre><code class="language-bash"># Navigate to the example directory
+cd code/ch04_introduction_to_debugging/general/nested_operation_flow/
+
+# Run the example
+computo --trace script.json
+
+# Or use the provided script
+./run.sh    # Linux/Mac
+run.bat     # Windows
+</code></pre>
+<p><strong>Expected Output</strong>:</p>
+<pre><code class="language-json">{
+  &quot;total&quot;: 18,
+  &quot;count&quot;: 3
+}
+</code></pre>
+<p><strong>💡 What to Learn</strong>: See how nested filter and reduce operations execute step by step</p>
+<p><strong>🛠️ CLI Flags Used</strong>:
+- <code>--trace</code>: Shows execution flow and operation details</p>
+<p><strong>📁 Download</strong>:
+- <a href="code/ch04_introduction_to_debugging/general/nested_operation_flow/">📂 This example's files</a>
+- <a href="code/ch04_examples.zip">📦 Chapter 4 examples</a>
+- <a href="download_all_examples.zip">📚 All book examples</a></p>
+<hr />
+    </main>
+    <div class="footer">
+        <p>Generated from <strong>ComputoPermutoBook</strong> | <a href="index.html">📖 Table of Contents</a></p>
+    </div>
+</body>
+</html>

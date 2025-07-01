@@ -169,18 +169,15 @@ class BookChapterGenerator:
                 content_parts.append(section['content'])
                 content_parts.append("")
 
-        # Add examples at the end
+        # Add comprehensive examples at the end
         if 'examples' in self.chapter_data:
-            content_parts.append("## Examples")
+            content_parts.append("## 💻 Hands-On Examples")
             content_parts.append("")
+            content_parts.append("These examples demonstrate the debugging concepts covered in this chapter. Each example includes the complete script, expected output, and instructions for running it yourself.")
+            content_parts.append("")
+            
             for example in self.chapter_data['examples']:
-                content_parts.append(f"### {example['name']}")
-                content_parts.append("")
-                content_parts.append(example['description'])
-                content_parts.append("")
-                if 'tutorial_text' in example:
-                    content_parts.append(example['tutorial_text'])
-                    content_parts.append("")
+                content_parts.extend(self._format_example_for_markdown(example))
 
         # Chapter summary
         if 'summary' in chapter:
@@ -188,6 +185,118 @@ class BookChapterGenerator:
             content_parts.append("")
 
         return "\n".join(content_parts)
+
+    def _format_example_for_markdown(self, example):
+        """Format a single example for markdown with complete details."""
+        parts = []
+        
+        # Example header
+        parts.append(f"### 🔧 {example['name'].replace('_', ' ').title()}")
+        parts.append("")
+        
+        # Description
+        parts.append(f"**Purpose**: {example['description']}")
+        parts.append("")
+        
+        # Tutorial text if present
+        if 'tutorial_text' in example:
+            parts.append(example['tutorial_text'])
+            parts.append("")
+        
+        # Script section
+        parts.append("**Computo Script**:")
+        parts.append("```json")
+        if isinstance(example['script'], str):
+            # If script is stored as a string, parse it first
+            try:
+                import json
+                script_obj = json.loads(example['script'])
+                parts.append(json.dumps(script_obj, indent=2))
+            except:
+                parts.append(example['script'])
+        else:
+            # Script is already an object
+            import json
+            parts.append(json.dumps(example['script'], indent=2))
+        parts.append("```")
+        parts.append("")
+        
+        # Input data if present
+        input_data = example.get('input', {})
+        has_input = len(input_data) > 0
+        if has_input:
+            parts.append("**Input Data** (`input.json`):")
+            parts.append("```json")
+            import json
+            parts.append(json.dumps(input_data, indent=2))
+            parts.append("```")
+            parts.append("")
+        
+        # How to run
+        parts.append("**How to Run**:")
+        cli_flags = example.get('cli_flags', [])
+        flags_str = ' '.join(cli_flags) if cli_flags else ''
+        input_arg = "input.json" if has_input else ""
+        command = f"computo {flags_str} script.json {input_arg}".strip()
+        parts.append("```bash")
+        parts.append(f"# Navigate to the example directory")
+        parts.append(f"cd code/ch{self.chapter_data['chapter']['number']:02d}_{self.chapter_data['chapter']['title'].lower().replace(' ', '_').replace('-', '_')}/general/{example['name']}/")
+        parts.append("")
+        parts.append(f"# Run the example")
+        parts.append(command)
+        parts.append("")
+        parts.append(f"# Or use the provided script")
+        parts.append(f"./run.sh    # Linux/Mac")
+        parts.append(f"run.bat     # Windows")
+        parts.append("```")
+        parts.append("")
+        
+        # Expected output
+        parts.append("**Expected Output**:")
+        parts.append("```json")
+        expected = example.get('expected')
+        if expected:
+            import json
+            if isinstance(expected, dict) and 'result' in expected:
+                # If expected is wrapped in {'result': ...}, show just the result
+                parts.append(json.dumps(expected['result'], indent=2))
+            else:
+                parts.append(json.dumps(expected, indent=2))
+        parts.append("```")
+        parts.append("")
+        
+        # Learning notes
+        if 'notes' in example:
+            parts.append(f"**💡 What to Learn**: {example['notes']}")
+            parts.append("")
+        
+        # CLI flags explanation
+        if cli_flags:
+            parts.append("**🛠️ CLI Flags Used**:")
+            for flag in cli_flags:
+                if flag == '--trace':
+                    parts.append("- `--trace`: Shows execution flow and operation details")
+                elif flag == '--profile':
+                    parts.append("- `--profile`: Displays timing information for performance analysis")
+                elif flag.startswith('--pretty'):
+                    parts.append(f"- `{flag}`: Formats output with proper indentation for readability")
+                else:
+                    parts.append(f"- `{flag}`: {flag}")
+            parts.append("")
+        
+        # Download section
+        chapter_num = self.chapter_data['chapter']['number']
+        chapter_title = self.chapter_data['chapter']['title'].lower().replace(' ', '_').replace('-', '_')
+        parts.append("**📁 Download**:")
+        parts.append(f"- [📂 This example's files](code/ch{chapter_num:02d}_{chapter_title}/general/{example['name']}/)")
+        parts.append(f"- [📦 Chapter {chapter_num} examples](code/ch{chapter_num:02d}_examples.zip)")
+        parts.append(f"- [📚 All book examples](download_all_examples.zip)")
+        parts.append("")
+        
+        parts.append("---")
+        parts.append("")
+        
+        return parts
 
     def generate_markdown(self):
         """Generate the markdown file."""
@@ -290,9 +399,21 @@ pause
 
                 # Save core files
                 files = {
-                    'script.json': example['script'],
                     'expected.json': example['expected']
                 }
+                
+                # Handle script - might be stored as string or object
+                script_content = example['script']
+                if isinstance(script_content, str):
+                    try:
+                        # Parse string as JSON
+                        files['script.json'] = json.loads(script_content)
+                    except json.JSONDecodeError:
+                        # If it fails to parse, treat as literal content
+                        files['script.json'] = script_content
+                else:
+                    # Already an object
+                    files['script.json'] = script_content
                 
                 # Only save input.json if there's actual input data
                 input_data = example.get('input', {})

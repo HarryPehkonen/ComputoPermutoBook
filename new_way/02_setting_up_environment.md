@@ -114,16 +114,162 @@ You are now ready to start writing transformations. Your typical workflow will i
 In the next chapter, we will write our first Computo script and explore its fundamental concepts.
 
 
-## Examples
+## 💻 Hands-On Examples
 
-### help_command
+These examples demonstrate the debugging concepts covered in this chapter. Each example includes the complete script, expected output, and instructions for running it yourself.
 
-Display help information to verify CLI is working
+### 🔧 Help Command
 
-### version_check
+**Purpose**: Display help information to verify CLI is working
 
-Check Computo version to verify installation
+**Computo Script**:
+```json
+[
+  "obj",
+  [
+    "message",
+    "Hello World"
+  ]
+]
+```
 
-### basic_usage
+**How to Run**:
+```bash
+# Navigate to the example directory
+cd code/ch02_setting_up_your_environment/general/help_command/
 
-Basic script execution to verify end-to-end functionality
+# Run the example
+computo --help script.json
+
+# Or use the provided script
+./run.sh    # Linux/Mac
+run.bat     # Windows
+```
+
+**Expected Output**:
+```json
+{
+  "message": "Hello World"
+}
+```
+
+**💡 What to Learn**: This example tests basic CLI functionality by showing help output
+
+**🛠️ CLI Flags Used**:
+- `--help`: --help
+
+**📁 Download**:
+- [📂 This example's files](code/ch02_setting_up_your_environment/general/help_command/)
+- [📦 Chapter 2 examples](code/ch02_examples.zip)
+- [📚 All book examples](download_all_examples.zip)
+
+---
+
+### 🔧 Version Check
+
+**Purpose**: Check Computo version to verify installation
+
+**Computo Script**:
+```json
+[
+  "obj",
+  [
+    "status",
+    "installed"
+  ]
+]
+```
+
+**How to Run**:
+```bash
+# Navigate to the example directory
+cd code/ch02_setting_up_your_environment/general/version_check/
+
+# Run the example
+computo --version script.json
+
+# Or use the provided script
+./run.sh    # Linux/Mac
+run.bat     # Windows
+```
+
+**Expected Output**:
+```json
+{
+  "status": "installed"
+}
+```
+
+**💡 What to Learn**: Verifies that computo command is available and shows version
+
+**🛠️ CLI Flags Used**:
+- `--version`: --version
+
+**📁 Download**:
+- [📂 This example's files](code/ch02_setting_up_your_environment/general/version_check/)
+- [📦 Chapter 2 examples](code/ch02_examples.zip)
+- [📚 All book examples](download_all_examples.zip)
+
+---
+
+### 🔧 Basic Usage
+
+**Purpose**: Basic script execution to verify end-to-end functionality
+
+**Computo Script**:
+```json
+[
+  "obj",
+  [
+    "result",
+    "success"
+  ],
+  [
+    "timestamp",
+    [
+      "get",
+      [
+        "$input"
+      ],
+      "/when"
+    ]
+  ]
+]
+```
+
+**Input Data** (`input.json`):
+```json
+{
+  "when": "2024-01-01"
+}
+```
+
+**How to Run**:
+```bash
+# Navigate to the example directory
+cd code/ch02_setting_up_your_environment/general/basic_usage/
+
+# Run the example
+computo --pretty=2 script.json input.json
+
+# Or use the provided script
+./run.sh    # Linux/Mac
+run.bat     # Windows
+```
+
+**Expected Output**:
+```json
+"success"
+```
+
+**💡 What to Learn**: Tests basic script execution with pretty-printed output
+
+**🛠️ CLI Flags Used**:
+- `--pretty=2`: Formats output with proper indentation for readability
+
+**📁 Download**:
+- [📂 This example's files](code/ch02_setting_up_your_environment/general/basic_usage/)
+- [📦 Chapter 2 examples](code/ch02_examples.zip)
+- [📚 All book examples](download_all_examples.zip)
+
+---

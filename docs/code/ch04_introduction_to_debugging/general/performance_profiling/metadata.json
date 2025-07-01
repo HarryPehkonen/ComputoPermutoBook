@@ -1,0 +1,11 @@
+{
+  "name": "performance_profiling",
+  "description": "Basic performance profiling to identify slow operations",
+  "section": "",
+  "cli_flags": [
+    "--profile",
+    "--pretty=2"
+  ],
+  "chapter": 4,
+  "chapter_title": "Introduction to Debugging"
+}

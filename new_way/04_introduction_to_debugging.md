@@ -139,28 +139,487 @@ For now, practice using these basic debugging tools with the examples in this ch
 **Key Takeaway:** Debugging isn't just for fixing problems - it's a learning tool that makes you a better Computo developer.
 
 
-## Examples
+## 💻 Hands-On Examples
 
-### basic_tracing
+These examples demonstrate the debugging concepts covered in this chapter. Each example includes the complete script, expected output, and instructions for running it yourself.
 
-Basic execution tracing to see operation flow
+### 🔧 Basic Tracing
 
-### array_operation_tracing
+**Purpose**: Basic execution tracing to see operation flow
 
-Trace array operations to understand iteration
+**Computo Script**:
+```json
+[
+  "let",
+  [
+    [
+      "x",
+      10
+    ],
+    [
+      "y",
+      32
+    ]
+  ],
+  [
+    "+",
+    [
+      "$",
+      "/x"
+    ],
+    [
+      "$",
+      "/y"
+    ]
+  ]
+]
+```
 
-### performance_profiling
+**How to Run**:
+```bash
+# Navigate to the example directory
+cd code/ch04_introduction_to_debugging/general/basic_tracing/
 
-Basic performance profiling to identify slow operations
+# Run the example
+computo --trace --pretty=2 script.json
 
-### variable_watching
+# Or use the provided script
+./run.sh    # Linux/Mac
+run.bat     # Windows
+```
 
-Watch variable creation and usage in complex expressions
+**Expected Output**:
+```json
+42
+```
 
-### error_demonstration
+**💡 What to Learn**: Watch how let binding creates variables and how they're accessed
 
-Demonstrate clear error messages for common mistakes
+**🛠️ CLI Flags Used**:
+- `--trace`: Shows execution flow and operation details
+- `--pretty=2`: Formats output with proper indentation for readability
 
-### nested_operation_flow
+**📁 Download**:
+- [📂 This example's files](code/ch04_introduction_to_debugging/general/basic_tracing/)
+- [📦 Chapter 4 examples](code/ch04_examples.zip)
+- [📚 All book examples](download_all_examples.zip)
 
-Trace complex nested operations to understand execution order
+---
+
+### 🔧 Array Operation Tracing
+
+**Purpose**: Trace array operations to understand iteration
+
+**Computo Script**:
+```json
+[
+  "map",
+  {
+    "array": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  [
+    "lambda",
+    [
+      "x"
+    ],
+    [
+      "*",
+      [
+        "$",
+        "/x"
+      ],
+      2
+    ]
+  ]
+]
+```
+
+**How to Run**:
+```bash
+# Navigate to the example directory
+cd code/ch04_introduction_to_debugging/general/array_operation_tracing/
+
+# Run the example
+computo --trace script.json
+
+# Or use the provided script
+./run.sh    # Linux/Mac
+run.bat     # Windows
+```
+
+**Expected Output**:
+```json
+[
+  2,
+  4,
+  6,
+  8
+]
+```
+
+**💡 What to Learn**: See how map processes each array element individually
+
+**🛠️ CLI Flags Used**:
+- `--trace`: Shows execution flow and operation details
+
+**📁 Download**:
+- [📂 This example's files](code/ch04_introduction_to_debugging/general/array_operation_tracing/)
+- [📦 Chapter 4 examples](code/ch04_examples.zip)
+- [📚 All book examples](download_all_examples.zip)
+
+---
+
+### 🔧 Performance Profiling
+
+**Purpose**: Basic performance profiling to identify slow operations
+
+**Computo Script**:
+```json
+[
+  "reduce",
+  {
+    "array": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ]
+  },
+  [
+    "lambda",
+    [
+      "acc",
+      "x"
+    ],
+    [
+      "+",
+      [
+        "$",
+        "/acc"
+      ],
+      [
+        "*",
+        [
+          "$",
+          "/x"
+        ],
+        [
+          "$",
+          "/x"
+        ]
+      ]
+    ]
+  ],
+  0
+]
+```
+
+**How to Run**:
+```bash
+# Navigate to the example directory
+cd code/ch04_introduction_to_debugging/general/performance_profiling/
+
+# Run the example
+computo --profile --pretty=2 script.json
+
+# Or use the provided script
+./run.sh    # Linux/Mac
+run.bat     # Windows
+```
+
+**Expected Output**:
+```json
+385
+```
+
+**💡 What to Learn**: See timing information for each operation
+
+**🛠️ CLI Flags Used**:
+- `--profile`: Displays timing information for performance analysis
+- `--pretty=2`: Formats output with proper indentation for readability
+
+**📁 Download**:
+- [📂 This example's files](code/ch04_introduction_to_debugging/general/performance_profiling/)
+- [📦 Chapter 4 examples](code/ch04_examples.zip)
+- [📚 All book examples](download_all_examples.zip)
+
+---
+
+### 🔧 Variable Watching
+
+**Purpose**: Watch variable creation and usage in complex expressions
+
+**Computo Script**:
+```json
+[
+  "let",
+  [
+    [
+      "numbers",
+      {
+        "array": [
+          5,
+          10,
+          15
+        ]
+      }
+    ],
+    [
+      "multiplier",
+      3
+    ]
+  ],
+  [
+    "map",
+    [
+      "$",
+      "/numbers"
+    ],
+    [
+      "lambda",
+      [
+        "n"
+      ],
+      [
+        "*",
+        [
+          "$",
+          "/n"
+        ],
+        [
+          "$",
+          "/multiplier"
+        ]
+      ]
+    ]
+  ]
+]
+```
+
+**How to Run**:
+```bash
+# Navigate to the example directory
+cd code/ch04_introduction_to_debugging/general/variable_watching/
+
+# Run the example
+computo --trace --pretty=2 script.json
+
+# Or use the provided script
+./run.sh    # Linux/Mac
+run.bat     # Windows
+```
+
+**Expected Output**:
+```json
+[
+  15,
+  30,
+  45
+]
+```
+
+**💡 What to Learn**: Watch how variables are bound and accessed in nested operations
+
+**🛠️ CLI Flags Used**:
+- `--trace`: Shows execution flow and operation details
+- `--pretty=2`: Formats output with proper indentation for readability
+
+**📁 Download**:
+- [📂 This example's files](code/ch04_introduction_to_debugging/general/variable_watching/)
+- [📦 Chapter 4 examples](code/ch04_examples.zip)
+- [📚 All book examples](download_all_examples.zip)
+
+---
+
+### 🔧 Error Demonstration
+
+**Purpose**: Demonstrate clear error messages for common mistakes
+
+**Computo Script**:
+```json
+[
+  "obj",
+  [
+    "safe_value",
+    [
+      "+",
+      20,
+      22
+    ]
+  ],
+  [
+    "message",
+    "This works fine"
+  ]
+]
+```
+
+**How to Run**:
+```bash
+# Navigate to the example directory
+cd code/ch04_introduction_to_debugging/general/error_demonstration/
+
+# Run the example
+computo --pretty=2 script.json
+
+# Or use the provided script
+./run.sh    # Linux/Mac
+run.bat     # Windows
+```
+
+**Expected Output**:
+```json
+{
+  "safe_value": 42,
+  "message": "This works fine"
+}
+```
+
+**💡 What to Learn**: Example of successful execution - compare with error cases you encounter
+
+**🛠️ CLI Flags Used**:
+- `--pretty=2`: Formats output with proper indentation for readability
+
+**📁 Download**:
+- [📂 This example's files](code/ch04_introduction_to_debugging/general/error_demonstration/)
+- [📦 Chapter 4 examples](code/ch04_examples.zip)
+- [📚 All book examples](download_all_examples.zip)
+
+---
+
+### 🔧 Nested Operation Flow
+
+**Purpose**: Trace complex nested operations to understand execution order
+
+**Computo Script**:
+```json
+[
+  "obj",
+  [
+    "total",
+    [
+      "reduce",
+      [
+        "filter",
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        },
+        [
+          "lambda",
+          [
+            "x"
+          ],
+          [
+            ">",
+            [
+              "$",
+              "/x"
+            ],
+            3
+          ]
+        ]
+      ],
+      [
+        "lambda",
+        [
+          "sum",
+          "x"
+        ],
+        [
+          "+",
+          [
+            "$",
+            "/sum"
+          ],
+          [
+            "$",
+            "/x"
+          ]
+        ]
+      ],
+      0
+    ]
+  ],
+  [
+    "count",
+    [
+      "filter",
+      {
+        "array": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      [
+        "lambda",
+        [
+          "x"
+        ],
+        [
+          ">",
+          [
+            "$",
+            "/x"
+          ],
+          3
+        ]
+      ]
+    ]
+  ]
+]
+```
+
+**How to Run**:
+```bash
+# Navigate to the example directory
+cd code/ch04_introduction_to_debugging/general/nested_operation_flow/
+
+# Run the example
+computo --trace script.json
+
+# Or use the provided script
+./run.sh    # Linux/Mac
+run.bat     # Windows
+```
+
+**Expected Output**:
+```json
+{
+  "total": 18,
+  "count": 3
+}
+```
+
+**💡 What to Learn**: See how nested filter and reduce operations execute step by step
+
+**🛠️ CLI Flags Used**:
+- `--trace`: Shows execution flow and operation details
+
+**📁 Download**:
+- [📂 This example's files](code/ch04_introduction_to_debugging/general/nested_operation_flow/)
+- [📦 Chapter 4 examples](code/ch04_examples.zip)
+- [📚 All book examples](download_all_examples.zip)
+
+---
