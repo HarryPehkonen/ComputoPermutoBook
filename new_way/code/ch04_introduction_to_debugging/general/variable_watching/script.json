@@ -1,0 +1,1 @@
+"[\n  \"let\",\n  [\n    [\"numbers\", {\"array\": [5, 10, 15]}],\n    [\"multiplier\", 3]\n  ],\n  [\n    \"map\",\n    [\"$\", \"/numbers\"],\n    [\"lambda\", [\"n\"], [\"*\", [\"$\", \"/n\"], [\"$\", \"/multiplier\"]]]\n  ]\n]"

@@ -69,8 +69,7 @@ output/
 ├── pdf/
 │   ├── ComputoPermutoBook.pdf    # Complete book as PDF
 │   └── ComputoPermutoBook.md     # Combined markdown source
-├── ComputoREADME.html
-└── PermutoREADME.html
+└── (README files are linked directly to GitHub repositories)
 ```
 
 ## Features

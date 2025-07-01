@@ -1,0 +1,10 @@
+{
+  "name": "basic_usage",
+  "description": "Basic script execution to verify end-to-end functionality",
+  "section": "",
+  "cli_flags": [
+    "--pretty=2"
+  ],
+  "chapter": 2,
+  "chapter_title": "Setting Up Your Environment"
+}

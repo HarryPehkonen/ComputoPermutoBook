@@ -1,0 +1,6 @@
+{
+  "name": "simple_addition",
+  "description": "Basic addition demonstrating core Computo syntax",
+  "section": "anatomy_of_expression",
+  "cli_flags": []
+}

@@ -237,8 +237,8 @@ EOF
         
         <h3>Reference Documents</h3>
         <ul>
-            <li><a href="../ComputoREADME.html">Computo README</a></li>
-            <li><a href="../PermutoREADME.html">Permuto README</a></li>
+            <li><a href="https://github.com/HarryPehkonen/Computo/blob/main/README.md" target="_blank">Computo Technical README</a></li>
+            <li><a href="https://github.com/HarryPehkonen/Permuto/blob/main/README.md" target="_blank">Permuto Technical README</a></li>
         </ul>
     </div>
     
@@ -248,10 +248,8 @@ EOF
 </html>
 EOF
 
-    # Convert README files
-    print_status "Converting README files..."
-    pandoc "ComputoREADME.md" --from markdown-yaml_metadata_block --to html5 --standalone --css="html/style.css" --metadata title="Computo README" --output "$OUTPUT_DIR/ComputoREADME.html"
-    pandoc "PermutoREADME.md" --from markdown-yaml_metadata_block --to html5 --standalone --css="html/style.css" --metadata title="Permuto README" --output "$OUTPUT_DIR/PermutoREADME.html"
+    # README files are now linked directly to GitHub repositories for latest information
+    # No longer converting local README files
     
     print_status "HTML generation complete!"
     print_status "Open $HTML_DIR/index.html in your browser to view the book."

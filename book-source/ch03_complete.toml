@@ -1,0 +1,209 @@
+# Chapter 3: Computo Basics - Data and Logic
+# Complete source for generating 03_computo_basics.md and examples
+
+[chapter]
+number = 3
+title = "Computo Basics - Data and Logic"
+description = "Core syntax, operators, and fundamental concepts"
+
+[chapter.learning_objectives]
+summary = """
+Now that you have a working environment, it's time to start transforming JSON. In this chapter, we'll focus on the core of Computo: its syntax, its fundamental operators, and how it handles data.
+
+At its heart, Computo treats **code as data**. Every Computo script is itself a valid JSON document. This is a powerful concept borrowed from Lisp-like languages that makes scripts easy to generate, store, and even manipulate programmatically.
+"""
+
+operators_introduced = [
+  "+", "-", "*", "/", "%",
+  "obj", "get", "let", "$", "$input"
+]
+
+[chapter.sections]
+
+[chapter.sections.anatomy_of_expression]
+title = "The Anatomy of a Computo Expression"
+content = '''
+An "operation" in Computo is represented by a JSON array where the first element is a string identifying the operator.
+
+```json
+["+", 10, 5]
+```
+
+This is a Computo expression that instructs the engine to use the `+` operator on the numbers `10` and `5`. If you were to run this script, the engine would evaluate it and return the JSON number `15`.
+
+Any JSON that isn't an operator call is treated as a **literal value**.
+
+*   `42` evaluates to the number `42`.
+*   `"hello"` evaluates to the string `"hello"`.
+*   `{"name": "Alice"}` evaluates to a JSON object.
+
+The magic happens when you start nesting these expressions.
+'''
+
+[chapter.sections.first_transformation]
+title = "Your First Transformation: Simple Arithmetic"
+content = '''
+Let's start with the simplest possible script.
+
+1.  Create a file named `add.json`:
+
+    ```json
+    ["+", 100, 50]
+    ```
+
+2.  Create an empty file for our input, `input.json`:
+    *(Computo requires an input file, even if the script doesn't use it yet.)*
+
+    ```json
+    {}
+    ```
+
+3.  Now, run it from your terminal:
+
+    ```bash
+    computo add.json input.json
+    ```
+
+The output will be:
+```
+150
+```
+
+By default, Computo outputs JSON in compact form. For development and learning, you might prefer pretty-printed output:
+
+```bash
+computo --pretty=2 add.json input.json
+```
+
+This produces the same result but with proper indentation when dealing with complex structures.
+'''
+
+[chapter.sections.mathematical_operations]
+title = "Mathematical Operations"
+content = '''
+Computo supports all standard arithmetic operations. In addition to the `+`, `-`, `*`, and `/` operators you've seen, there's also the modulo operator `%` for finding remainders:
+
+```json
+["%", 17, 5]
+```
+
+This would return `2` (the remainder when 17 is divided by 5).
+
+The modulo operator is particularly useful for tasks like:
+- **Determining even/odd numbers**: `["%", number, 2]` returns `0` for even, `1` for odd
+- **Cyclic operations**: Creating repeating patterns or rotations
+- **Validation**: Checking if numbers are divisible by specific values
+'''
+
+[chapter.sections.creating_objects_arrays]
+title = "Creating Objects and Arrays"
+content = '''
+After experimenting with basic arithmetic, you might wonder how to create more complex JSON structures. Computo provides specific syntax for constructing objects and arrays.
+
+#### Creating Objects with `obj`
+
+To create a JSON object, use the `obj` operator with key-value pairs:
+
+```json
+["obj", ["key1", "value1"], ["key2", "value2"]]
+```
+
+#### Creating Arrays
+
+For arrays, use the special `{"array": [...]}` syntax:
+
+```json
+{"array": [1, 2, ["*", 3, 4]]}
+```
+'''
+
+[chapter.sections.accessing_input_data]
+title = "Accessing Input Data with `$input` and `get`"
+content = '''
+Static scripts are only so useful. The real power comes from transforming dynamic input data. Computo makes the entire contents of your `input.json` file available through a special, zero-argument operator: `$input`. Please note that the name of the operator has nothing to do with the filename.
+
+The `get` operator takes an object to query and a [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901) string to specify which value to extract.
+
+`["get", <object>, <json_pointer>]`
+'''
+
+[chapter.sections.variable_binding]
+title = "Storing Intermediate Values with `let` and `$`"
+content = '''
+Often, you need to calculate an intermediate value and reuse it multiple times. Constantly re-evaluating long expressions like `["get", ["$input"], "/user/plan"]` would be tedious and inefficient.
+
+Computo provides the `let` operator for binding values to variables within a specific scope.
+
+`["let", [["var1", <expr1>], ...], <body_expr>]`
+
+Variables defined in a `let` block are accessed using the `$` operator: `["$", "/var_name"]`. Note the required `/` prefix, which makes variable access look similar to root-level JSON Pointers.
+'''
+
+# =============================================================================
+# EXAMPLES
+# =============================================================================
+
+[[chapter.examples]]
+name = "simple_addition"
+section = "first_transformation"
+description = "Basic addition demonstrating core Computo syntax"
+script = ["+", 100, 50]
+input = {}
+expected = 150
+
+[[chapter.examples]]
+name = "nested_arithmetic"
+section = "first_transformation"
+description = "Nested arithmetic operations showing operator composition"
+script = ["+", 100, ["*", 5, 10]]
+input = {}
+expected = 150
+
+[[chapter.examples]]
+name = "modulo_remainder"
+section = "mathematical_operations"
+description = "Basic modulo operation for remainder calculation"
+script = ["%", 17, 5]
+input = {}
+expected = 2
+
+[[chapter.examples]]
+name = "simple_object_creation"
+section = "creating_objects_arrays"
+description = "Creating a JSON object with computed values"
+script = ["obj", ["name", "Alice"], ["age", 30], ["score", ["+", 85, 15]]]
+input = {}
+expected = {name = "Alice", age = 30, score = 100}
+cli_flags = ["--pretty=2"]
+
+[[chapter.examples]]
+name = "input_access_whole"
+section = "accessing_input_data"
+description = "Access entire input document using $input"
+script = ["$input"]
+input = {message = "Hello World", number = 42}
+expected = {message = "Hello World", number = 42}
+
+[[chapter.examples]]
+name = "variable_binding_basic"
+section = "variable_binding"
+description = "Simple variable binding with let for reuse"
+script = ["let", [["x", 25], ["y", 17]], ["+", ["$", "/x"], ["$", "/y"]]]
+input = {}
+expected = 42
+
+[chapter.summary]
+content = '''
+### In This Chapter
+
+You've learned the fundamental building blocks of Computo:
+*   The **syntax** of operators `["op", ...]` and literal values.
+*   **Mathematical operations** including the modulo operator `%` for remainders.
+*   How to **create objects** using the `obj` operator with key-value pairs.
+*   How to **create arrays** using the `{"array": [...]}` syntax.
+*   How to access the entire input document with **`$input`**.
+*   How to extract specific data with **`get`** and JSON Pointers.
+*   How to create temporary variables with **`let`** and access them with **`$`**.
+
+These fundamental operators give you the power to construct new JSON structures and perform data extraction and reshaping. In the next chapter, we'll switch gears and look at Permuto, the templating engine that complements Computo's logic.
+''' 
