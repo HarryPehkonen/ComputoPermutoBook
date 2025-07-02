@@ -1,6 +1,0 @@
-{
-  "name": "nested_arithmetic",
-  "description": "Nested arithmetic operations showing operator composition",
-  "section": "anatomy_of_expression",
-  "cli_flags": []
-}

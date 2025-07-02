@@ -18,150 +18,118 @@ knowledge = ["Basic Computo operators", "JSON structure", "Command-line usage"]
 tools = ["Computo installed", "Basic familiarity with CLI flags"]
 
 [[sections]]
-title = "Why Debugging Matters"
+title = "Debugging Essentials"
 content = """
-As you start building more complex Computo transformations, you'll quickly want to "see inside" what's happening. Unlike traditional programming languages where you can add print statements, Computo scripts are pure JSON expressions. This is where Computo's powerful debugging features become essential.
+Computo provides debugging tools to see inside your transformations:
 
-Think of debugging not as something you do when things go wrong, but as a learning tool that helps you:
-
-- **Understand execution flow** - See exactly how your script processes data
-- **Verify your logic** - Confirm each step produces what you expect  
-- **Learn performance characteristics** - Identify which operations are expensive
-- **Build confidence** - Experiment with complex operations safely
-- **Troubleshoot efficiently** - Quickly identify issues when they occur
-
-Computo provides professional-grade debugging tools that make complex transformations transparent and understandable.
+- **Execution tracing** - See how your script processes data
+- **Performance profiling** - Identify expensive operations
+- **Error messages** - Understand what went wrong
+- **Variable watching** - Track data flow through transformations
 """
 
 [[sections]]
-title = "Basic Execution Tracing"
+title = "Execution Tracing"
 content = """
-The most fundamental debugging tool is **execution tracing**. This shows you exactly which operations are being executed and in what order.
+Execution tracing shows which operations are executed and in what order.
 
-**Basic Usage:**
+**Usage:**
 ```bash
 computo --trace script.json input.json
 ```
 
-The trace output goes to stderr (error stream), while your JSON result still goes to stdout. This means you can see the debugging information while still capturing clean output.
-
-**What You'll See:**
-- Each operator call with its arguments
-- The result of each operation
+**Shows:**
+- Each operator call with arguments
+- Results of each operation
 - Nested operation flow with indentation
 - Variable bindings and lookups
 
-This is invaluable when learning how `map`, `filter`, `reduce`, and other operations actually work under the hood.
+Trace output goes to stderr, results to stdout.
 """
 
 [[sections]]
-title = "Performance Awareness"
+title = "Performance Profiling"
 content = """
-Even simple scripts can have performance implications. Computo's **profiling** helps you understand which operations are taking time.
+Profiling helps identify which operations take time.
 
-**Basic Profiling:**
+**Usage:**
 ```bash
 computo --profile script.json input.json
 ```
 
-**What to Look For:**
-- Operations that take significantly longer than others
-- Repeated expensive operations that could be optimized
-- Memory-intensive operations with large datasets
+**Look For:**
+- Operations taking longer than others
+- Repeated expensive operations
+- Memory-intensive operations
 
-**Performance Tips:**
-- `reduce` operations are generally faster than multiple `map` calls
-- Avoid deeply nested operations when possible
-- Consider the size of your datasets with operations like `filter` and `map`
-
-You don't need to optimize everything, but understanding where time is spent helps you make informed decisions as your scripts grow in complexity.
+**Tips:**
+- `reduce` is generally faster than multiple `map` calls
+- Avoid deeply nested operations
+- Consider dataset size with `filter` and `map`
 """
 
 [[sections]]
-title = "Reading Error Messages"
+title = "Error Messages"
 content = """
-Computo provides detailed error messages that pinpoint exactly where issues occur. Learning to read these messages efficiently will save you significant debugging time.
+Computo provides detailed error messages that pinpoint issues.
 
 **Common Error Types:**
-- **Path errors**: When JSON pointers don't exist (`/user/name` but `user` is null)
-- **Type errors**: Wrong data types for operations (trying to add a string and number)
-- **Operator errors**: Invalid arguments to operators
-- **Structure errors**: Malformed JSON or incorrect operator syntax
+- **Path errors**: JSON pointers that don't exist
+- **Type errors**: Wrong data types for operations
+- **Operator errors**: Invalid arguments
+- **Structure errors**: Malformed JSON or syntax
 
 **Error Message Components:**
-- **Location**: Which part of your script caused the error
+- **Location**: Which part of script caused error
 - **Context**: What data was being processed
-- **Suggestion**: Often includes hints about what went wrong
-
-The key is to read the full error message - Computo's errors are designed to be helpful, not cryptic.
+- **Suggestion**: Hints about what went wrong
 """
 
 [[sections]]
-title = "Variable Watching and Data Flow"
+title = "Variable Watching"
 content = """
-One of the most powerful debugging techniques is watching how data flows through your transformations, especially with `let` expressions and complex nested operations.
+Watch how data flows through transformations with `let` expressions.
 
 **Variable Inspection:**
-When using `let` bindings, you can see exactly what values are assigned to each variable and how they're used throughout the expression.
+See values assigned to each variable and how they're used.
 
 **Data Flow Tracing:**
-- Watch how arrays are transformed step by step
-- See intermediate results in complex calculations
-- Understand how nested operations pass data between levels
+- Watch array transformations step by step
+- See intermediate results in calculations
+- Understand nested operation data flow
 
 **Best Practices:**
-- Use meaningful variable names in `let` expressions
-- Break complex operations into smaller, named steps
-- Watch how data changes shape through transformations
-
-This becomes especially valuable when working with real-world data that might have unexpected structure or missing fields.
+- Use meaningful variable names
+- Break complex operations into named steps
+- Watch how data changes shape
 """
 
 [[sections]]
-title = "Output Formatting for Development"
+title = "Output Formatting"
 content = """
-While debugging, readable output is crucial. Computo provides several formatting options to make development easier.
+Use readable output while debugging.
 
 **Pretty Printing:**
 ```bash
 computo --pretty=2 script.json input.json
 ```
 
-The number after `--pretty` controls indentation depth. Use 2 or 4 for most development work.
-
-**Combining Debugging Flags:**
+**Combining Flags:**
 ```bash
-# Trace execution with pretty output
+# Trace with pretty output
 computo --trace --pretty=2 script.json input.json
 
-# Profile performance with readable results  
+# Profile with readable results
 computo --profile --pretty=2 script.json input.json
 ```
 
-**Development Workflow:**
-1. Start with basic execution and pretty output
-2. Add tracing when you need to understand flow
-3. Add profiling when performance matters
-4. Use plain output for production scripts
-
-Remember: debugging flags are for development. Production scripts should typically run without them for best performance.
+**Workflow:**
+1. Start with pretty output
+2. Add tracing to understand flow
+3. Add profiling for performance
+4. Use plain output for production
 """
 
-[[sections]]
-title = "Next Steps: Advanced Debugging"
-content = """
-This chapter covered the essential debugging skills you'll use every day. As you progress through the book and tackle more complex transformations, you'll encounter advanced debugging techniques including:
-
-- **Interactive debugging sessions** for step-through analysis
-- **Conditional breakpoints** for specific scenarios  
-- **Advanced performance optimization** strategies
-- **Complex error diagnosis** for production systems
-- **Debugging multi-input transformations** and pipelines
-
-For now, practice using these basic debugging tools with the examples in this chapter. The more comfortable you become with tracing and profiling, the more confident you'll be tackling advanced Computo transformations.
-
-**Key Takeaway:** Debugging isn't just for fixing problems - it's a learning tool that makes you a better Computo developer.
-"""
 
 # Essential debugging examples for beginners
 [[examples]]

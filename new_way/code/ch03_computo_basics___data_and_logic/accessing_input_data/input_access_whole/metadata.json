@@ -1,8 +1,0 @@
-{
-  "name": "input_access_whole",
-  "description": "Access entire input document using $input",
-  "section": "accessing_input_data",
-  "cli_flags": [],
-  "chapter": 3,
-  "chapter_title": "Computo Basics - Data and Logic"
-}

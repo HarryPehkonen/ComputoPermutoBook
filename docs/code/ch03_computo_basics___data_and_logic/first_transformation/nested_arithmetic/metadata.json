@@ -1,8 +1,0 @@
-{
-  "name": "nested_arithmetic",
-  "description": "Nested arithmetic operations showing operator composition",
-  "section": "first_transformation",
-  "cli_flags": [],
-  "chapter": 3,
-  "chapter_title": "Computo Basics - Data and Logic"
-}

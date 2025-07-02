@@ -7,7 +7,7 @@ description = "Quick reference for all Computo operators with syntax and example
 primary = "Provide quick reference access to all Computo operators with complete syntax and examples"
 secondary = [
     "Understand operator categories and their relationships",
-    "Access quick syntax references for all 40+ operators",
+    "Access quick syntax references for all 45+ operators",
     "Find practical examples for each operator",
     "Understand operator precedence and evaluation rules"
 ]

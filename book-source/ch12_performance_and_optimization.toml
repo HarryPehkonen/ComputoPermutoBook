@@ -4,13 +4,12 @@ title = "Performance and Optimization"
 description = "Master performance optimization techniques for production-grade Computo and Permuto transformations"
 
 [chapter.learning_objectives]
-primary = "Write high-performance transformations that scale efficiently with large datasets"
+primary = "Write high-performance transformations that scale efficiently"
 secondary = [
-    "Master the use of 'let' for eliminating redundant computations",
-    "Understand lazy evaluation and computational deferral strategies", 
-    "Apply pipeline ordering techniques for optimal performance",
-    "Leverage tail call optimization for complex nested logic",
-    "Implement memory-efficient patterns for large-scale data processing"
+    "Master 'let' for eliminating redundant computations",
+    "Apply lazy evaluation with conditional logic", 
+    "Optimize pipeline ordering for performance",
+    "Handle deep nesting efficiently"
 ]
 
 [chapter.prerequisites]
@@ -18,11 +17,11 @@ knowledge = ["Advanced array operations", "Complex nested transformations", "Tem
 tools = ["Computo CLI", "Performance monitoring tools"]
 
 [[sections]]
-title = "The Golden Rule: Strategic Use of let"
+title = "Strategic Use of let"
 content = """
-The single most important optimization technique in Computo is the strategic use of the `let` operator. Every time you write an expression that might be used more than once, consider binding it to a variable.
+The most important optimization in Computo is strategic use of `let` to eliminate redundant computations.
 
-## The Performance Impact
+## Performance Impact
 
 Consider this common anti-pattern where the same expensive operation is repeated:
 
@@ -35,7 +34,7 @@ Consider this common anti-pattern where the same expensive operation is repeated
 ]
 ```
 
-Here, `["get", ["$input"], "/users"]` is evaluated **four times**, and the user lookup is repeated **four times**. This redundancy compounds exponentially with data size.
+Here, `["get", ["$input"], "/users"]` is evaluated four times, and the user lookup is repeated four times.
 
 ## The Optimized Approach
 
@@ -55,29 +54,23 @@ Using `let` strategically eliminates all redundant computations:
 ]
 ```
 
-**Performance Benefits:**
-- Expensive operations executed once instead of multiple times
-- Intermediate results stored once rather than recomputed
-- Variable names make the script self-documenting
-- Changes to complex expressions need only be made in one place
+**Benefits:**
+- Expensive operations executed once
+- Intermediate results cached
+- Self-documenting variable names
 
-## When to Use let
-
-Use `let` when you have:
-- Complex `get` expressions used multiple times
-- Expensive calculations (arithmetic, array operations)
-- Template applications that might be reused
-- Any expression that takes non-trivial time to compute
-
-**Rule of thumb**: If you copy-paste an expression, use `let` instead.
+**When to use let:**
+- Complex expressions used multiple times
+- Expensive calculations or array operations
+- Any expression copied more than once
 """
 
 [[sections]]
-title = "Mastering Lazy Evaluation"
+title = "Lazy Evaluation"
 content = """
-Computo's `if` operator implements lazy evaluation, meaning it only executes the branch that is actually taken. This has profound performance implications for conditional logic.
+Computo's `if` operator uses lazy evaluation - only executing the branch that's actually taken.
 
-## The Anti-Pattern: Pre-Computing Everything
+## Anti-Pattern: Pre-Computing Everything
 
 ```json
 ["let", [
@@ -100,9 +93,9 @@ Computo's `if` operator implements lazy evaluation, meaning it only executes the
 ]
 ```
 
-**Problem**: Both the expensive report AND the simple summary are computed every time, even though only one will be used.
+**Problem**: Both branches are computed even though only one is used.
 
-## The Optimized Pattern: Lazy Computation
+## Optimized: Lazy Computation
 
 ```json
 ["if", ["get", ["$input"], "/user/wants_detailed_report"],
@@ -120,44 +113,17 @@ Computo's `if` operator implements lazy evaluation, meaning it only executes the
 ]
 ```
 
-**Benefit**: Only the needed computation is performed, potentially saving orders of magnitude in processing time.
+**Benefit**: Only the needed computation is performed.
 
-## Advanced Lazy Patterns
-
-### Multi-Level Conditional Deferral
-```json
-["if", ["get", ["$input"], "/user/role"],
-  ["if", ["==", ["get", ["$input"], "/user/role"], "admin"],
-    ["obj", ["dashboard", "admin"], ["features", "all"]],
-    ["if", ["==", ["get", ["$input"], "/user/role"], "manager"],
-      ["obj", ["dashboard", "manager"], ["features", "limited"]],
-      ["obj", ["dashboard", "user"], ["features", "basic"]]
-    ]
-  ],
-  ["obj", ["dashboard", "guest"], ["features", "minimal"]]
-]
-```
-
-### Conditional Template Application
-```json
-["if", ["get", ["$input"], "/enable_templating"],
-  ["permuto.apply",
-    ["get", ["$input"], "/complex_template"],
-    ["$input"]
-  ],
-  ["$input"]
-]
-```
-
-**Key principle**: Move expensive computations inside the `if` branches that actually need them.
+**Key principle**: Move expensive computations inside the `if` branches that need them.
 """
 
 [[sections]]
-title = "Pipeline Ordering for Maximum Efficiency"
+title = "Pipeline Ordering"
 content = """
-The order of operations in data processing pipelines can dramatically impact performance. The fundamental principle is: **reduce data volume as early as possible**.
+The order of operations dramatically impacts performance. **Filter early to reduce data volume.**
 
-## The Classic Anti-Pattern
+## Anti-Pattern
 
 Consider extracting names of active users from a large dataset:
 
@@ -181,11 +147,11 @@ Consider extracting names of active users from a large dataset:
 ```
 
 **Problems:**
-- Creates complex objects for ALL users first
-- Then filters out most of them
-- Wastes memory and CPU on discarded objects
+- Creates objects for ALL users first
+- Then filters most of them out
+- Wastes memory on discarded objects
 
-## The Optimized Pipeline
+## Optimized Pipeline
 
 ```json
 ["map",
@@ -196,125 +162,79 @@ Consider extracting names of active users from a large dataset:
 ]
 ```
 
-**Performance improvements:**
+**Improvements:**
 - With 10,000 users, 100 active: Original processes 10,000 → 100. Optimized processes 100.
 - Memory usage reduced by ~90%
-- CPU usage proportionally reduced
 
-## The Universal Rule
-
-**Always filter as early as you can to reduce the amount of data that later stages need to process.**
+**Rule: Filter as early as possible.**
 
 ### Multi-Stage Filtering
 ```json
 ["let", [
     ["users", ["get", ["$input"], "/users"]],
-    ["active_users", ["filter", ["$", "/users"],
-      ["lambda", ["u"], ["get", ["$", "/u"], "/status/active"]]
-    ]],
-    ["recent_users", ["filter", ["$", "/active_users"],
-      ["lambda", ["u"], [">", ["get", ["$", "/u"], "/last_login"], 
-        ["get", ["$input"], "/cutoff_date"]]]
-    ]]
+    ["active_users", ["filter", ["$", "/users"], ["lambda", ["u"], ["get", ["$", "/u"], "/active"]]]],
+    ["recent_users", ["filter", ["$", "/active_users"], ["lambda", ["u"], ["get", ["$", "/u"], "/recent"]]]]
   ],
-  ["map", ["$", "/recent_users"],
-    ["lambda", ["u"], 
-      ["obj",
-        ["name", ["get", ["$", "/u"], "/name"]],
-        ["department", ["get", ["$", "/u"], "/department"]]
-      ]
-    ]
-  ]
+  ["map", ["$", "/recent_users"], ["lambda", ["u"], ["get", ["$", "/u"], "/name"]]]
 ]
 ```
-
-This pattern progressively narrows the dataset before doing expensive transformations.
 """
 
 [[sections]]
-title = "Tail Call Optimization and Deep Nesting"
+title = "Deep Nesting"
 content = """
-Computo implements automatic tail call optimization (TCO), eliminating stack overflow concerns and enabling arbitrarily deep nesting patterns for complex business logic.
+Computo handles arbitrarily deep nesting without stack overflow concerns.
 
-## What This Means for You
-
-Traditional recursive or deeply nested programs can exhaust the call stack. Computo's TCO provides:
-
-- **No stack limits**: Nest conditionals and operations as deeply as needed
-- **Consistent performance**: Deep nesting doesn't degrade performance  
-- **Memory efficiency**: No stack frame accumulation
-- **Production reliability**: No unexpected stack overflow errors
-
-## Deep Conditional Trees
+## Deep Conditional Logic
 
 ```json
 ["let", [
     ["user", ["get", ["$input"], "/user"]],
-    ["account", ["get", ["$input"], "/account"]],
-    ["transaction", ["get", ["$input"], "/transaction"]]
+    ["account", ["get", ["$input"], "/account"]]
   ],
   ["if", ["get", ["$", "/user"], "/active"],
     ["if", ["get", ["$", "/account"], "/verified"],
-      ["if", [">", ["get", ["$", "/account"], "/balance"], 
-             ["get", ["$", "/transaction"], "/amount"]],
-        ["if", ["==", ["get", ["$", "/transaction"], "/type"], "withdrawal"],
-          ["if", ["<=", ["get", ["$", "/transaction"], "/amount"], 
-                 ["get", ["$", "/account"], "/daily_limit"]],
-            ["if", ["get", ["$", "/user"], "/two_factor_enabled"],
-              ["obj", ["status", "approved"], ["action", "withdrawal_processed"]],
-              ["obj", ["status", "requires_2fa"], ["action", "request_verification"]]
-            ],
-            ["obj", ["status", "rejected"], ["reason", "over_daily_limit"]]
-          ],
-          ["obj", ["status", "processed"], ["type", "other_transaction"]]
-        ],
-        ["obj", ["status", "rejected"], ["reason", "insufficient_funds"]]
+      ["if", [">", ["get", ["$", "/account"], "/balance"], 100],
+        ["obj", ["status", "approved"]],
+        ["obj", ["status", "insufficient_funds"]]
       ],
-      ["obj", ["status", "rejected"], ["reason", "account_not_verified"]]
+      ["obj", ["status", "unverified"]]
     ],
-    ["obj", ["status", "rejected"], ["reason", "user_inactive"]]
+    ["obj", ["status", "inactive"]]
   ]
 ]
 ```
 
-This nested structure (6 levels deep) would cause stack overflow in many systems, but runs efficiently in Computo.
-
-## Practical Benefits
-
-1. **Complex conditional trees**: Nest `if` statements arbitrarily deep without performance degradation
-2. **Deep `let` scoping**: Nested variable scopes don't consume stack space
-3. **Programmatic generation**: Generated scripts with deep nesting work reliably
-4. **No configuration needed**: TCO is automatic and always enabled
-
-This optimization makes Computo robust for complex business logic and machine-generated transformations where nesting depth might be unpredictable.
+**Benefits:**
+- No stack overflow with deep nesting
+- Consistent performance regardless of depth
+- Reliable for complex business logic
 """
 
 [chapter.summary]
 content = """
-You've mastered the essential performance optimization techniques for production-grade Computo transformations:
+You've mastered essential performance optimization techniques:
 
-**Key Optimization Strategies:**
-- **Strategic `let` usage**: Eliminate redundant computations by binding expensive operations to variables
-- **Lazy evaluation mastery**: Leverage `if` operator lazy evaluation to defer expensive computations until needed  
-- **Pipeline optimization**: Structure data processing to filter early and minimize intermediate data volume
-- **TCO advantages**: Write deeply nested logic without stack overflow concerns
+**Key Strategies:**
+- **Strategic `let`**: Eliminate redundant computations
+- **Lazy evaluation**: Use `if` to defer expensive operations
+- **Pipeline optimization**: Filter early to reduce data volume
+- **Deep nesting**: Handle complex logic without stack concerns
 
-**Performance Rules of Thumb:**
-1. Use `let` for any expression used more than once
-2. Move expensive computations inside `if` branches when possible
-3. Filter data as early as possible in processing pipelines
-4. Don't worry about nesting depth - TCO handles it efficiently
+**Rules:**
+1. Use `let` for repeated expressions
+2. Move expensive computations inside `if` branches
+3. Filter data as early as possible
+4. Don't worry about nesting depth
 
-These optimization patterns enable your transformations to scale from small scripts to enterprise-grade data processing pipelines handling millions of records efficiently.
-
-**Next**: Chapter 13 covers error handling and debugging techniques to make your optimized transformations robust and maintainable.
+**Next**: Chapter 13 covers error handling and debugging.
 """
 
 [[examples]]
 name = "let_optimization_comparison"
 description = "Compare performance impact of redundant vs optimized expressions"
 section = "general"
-tutorial_text = "This example demonstrates the performance difference between scripts with redundant expressions and those optimized with let bindings."
+tutorial_text = "Compare redundant vs optimized expressions using let bindings."
 
 script = ["obj",
   ["inefficient_total", ["+",
@@ -335,14 +255,14 @@ input = { price = 29.99, quantity = 3 }
 
 expected = { inefficient_total = 97.1676, optimized_total = 97.1676 }
 
-notes = "Both approaches produce the same result, but the optimized version avoids redundant calculations and improves readability."
+notes = "Both produce the same result, but optimized version avoids redundant calculations."
 cli_flags = ["--pretty=2"]
 
 [[examples]]
 name = "pipeline_ordering_optimization"
 description = "Compare inefficient vs optimized pipeline ordering for array operations"
 section = "general"
-tutorial_text = "This example demonstrates the performance impact of proper pipeline ordering by filtering before mapping."
+tutorial_text = "Show performance impact of filtering before mapping."
 
 script = ["let", [
     ["users", ["get", ["$input"], "/users"]],
@@ -397,5 +317,5 @@ expected = '''
 }
 '''
 
-notes = "The optimized pipeline filters users first (reducing dataset from 4 to 2), then maps only the remaining items, avoiding unnecessary object creation."
+notes = "Optimized pipeline filters first (4 to 2 users), then maps only remaining items."
 cli_flags = ["--pretty=2"] 

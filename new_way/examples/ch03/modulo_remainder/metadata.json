@@ -1,6 +1,0 @@
-{
-  "name": "modulo_remainder",
-  "description": "Basic modulo operation for remainder calculation",
-  "section": "mathematical_operations",
-  "cli_flags": []
-}

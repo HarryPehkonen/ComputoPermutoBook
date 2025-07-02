@@ -1,8 +1,0 @@
-{
-  "name": "variable_binding_basic",
-  "description": "Simple variable binding with let for reuse",
-  "section": "variable_binding",
-  "cli_flags": [],
-  "chapter": 3,
-  "chapter_title": "Computo Basics - Data and Logic"
-}

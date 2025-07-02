@@ -78,91 +78,24 @@ computo script.json input.json
   }
   ```
 
-## Permuto Integration
+## Additional Features
 
-### `--interpolation`
-Enables string interpolation in Permuto templates.
-
-```bash
-# Enable string interpolation
-computo --interpolation script.json input.json
-
-# Disable string interpolation (default)
-computo --no-interpolation script.json input.json
-```
-
-**Example with interpolation:**
-```json
-// Script
-["permuto.apply", {"message": "Hello ${/name}!"}, ["$input"]]
-
-// Input: {"name": "Alice"}
-// Output: {"message": "Hello Alice!"}
-```
-
-**Example without interpolation:**
-```json
-// Same script and input
-// Output: {"message": "Hello ${/name}!"}
-```
-
-## JSON Patch Operations
-
-### `--diff`
-Generates RFC 6902 JSON Patch instead of applying transformation.
-
-```bash
-# Generate patch from transformation
-computo --diff script.json input.json
-
-# Save patch to file
-computo --diff script.json input.json > changes.patch
-```
-
-**Example:**
-```bash
-# Input: {"status": "active", "id": 123}
-# Script transforms status to "archived"
-# Output: [{"op": "replace", "path": "/status", "value": "archived"}]
-```
-
-**Important:** `--diff` only works with single input files, not multiple inputs.
-
-## Development and Debugging
-
-### `--comments`
-Allows comments in script files (CLI only, not in library usage).
-
-```bash
-# Enable comment parsing in script files
-computo --comments script_with_comments.json input.json
-```
-
-**Supported comment styles:**
-```json
-[
-  // Single line comments
-  "obj",
-  /* Multi-line
-     comments */
-  ["name", "Alice"]
-]
-```
-
-**Note:** Comments are only supported in script files, not input files.
+The Computo CLI focuses on core transformation functionality. For advanced templating features like string interpolation, custom delimiters, and reverse operations, use the separate Permuto CLI tool documented below.
 
 ## Exit Codes
 
-The `computo` command returns standard exit codes:
-
 - **0:** Success - transformation completed without errors
 - **1:** Error - transformation failed (invalid script, runtime error, file not found, etc.)
+
+## Testing
+
+Computo includes comprehensive testing with **198 tests, 100% passing** covering all functionality.
 """
 
 [[sections]]
 title = "Permuto CLI Reference"
 content = """
-The `permuto` command-line tool provides standalone templating capabilities with additional features beyond what's available through Computo's `permuto.apply`.
+The `permuto` command-line tool provides standalone templating capabilities. This tool is thread-safe and can be used independently or alongside Computo transformations.
 
 ## Basic Usage
 

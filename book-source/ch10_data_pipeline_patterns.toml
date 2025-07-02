@@ -8,9 +8,7 @@ description = "Real-world transformation patterns, best practices, and productio
 
 [chapter.learning_objectives]
 summary = """
-You've mastered Computo's operators, learned Permuto's templating, and explored advanced transformation techniques. Now it's time to bring it all together. This final chapter focuses on **real-world data pipeline patterns** - the battle-tested approaches that power production systems.
-
-We'll explore complete workflows, error handling strategies, performance patterns, and integration techniques that transform your knowledge into robust, maintainable data processing solutions.
+Apply Computo and Permuto in real-world data pipeline patterns. Learn battle-tested approaches for building robust, maintainable data processing workflows.
 """
 
 operators_introduced = []  # No new operators - this chapter focuses on patterns
@@ -18,17 +16,13 @@ operators_introduced = []  # No new operators - this chapter focuses on patterns
 [chapter.sections]
 
 [chapter.sections.pipeline_architecture]
-title = "Pipeline Architecture Patterns"
+title = "Pipeline Architecture"
 content = '''
-Data pipelines are more than single transformations - they're workflows that move data through multiple stages, each serving a specific purpose. Understanding common architecture patterns helps you design robust, maintainable systems.
+Data pipelines process data through multiple stages. The standard three-stage pattern:
 
-#### The Three-Stage Pattern
-
-Most successful data pipelines follow a three-stage architecture:
-
-1. **Extract & Validate** - Ingest data and ensure it meets basic requirements
-2. **Transform & Enrich** - Apply business logic and enhance data
-3. **Format & Deliver** - Shape final output for consumption
+1. **Extract & Validate** - Ingest and validate data
+2. **Transform & Enrich** - Apply business logic
+3. **Format & Deliver** - Shape final output
 
 ```json
 // Stage 1: Validation Pipeline
@@ -47,206 +41,72 @@ Most successful data pipelines follow a three-stage architecture:
 
 This pattern separates concerns cleanly and makes each stage testable independently.
 
-#### The Template-Driven Pattern
-
-For output formatting, the template-driven pattern provides maximum flexibility:
+#### Template-Driven Pattern
 
 ```json
-// Stage 2: Data Preparation
+// Data preparation then template application
 ["let",
-  [["clean_context", ["obj",
-    ["user", ["get", ["$input"], "/user_data"]],
-    ["summary", ["reduce", ["get", ["$input"], "/events"], 0, ["lambda", ["acc", "event"], ["+", ["$", "/acc"], 1]]]]
-  ]]],
-  // Stage 3: Template Application  
-  ["permuto.apply", <template>, ["$", "/clean_context"]]
+  [["context", ["obj", ["user", ["get", ["$input"], "/user"]], ["count", ["count", ["get", ["$input"], "/events"]]]]]],
+  ["permuto.apply", <template>, ["$", "/context"]]
 ]
 ```
 
-#### Error Recovery Patterns
-
-Production pipelines need graceful error handling:
-
-```json
-["let",
-  [["safe_result", ["if",
-    ["try_operation", ["$input"]],
-    ["successful_transform", ["$input"]],
-    ["error_fallback", ["$input"]]
-  ]]],
-  ["$", "/safe_result"]
-]
-```
 '''
 
 [chapter.sections.validation_strategies]
-title = "Validation and Error Handling Strategies"
+title = "Validation and Error Handling"
 content = '''
-Robust data pipelines anticipate and handle errors gracefully. Rather than failing catastrophically, they provide meaningful feedback and fallback behaviors.
+Build robust pipelines with validation and error handling.
 
-#### Input Validation Patterns
+#### Input Validation
 
-**Schema Validation:**
 ```json
 ["let",
-  [["is_valid", ["&&",
-    ["!=", ["get", ["$input"], "/required_field"], null],
-    [">=", ["count", ["get", ["$input"], "/items"]], 1],
-    ["==", ["type", ["get", ["$input"], "/amount"]], "number"]
-  ]]],
+  [["is_valid", ["&&", ["get", ["$input"], "/required_field"], [">=", ["count", ["get", ["$input"], "/items"]], 1]]]],
   ["if", ["$", "/is_valid"],
-    ["process_valid_input", ["$input"]],
-    ["obj", ["error", "Validation failed"], ["input", ["$input"]]]
-  ]
-]
-```
-
-**Range Validation:**
-```json
-["let",
-  [["value", ["get", ["$input"], "/score"]],
-   ["in_range", ["&&", [">=", ["$", "/value"], 0], ["<=", ["$", "/value"], 100]]]],
-  ["if", ["$", "/in_range"],
-    ["$", "/value"],
-    ["obj", ["error", "Score must be between 0 and 100"], ["received", ["$", "/value"]]]
+    ["process_input", ["$input"]],
+    ["obj", ["error", "Validation failed"]]
   ]
 ]
 ```
 
 #### Safe Data Access
 
-Use the `get` operator with default values to prevent null reference errors:
-
 ```json
 ["obj",
-  ["user_name", ["get", ["$input"], "/user/name", "Unknown User"]],
-  ["preferences", ["get", ["$input"], "/user/settings", {}]]
-]
-```
-
-#### Error Context Preservation
-
-When errors occur, preserve context for debugging:
-
-```json
-["obj",
-  ["success", false],
-  ["error_message", "Transformation failed"],
-  ["input_snapshot", ["$input"]],
-  ["step", "data_enrichment"],
-  ["timestamp", ["now"]]
+  ["user_name", ["get", ["$input"], "/user/name", "Unknown"]],
+  ["settings", ["get", ["$input"], "/user/settings", {}]]
 ]
 ```
 '''
 
 [chapter.sections.performance_patterns]
-title = "Performance Optimization Patterns"
+title = "Performance Patterns"
 content = '''
-As data volumes grow, transformation performance becomes critical. These patterns help you build efficient, scalable pipelines.
+Build efficient, scalable pipelines.
 
-#### Minimize Deep Nesting
+#### Use let for Caching
 
-Instead of deeply nested operations:
 ```json
-// Inefficient - deep nesting
-["get", ["get", ["get", ["$input"], "/data"], "/users"], "/0"]
-```
-
-Use `let` to flatten and cache intermediate results:
-```json
-// Efficient - cached intermediate values
+// Cache intermediate values
 ["let",
   [["data", ["get", ["$input"], "/data"]],
-   ["users", ["get", ["$", "/data"], "/users"]],
-   ["first_user", ["get", ["$", "/users"], "/0"]]],
-  ["$", "/first_user"]
+   ["users", ["get", ["$", "/data"], "/users"]]],
+  ["get", ["$", "/users"], "/0"]
 ]
 ```
 
-#### Early Filtering
-
-Filter data as early as possible to reduce processing overhead:
+#### Filter Early
 
 ```json
-// Filter first, then transform
+// Filter before expensive operations
 ["map", 
-  ["filter", ["get", ["$input"], "/records"], 
-    ["lambda", ["record"], [">", ["get", ["$", "/record"], "/amount"], 1000]]
-  ],
-  ["lambda", ["record"], ["expensive_transformation", ["$", "/record"]]]
-]
-```
-
-#### Conditional Processing
-
-Use short-circuit evaluation to avoid unnecessary work:
-
-```json
-["if", 
-  ["&&", 
-    ["get", ["$input"], "/should_process"],
-    [">", ["count", ["get", ["$input"], "/items"]], 0]
-  ],
-  ["expensive_processing", ["$input"]],
-  ["simple_passthrough", ["$input"]]
-]
-```
-
-#### Batch-Friendly Patterns
-
-Design transformations that work efficiently on large datasets:
-
-```json
-// Process entire arrays efficiently
-["map", ["get", ["$input"], "/user_events"],
-  ["lambda", ["event"],
-    ["obj",
-      ["user_id", ["get", ["$", "/event"], "/user"]],
-      ["type", ["get", ["$", "/event"], "/action"]],
-      ["value", ["get", ["$", "/event"], "/data/amount", 0]]
-    ]
-  ]
+  ["filter", ["get", ["$input"], "/records"], ["lambda", ["r"], [">", ["get", ["$", "/r"], "/amount"], 1000]]],
+  ["lambda", ["record"], ["expensive_transform", ["$", "/record"]]]
 ]
 ```
 '''
 
-[chapter.sections.testing_strategies]
-title = "Testing and Validation Strategies"
-content = '''
-Reliable data pipelines require comprehensive testing. Here are patterns for validating transformation logic at multiple levels.
-
-#### Unit Testing Individual Transformations
-
-Test small, focused transformations with known inputs and expected outputs:
-
-```json
-// Test: User name formatting
-// Input: {"first": "John", "last": "Doe"}
-// Expected: "John Doe"
-["str_concat", 
-  ["get", ["$input"], "/first"], 
-  " ", 
-  ["get", ["$input"], "/last"]
-]
-```
-
-#### Integration Testing Pipelines
-
-Test complete workflows end-to-end:
-
-```json
-// Test: Complete user enrichment pipeline
-// Input: Raw user data
-// Expected: Formatted user profile with calculated fields
-["let",
-  [["validated", ["validate_user", ["$input"]]],
-   ["enriched", ["enrich_user_data", ["$", "/validated"]]],
-   ["formatted", ["format_user_profile", ["$", "/enriched"]]]],
-  ["$", "/formatted"]
-]
-```
-
-#### Property-Based Testing
 
 Test transformation properties that should always hold:
 
@@ -289,108 +149,6 @@ Maintain test suites that catch regressions:
 ```
 '''
 
-[chapter.sections.integration_patterns]
-title = "Integration and Deployment Patterns"
-content = '''
-Production systems require reliable integration patterns. These approaches help you embed transformations into larger applications and services.
-
-#### API Gateway Pattern
-
-Use transformations to standardize API responses:
-
-```json
-// Transform internal API format to public API format
-["let",
-  [["internal_data", ["$input"]],
-   ["public_format", ["obj",
-     ["id", ["get", ["$", "/internal_data"], "/uuid"]],
-     ["name", ["get", ["$", "/internal_data"], "/display_name"]],
-     ["status", ["if", ["get", ["$", "/internal_data"], "/is_active"], "active", "inactive"]]
-   ]]],
-  ["permuto.apply",
-    {
-      "data": "${/public_format}",
-      "meta": {
-        "version": "v1",
-        "transformed_at": "${/timestamp}"
-      }
-    },
-    ["obj", ["public_format", ["$", "/public_format"]], ["timestamp", ["now"]]]
-  ]
-]
-```
-
-#### Event Stream Processing
-
-Transform events as they flow through your system:
-
-```json
-// Enrich events with contextual data
-["let",
-  [["event", ["$input"]],
-   ["user_context", ["lookup_user", ["get", ["$", "/event"], "/user_id"]]],
-   ["enriched_event", ["obj",
-     ["original", ["$", "/event"]],
-     ["user_name", ["get", ["$", "/user_context"], "/name"]],
-     ["user_segment", ["get", ["$", "/user_context"], "/segment"]],
-     ["processed_at", ["now"]]
-   ]]],
-  ["$", "/enriched_event"]
-]
-```
-
-#### Batch Processing Pattern
-
-Handle large datasets efficiently:
-
-```json
-// Process records in batches with progress tracking
-["let",
-  [["records", ["get", ["$input"], "/batch"]],
-   ["processed", ["map", ["$", "/records"],
-     ["lambda", ["record"],
-       ["obj",
-         ["id", ["get", ["$", "/record"], "/id"]],
-         ["result", ["process_record", ["$", "/record"]]],
-         ["status", "completed"]
-       ]
-     ]
-   ]]],
-  ["obj",
-    ["batch_id", ["get", ["$input"], "/batch_id"]],
-    ["processed_count", ["count", ["$", "/processed"]]],
-    ["results", ["$", "/processed"]]
-  ]
-]
-```
-
-#### Configuration Management
-
-Use transformations to process configuration files:
-
-```json
-// Transform environment-specific config
-["let",
-  [["base_config", ["get", ["$input"], "/base"]],
-   ["env_overrides", ["get", ["$input"], "/environments/production"]],
-   ["merged_config", ["merge", ["$", "/base_config"], ["$", "/env_overrides"]]]],
-  ["permuto.apply",
-    {
-      "database": {
-        "host": "${/database/host}",
-        "port": "${/database/port}",
-        "ssl": true
-      },
-      "api": {
-        "base_url": "${/api/base_url}",
-        "timeout": "${/api/timeout}"
-      }
-    },
-    ["$", "/merged_config"]
-  ]
-]
-```
-'''
 
 # =============================================================================
 # EXAMPLES

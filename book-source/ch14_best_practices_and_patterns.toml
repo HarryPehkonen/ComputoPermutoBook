@@ -1,16 +1,15 @@
 [chapter]
 number = 14
 title = "Best Practices and Patterns"
-description = "Master the art of writing maintainable, efficient, and team-friendly Computo and Permuto transformations"
+description = "Essential patterns for writing maintainable, efficient Computo and Permuto transformations"
 
 [chapter.learning_objectives]
-primary = "Apply comprehensive best practices for creating production-ready, maintainable transformation scripts"
+primary = "Apply core best practices for creating production-ready transformation scripts"
 secondary = [
-    "Understand the fundamental separation of logic and presentation patterns",
-    "Master code organization and project structure strategies",
-    "Implement team collaboration and version control workflows",
-    "Apply defensive programming and error prevention techniques",
-    "Design scalable and reusable transformation architectures"
+    "Separate logic from presentation effectively",
+    "Organize code with clear structure and naming",
+    "Implement defensive programming and error handling",
+    "Design reusable transformation patterns"
 ]
 
 [chapter.prerequisites]
@@ -18,22 +17,18 @@ knowledge = ["All previous chapters", "Performance optimization", "Error handlin
 tools = ["Computo CLI", "Permuto CLI", "Version control system", "Text editor"]
 
 [[sections]]
-title = "The Philosophy: Separate Logic from Presentation"
+title = "Separate Logic from Presentation"
 content = """
-This is the philosophical core of the Computo/Permuto toolkit and the foundation of all best practices.
-
 ## The Two-Phase Approach
 
 **Phase 1: Data Logic (Computo)**
-- Data extraction and validation
-- Conditional logic and computations
+- Data extraction, validation, and computation
 - Array processing and aggregations
 - Clean context preparation
 
 **Phase 2: Presentation (Permuto)**
-- Declarative template application
-- String interpolation and formatting
-- Structure definition and output generation
+- Template application and string interpolation
+- Structure definition and output formatting
 
 ## Example: API Response Transformation
 
@@ -74,74 +69,41 @@ This is the philosophical core of the Computo/Permuto toolkit and the foundation
 ]
 ```
 
-## Benefits of Separation
-
-1. **Testability**: Logic can be tested independently of presentation
-2. **Reusability**: Same logic can drive multiple output formats
-3. **Maintainability**: Changes to business logic don't affect templates
-4. **Performance**: Complex logic runs once, template applies cleanly
-5. **Clarity**: Each phase has a single responsibility
+## Benefits
+- **Testability**: Logic can be tested independently
+- **Reusability**: Same logic drives multiple output formats
+- **Maintainability**: Business logic changes don't affect templates
+- **Performance**: Complex logic runs once, template applies cleanly
 """
 
 [[sections]]
-title = "Project Organization and Code Structure"
+title = "Code Organization"
 content = """
-As your transformation projects grow, proper organization becomes critical for maintainability and team collaboration.
-
-## Directory Structure for Large Projects
+## Directory Structure
 
 ```
 project/
 ├── scripts/
 │   ├── data-processing/
-│   │   ├── user-profiles.json
-│   │   ├── order-processing.json
-│   │   └── analytics-pipeline.json
 │   ├── api-transforms/
-│   │   ├── rest-response-formatter.json
-│   │   ├── graphql-aggregator.json
-│   │   └── webhook-processor.json
 │   └── templates/
-│       ├── email-notifications.json
-│       ├── report-generation.json
-│       └── config-builders.json
 ├── shared/
 │   ├── common-functions.json
 │   ├── validation-rules.json
 │   └── constants.json
 ├── tests/
 │   ├── unit/
-│   ├── integration/
-│   └── fixtures/
-├── docs/
-│   ├── README.md
-│   ├── api-reference.md
-│   └── examples/
-└── deployment/
-    ├── staging/
-    ├── production/
-    └── scripts/
+│   └── integration/
+└── docs/
 ```
 
-## Modular Script Design
-
-### Creating Reusable Components
+## Reusable Components
 
 **shared/validation-rules.json:**
 ```json
 ["obj",
   ["is_valid_email", ["lambda", ["email"],
-    ["and",
-      ["!=", ["$", "/email"], ""],
-      ["get", ["$", "/email"], "@"]
-    ]
-  ]],
-  ["is_valid_user", ["lambda", ["user"],
-    ["and",
-      ["get", ["$", "/user"], "/id"],
-      ["get", ["$", "/user"], "/name"],
-      ["$", "/is_valid_email"], ["get", ["$", "/user"], "/email"]
-    ]
+    ["and", ["!=", ["$", "/email"], ""], ["get", ["$", "/email"], "@"]]
   ]],
   ["safe_get", ["lambda", ["obj", "path", "default"],
     ["if", ["get", ["$", "/obj"], ["$", "/path"]],
@@ -152,582 +114,119 @@ project/
 ]
 ```
 
-**Using Shared Components:**
-```json
-["let", [
-    ["validation", ["get", ["$input"], "/shared/validation"]],
-    ["users", ["get", ["$input"], "/data/users"]]
-  ],
-  ["filter", ["$", "/users"],
-    ["$", "/validation"], "/is_valid_user"
-  ]
-]
-```
-
 ## Naming Conventions
 
-### Script Files
-- Use descriptive, action-oriented names: `process-user-orders.json`
+**Script Files:**
+- Use descriptive names: `process-user-orders.json`
 - Group by domain: `user-*`, `order-*`, `analytics-*`
-- Include version when needed: `api-v2-transformer.json`
 
-### Variables and Functions
+**Variables:**
 ```json
 // Good: Descriptive names
 ["let", [
-    ["active_premium_users", ["filter", ["$", "/users"], ["$", "/is_premium_and_active"]]],
-    ["monthly_revenue_summary", ["reduce", ["$", "/orders"], ["$", "/sum_order_values"], 0]],
-    ["validation_error_count", ["count", ["$", "/validation_errors"]]]
+    ["active_premium_users", ["filter", ["$", "/users"], ["$", "/is_premium"]]],
+    ["monthly_revenue", ["reduce", ["$", "/orders"], ["$", "/sum_values"], 0]]
   ],
-  // ... script body
+  // ...
 ]
 
-// Poor: Abbreviated or unclear names
+// Poor: Abbreviated names
 ["let", [
     ["apu", ["filter", ["$", "/users"], ["$", "/ipa"]]],
-    ["mrs", ["reduce", ["$", "/orders"], ["$", "/sov"], 0]],
-    ["vec", ["count", ["$", "/ve"]]]
+    ["mrs", ["reduce", ["$", "/orders"], ["$", "/sov"], 0]]
   ],
-  // ... script body
+  // ...
 ]
 ```
 
-## Configuration Management
-
-### Environment-Specific Configuration
-
-**shared/config.json:**
-```json
-["let", [
-    ["environment", ["get", ["$input"], "/environment"]],
-    ["base_config", ["obj",
-      ["api_timeout", 30000],
-      ["max_retries", 3],
-      ["log_level", "info"]
-    ]],
-    ["env_overrides", ["if", ["==", ["$", "/environment"], "production"],
-      ["obj", ["log_level", "warn"], ["max_retries", 5]],
-      ["if", ["==", ["$", "/environment"], "development"],
-        ["obj", ["log_level", "debug"], ["api_timeout", 60000]],
-        {}
-      ]
-    ]]
-  ],
-  ["merge", ["$", "/base_config"], ["$", "/env_overrides"]]
-]
-```
-
-### Feature Flags and Toggles
-
-```json
-["let", [
-    ["feature_flags", ["get", ["$input"], "/feature_flags"]],
-    ["use_new_algorithm", ["get", ["$", "/feature_flags"], "/enable_new_processing"]],
-    ["data", ["get", ["$input"], "/data"]]
-  ],
-  ["if", ["$", "/use_new_algorithm"],
-    ["new_processing_pipeline", ["$", "/data"]],
-    ["legacy_processing_pipeline", ["$", "/data"]]
-  ]
-]
-```
 """
 
-[[sections]]
-title = "Team Collaboration and Version Control"
-content = """
-Effective collaboration on transformation projects requires careful attention to versioning, documentation, and team workflows.
-
-## Version Control Best Practices
-
-### Commit Message Standards
-
-```bash
-# Good commit messages
-git commit -m "feat(user-processing): add email validation to user pipeline"
-git commit -m "fix(order-transform): handle null order dates gracefully"
-git commit -m "refactor(shared): extract common validation functions"
-git commit -m "docs(api-transforms): add examples for REST endpoint usage"
-
-# Poor commit messages
-git commit -m "fixed stuff"
-git commit -m "update"
-git commit -m "working version"
-```
-
-### Branching Strategy
-
-```bash
-# Feature development
-git checkout -b feature/add-user-analytics-pipeline
-git checkout -b bugfix/order-date-validation
-git checkout -b refactor/extract-common-functions
-
-# Release preparation
-git checkout -b release/v2.1.0
-```
-
-### Script Versioning Within Files
-
-**Add metadata to complex scripts:**
-```json
-["obj",
-  ["metadata", ["obj",
-    ["version", "2.1.0"],
-    ["author", "data-team"],
-    ["last_modified", "2024-01-15"],
-    ["description", "User order processing with analytics"],
-    ["dependencies", ["shared/validation-rules.json", "shared/constants.json"]]
-  ]],
-  ["result", ["process_user_orders", ["$input"]]]
-]
-```
-
-## Code Review Guidelines
-
-### What to Review
-
-1. **Logic Correctness**
-   - Edge case handling
-   - Data type assumptions
-   - Error conditions
-
-2. **Performance Patterns**
-   - Proper use of `let` for reused expressions
-   - Filter-before-map pipeline ordering
-   - Unnecessary nested operations
-
-3. **Readability and Maintainability**
-   - Clear variable names
-   - Logical organization
-   - Appropriate use of comments (in surrounding documentation)
-
-4. **Best Practices Compliance**
-   - Logic/presentation separation
-   - Defensive programming patterns
-   - Consistent naming conventions
-
-### Review Checklist
-
-```markdown
-## Transformation Script Review Checklist
-
-### Functionality
-- [ ] Script produces expected output for provided test cases
-- [ ] Edge cases are handled appropriately
-- [ ] Error conditions result in graceful failures
-
-### Performance
-- [ ] Repeated expressions are bound with `let`
-- [ ] Array operations are ordered efficiently (filter before map)
-- [ ] No unnecessary nested computations
-
-### Code Quality
-- [ ] Variable names are descriptive and consistent
-- [ ] Script structure follows established patterns
-- [ ] Complex logic is broken into manageable pieces
-
-### Documentation
-- [ ] Script purpose is clearly documented
-- [ ] Complex sections have explanatory comments
-- [ ] Usage examples are provided
-```
-
-## Documentation Standards
-
-### Script Documentation Template
-
-**user-profile-processor.md:**
-```markdown
-# User Profile Processor
-
-## Purpose
-Transforms raw user data from multiple sources into standardized profile format for API consumption.
-
-## Input Format
-```json
-{
-  "users": [...],
-  "preferences": {...},
-  "activity_logs": [...]
-}
-```
-
-## Output Format
-```json
-{
-  "processed_users": [...],
-  "summary": {...}
-}
-```
-
-## Usage
-```bash
-computo user-profile-processor.json user-data.json
-```
-
-## Dependencies
-- shared/validation-rules.json
-- shared/user-constants.json
-
-## Performance Notes
-- Filters inactive users early to improve performance
-- Uses `let` binding for repeated preference lookups
-- Suitable for datasets up to 10,000 users
-
-## Examples
-See `examples/user-processing/` directory for sample inputs and outputs.
-```
-
-### Inline Documentation Patterns
-
-```json
-["let", [
-    // Extract and validate core user data
-    ["raw_users", ["get", ["$input"], "/users"]],
-    ["valid_users", ["filter", ["$", "/raw_users"], ["$", "/is_valid_user"]]],
-    
-    // Build preference lookup for efficient access
-    ["preference_map", ["reduce", 
-      ["get", ["$input"], "/preferences"],
-      ["lambda", ["acc", "pref"], 
-        ["merge", ["$", "/acc"], ["obj", [["get", ["$", "/pref"], "/user_id"], ["$", "/pref"]]]]
-      ],
-      {}
-    ]],
-    
-    // Process users with enriched data
-    ["enriched_users", ["map", ["$", "/valid_users"],
-      ["lambda", ["user"],
-        ["let", [
-            ["user_id", ["get", ["$", "/user"], "/id"]],
-            ["user_prefs", ["get", ["$", "/preference_map"], ["concat", "/", ["$", "/user_id"]]]]
-          ],
-          ["merge", ["$", "/user"], ["obj", ["preferences", ["$", "/user_prefs"]]]]
-        ]
-      ]
-    ]]
-  ],
-  ["obj",
-    ["processed_users", ["$", "/enriched_users"]],
-    ["processing_summary", ["obj",
-      ["total_input", ["count", ["$", "/raw_users"]]],
-      ["valid_users", ["count", ["$", "/valid_users"]]],
-      ["enrichment_rate", ["/", ["count", ["$", "/enriched_users"]], ["count", ["$", "/valid_users"]]]]
-    ]]
-  ]
-]
-```
-"""
 
 [[sections]]
-title = "Defensive Programming and Error Prevention"
+title = "Defensive Programming"
 content = """
-Writing robust transformations requires anticipating and handling various failure modes gracefully.
+Write robust transformations that handle edge cases gracefully.
 
 ## Input Validation Strategies
 
-### Multi-Level Validation
+### Input Validation
 
 ```json
 ["let", [
-    // Level 1: Structure validation
-    ["has_required_structure", ["and",
-      ["get", ["$input"], "/data"],
-      ["get", ["$input"], "/metadata"]
-    ]],
-    
-    // Level 2: Data type validation  
+    ["has_structure", ["and", ["get", ["$input"], "/data"], ["get", ["$input"], "/metadata"]]],
     ["data_is_array", ["==", ["type", ["get", ["$input"], "/data"]], "array"]],
-    ["metadata_is_object", ["==", ["type", ["get", ["$input"], "/metadata"]], "object"]],
-    
-    // Level 3: Content validation
     ["has_minimum_data", [">", ["count", ["get", ["$input"], "/data"]], 0]],
-    ["has_required_metadata", ["and",
-      ["get", ["$input"], "/metadata/version"],
-      ["get", ["$input"], "/metadata/source"]
-    ]],
-    
-    // Combined validation result
-    ["input_valid", ["and",
-      ["$", "/has_required_structure"],
-      ["$", "/data_is_array"],
-      ["$", "/metadata_is_object"],
-      ["$", "/has_minimum_data"],
-      ["$", "/has_required_metadata"]
-    ]]
+    ["input_valid", ["and", ["$", "/has_structure"], ["$", "/data_is_array"], ["$", "/has_minimum_data"]]]
   ],
   ["if", ["$", "/input_valid"],
     ["process_valid_input", ["$input"]],
-    ["obj",
-      ["error", "invalid_input"],
-      ["validation_details", ["obj",
-        ["structure_valid", ["$", "/has_required_structure"]],
-        ["types_valid", ["and", ["$", "/data_is_array"], ["$", "/metadata_is_object"]]],
-        ["content_valid", ["and", ["$", "/has_minimum_data"], ["$", "/has_required_metadata"]]]
-      ]]
-    ]
+    ["obj", ["error", "invalid_input"], ["details", "Missing required structure"]]
   ]
 ]
 ```
 
-### Safe Navigation Patterns
+### Safe Navigation
 
 ```json
 ["let", [
-    // Safe getter with path validation
-    ["safe_deep_get", ["lambda", ["obj", "path_parts", "default"],
-      ["reduce", ["$", "/path_parts"],
-        ["lambda", ["current", "part"],
-          ["if", ["and", ["$", "/current"], ["get", ["$", "/current"], ["$", "/part"]]],
-            ["get", ["$", "/current"], ["$", "/part"]],
-            ""
-          ]
-        ],
-        ["$", "/obj"]
-      ]
-    ]],
-    
-    // Safe array access
-    ["safe_array_get", ["lambda", ["arr", "index", "default"],
-      ["if", ["and", 
-              ["==", ["type", ["$", "/arr"]], "array"],
-              [">=", ["count", ["$", "/arr"]], ["+", ["$", "/index"], 1]]],
-        ["get", ["$", "/arr"], ["concat", "/", ["$", "/index"]]],
+    ["safe_get", ["lambda", ["obj", "path", "default"],
+      ["if", ["get", ["$", "/obj"], ["$", "/path"]],
+        ["get", ["$", "/obj"], ["$", "/path"]],
         ["$", "/default"]
       ]
     ]]
   ],
   ["obj",
-    ["user_name", ["$", "/safe_deep_get"], ["$input"], ["array", "user", "profile", "name"], "Unknown User"],
-    ["first_order", ["$", "/safe_array_get"], ["get", ["$input"], "/orders"], 0, {}]
+    ["user_name", ["$", "/safe_get"], ["$input"], "/user/name", "Unknown"],
+    ["order_count", ["$", "/safe_get"], ["$input"], "/orders", []]
   ]
 ]
 ```
 
-## Error Recovery Patterns
+## Error Recovery
 
 ### Graceful Degradation
 
 ```json
 ["let", [
-    ["primary_data_source", ["get", ["$input"], "/primary"]],
-    ["fallback_data_source", ["get", ["$input"], "/fallback"]],
-    ["emergency_defaults", ["obj",
-      ["status", "degraded"],
-      ["message", "Using emergency defaults"],
-      ["timestamp", "2024-01-15T12:00:00Z"]
-    ]]
+    ["primary", ["get", ["$input"], "/primary"]],
+    ["fallback", ["get", ["$input"], "/fallback"]]
   ],
-  ["if", ["$", "/primary_data_source"],
-    ["process_primary_data", ["$", "/primary_data_source"]],
-    ["if", ["$", "/fallback_data_source"],
-      ["process_fallback_data", ["$", "/fallback_data_source"]],
-      ["$", "/emergency_defaults"]
+  ["if", ["$", "/primary"],
+    ["process_primary", ["$", "/primary"]],
+    ["if", ["$", "/fallback"],
+      ["process_fallback", ["$", "/fallback"]],
+      ["obj", ["status", "degraded"], ["message", "No data available"]]
     ]
   ]
 ]
 ```
 
-### Partial Success Handling
-
-```json
-["let", [
-    ["processing_results", ["map", ["get", ["$input"], "/items"],
-      ["lambda", ["item"],
-        ["if", ["validate_item", ["$", "/item"]],
-          ["obj",
-            ["status", "success"],
-            ["item_id", ["get", ["$", "/item"], "/id"]],
-            ["result", ["process_item", ["$", "/item"]]]
-          ],
-          ["obj",
-            ["status", "error"],
-            ["item_id", ["get", ["$", "/item"], "/id"]],
-            ["error_reason", "validation_failed"],
-            ["original_item", ["$", "/item"]]
-          ]
-        ]
-      ]
-    ]],
-    ["successful_results", ["filter", ["$", "/processing_results"],
-      ["lambda", ["result"], ["==", ["get", ["$", "/result"], "/status"], "success"]]
-    ]],
-    ["failed_results", ["filter", ["$", "/processing_results"],
-      ["lambda", ["result"], ["==", ["get", ["$", "/result"], "/status"], "error"]]
-    ]]
-  ],
-  ["obj",
-    ["successful_items", ["map", ["$", "/successful_results"],
-      ["lambda", ["result"], ["get", ["$", "/result"], "/result"]]
-    ]],
-    ["processing_summary", ["obj",
-      ["total_items", ["count", ["get", ["$input"], "/items"]]],
-      ["successful_count", ["count", ["$", "/successful_results"]]],
-      ["error_count", ["count", ["$", "/failed_results"]]],
-      ["success_rate", ["/", ["count", ["$", "/successful_results"]], ["count", ["$", "/processing_results"]]]]
-    ]],
-    ["errors", ["$", "/failed_results"]]
-  ]
-]
-```
-
-## Testing Strategies
-
-### Unit Testing Pattern
-
-**Create testable scripts with clear input/output contracts:**
-
-```json
-// testable-transformation.json
-["let", [
-    ["config", ["if", ["get", ["$input"], "/config"], 
-      ["get", ["$input"], "/config"], 
-      ["obj", ["mode", "default"], ["timeout", 30000]]
-    ]],
-    ["data", ["get", ["$input"], "/data"]]
-  ],
-  ["obj",
-    ["config_used", ["$", "/config"]],
-    ["result", ["transform_data", ["$", "/data"], ["$", "/config"]]]
-  ]
-]
-```
-
-**Test files:**
-
-**test-input-valid.json:**
-```json
-{
-  "config": {"mode": "strict", "timeout": 5000},
-  "data": [{"id": 1, "name": "test"}]
-}
-```
-
-**test-input-minimal.json:**
-```json
-{
-  "data": [{"id": 1, "name": "test"}]
-}
-```
-
-**Integration Testing with Multiple Inputs:**
-
-```bash
-#!/bin/bash
-# test-suite.sh
-
-echo "Testing with valid config..."
-computo testable-transformation.json test-input-valid.json > actual-valid.json
-diff expected-valid.json actual-valid.json || echo "FAIL: Valid config test"
-
-echo "Testing with minimal input..."
-computo testable-transformation.json test-input-minimal.json > actual-minimal.json
-diff expected-minimal.json actual-minimal.json || echo "FAIL: Minimal input test"
-
-echo "Testing error conditions..."
-computo testable-transformation.json test-input-invalid.json > actual-error.json
-grep -q "error" actual-error.json || echo "FAIL: Error handling test"
-```
 """
 
 [[sections]]
-title = "Performance and Scalability Patterns"
+title = "Performance Patterns"
 content = """
-Designing transformations that scale efficiently requires understanding both Computo's execution model and real-world performance constraints.
+Key patterns for efficient transformations.
 
-## Memory-Efficient Processing Patterns
-
-### Stream Processing Approach
-
-```json
-// Instead of loading everything into memory
-["let", [
-    ["all_items", ["get", ["$input"], "/large_dataset"]],
-    ["processed_items", ["map", ["$", "/all_items"], ["lambda", ["item"], ["complex_transform", ["$", "/item"]]]]]
-  ],
-  ["$", "/processed_items"]
-]
-
-// Use reduce for memory-efficient aggregation
-["reduce", ["get", ["$input"], "/large_dataset"],
-  ["lambda", ["accumulator", "item"],
-    ["if", ["meets_criteria", ["$", "/item"]],
-      ["update_accumulator", ["$", "/accumulator"], ["$", "/item"]],
-      ["$", "/accumulator"]
-    ]
-  ],
-  ["create_initial_accumulator"]
-]
-```
-
-### Batch Processing Pattern
+## Caching Expensive Operations
 
 ```json
 ["let", [
-    ["batch_size", 1000],
-    ["total_items", ["get", ["$input"], "/items"]],
-    ["item_count", ["count", ["$", "/total_items"]]],
-    ["batch_count", ["/", ["+", ["$", "/item_count"], ["-", ["$", "/batch_size"], 1]], ["$", "/batch_size"]]],
-    ["batch_indices", ["range", 0, ["$", "/batch_count"]]]
-  ],
-  ["obj",
-    ["batch_processing_summary", ["obj",
-      ["total_items", ["$", "/item_count"]],
-      ["batch_size", ["$", "/batch_size"]],
-      ["total_batches", ["$", "/batch_count"]]
-    ]],
-    ["batch_results", ["map", ["$", "/batch_indices"],
-      ["lambda", ["batch_index"],
-        ["let", [
-            ["start_index", ["*", ["$", "/batch_index"], ["$", "/batch_size"]]],
-            ["end_index", ["min", ["+", ["$", "/start_index"], ["$", "/batch_size"]], ["$", "/item_count"]]],
-            ["batch_items", ["slice", ["$", "/total_items"], ["$", "/start_index"], ["$", "/end_index"]]]
-          ],
-          ["obj",
-            ["batch_number", ["$", "/batch_index"]],
-            ["items_in_batch", ["count", ["$", "/batch_items"]]],
-            ["processed_items", ["map", ["$", "/batch_items"], ["lambda", ["item"], ["process_item", ["$", "/item"]]]]]
-          ]
-        ]
-      ]
-    ]]
-  ]
-]
-```
-
-## Caching and Reuse Patterns
-
-### Computed Value Caching
-
-```json
-["let", [
-    // Expensive computations done once
+    // Build lookup tables once
     ["user_lookup", ["reduce", ["get", ["$input"], "/users"],
       ["lambda", ["acc", "user"],
         ["merge", ["$", "/acc"], ["obj", [["get", ["$", "/user"], "/id"], ["$", "/user"]]]]
-      ],
-      {}
-    ]],
-    ["category_lookup", ["reduce", ["get", ["$input"], "/categories"],
-      ["lambda", ["acc", "cat"],
-        ["merge", ["$", "/acc"], ["obj", [["get", ["$", "/cat"], "/id"], ["$", "/cat"]]]]
-      ],
-      {}
+      ], {}
     ]],
     
-    // Fast lookups for each order
+    // Use lookups for fast access
     ["enriched_orders", ["map", ["get", ["$input"], "/orders"],
       ["lambda", ["order"],
-        ["let", [
-            ["user_id", ["get", ["$", "/order"], "/user_id"]],
-            ["category_id", ["get", ["$", "/order"], "/category_id"]]
-          ],
+        ["let", [["user_id", ["get", ["$", "/order"], "/user_id"]]],
           ["obj",
             ["order_id", ["get", ["$", "/order"], "/id"]],
-            ["amount", ["get", ["$", "/order"], "/amount"]],
-            ["user_name", ["get", ["$", "/user_lookup"], ["concat", "/", ["$", "/user_id"]], "/name"]],
-            ["category_name", ["get", ["$", "/category_lookup"], ["concat", "/", ["$", "/category_id"]], "/name"]]
+            ["user_name", ["get", ["$", "/user_lookup"], ["concat", "/", ["$", "/user_id"]], "/name"]]
           ]
         ]
       ]
@@ -737,147 +236,40 @@ Designing transformations that scale efficiently requires understanding both Com
 ]
 ```
 
-### Template Reuse Strategy
+## Memory-Efficient Processing
 
 ```json
-["let", [
-    // Define reusable templates
-    ["email_template", ["obj",
-      ["subject", "Order ${/order_id} - ${/status}"],
-      ["body", "Dear ${/customer_name}, your order ${/order_id} is now ${/status}."],
-      ["footer", "Thank you for your business!"]
-    ]],
-    ["sms_template", ["obj",
-      ["message", "Order ${/order_id}: ${/status}. Details: ${/tracking_url}"]
-    ]],
-    
-    // Process notifications efficiently
-    ["notifications", ["map", ["get", ["$input"], "/orders"],
-      ["lambda", ["order"],
-        ["let", [
-            ["context", ["obj",
-              ["order_id", ["get", ["$", "/order"], "/id"]],
-              ["status", ["get", ["$", "/order"], "/status"]],
-              ["customer_name", ["get", ["$", "/order"], "/customer/name"]],
-              ["tracking_url", ["concat", "https://track.example.com/", ["get", ["$", "/order"], "/id"]]]
-            ]],
-            ["notification_type", ["get", ["$", "/order"], "/customer/notification_preference"]]
-          ],
-          ["obj",
-            ["order_id", ["get", ["$", "/context"], "/order_id"]],
-            ["type", ["$", "/notification_type"]],
-            ["content", ["if", ["==", ["$", "/notification_type"], "email"],
-              ["permuto.apply", ["$", "/email_template"], ["$", "/context"]],
-              ["permuto.apply", ["$", "/sms_template"], ["$", "/context"]]
-            ]]
-          ]
-        ]
-      ]
-    ]]
-  ],
-  ["$", "/notifications"]
-]
-```
-
-## Architecture Patterns for Large Systems
-
-### Microservice Integration Pattern
-
-```json
-["let", [
-    // Service-specific processing
-    ["user_service_data", ["process_user_service_response", ["get", ["$input"], "/user_service"]]],
-    ["order_service_data", ["process_order_service_response", ["get", ["$input"], "/order_service"]]],
-    ["inventory_service_data", ["process_inventory_service_response", ["get", ["$input"], "/inventory_service"]]],
-    
-    // Cross-service correlation
-    ["correlation_id", ["get", ["$input"], "/correlation_id"]],
-    ["request_timestamp", ["get", ["$input"], "/timestamp"]]
-  ],
-  ["obj",
-    ["correlation_id", ["$", "/correlation_id"]],
-    ["processing_timestamp", ["$", "/request_timestamp"]],
-    ["aggregated_data", ["obj",
-      ["user_profile", ["$", "/user_service_data"]],
-      ["order_history", ["$", "/order_service_data"]],
-      ["available_inventory", ["$", "/inventory_service_data"]]
-    ]],
-    ["cross_service_insights", ["generate_insights", 
-      ["$", "/user_service_data"], 
-      ["$", "/order_service_data"], 
-      ["$", "/inventory_service_data"]
-    ]]
-  ]
-]
-```
-
-### Event-Driven Processing Pattern
-
-```json
-["let", [
-    ["event_type", ["get", ["$input"], "/event_type"]],
-    ["event_data", ["get", ["$input"], "/data"]],
-    ["event_metadata", ["get", ["$input"], "/metadata"]]
-  ],
-  ["if", ["==", ["$", "/event_type"], "user.created"],
-    ["process_user_creation_event", ["$", "/event_data"]],
-    ["if", ["==", ["$", "/event_type"], "order.completed"],
-      ["process_order_completion_event", ["$", "/event_data"]],
-      ["if", ["==", ["$", "/event_type"], "inventory.updated"],
-        ["process_inventory_update_event", ["$", "/event_data"]],
-        ["obj",
-          ["status", "unhandled_event"],
-          ["event_type", ["$", "/event_type"]],
-          ["timestamp", ["get", ["$", "/event_metadata"], "/timestamp"]]
-        ]
-      ]
+// Use reduce for aggregation instead of loading everything
+["reduce", ["get", ["$input"], "/large_dataset"],
+  ["lambda", ["acc", "item"],
+    ["if", ["meets_criteria", ["$", "/item"]],
+      ["update_accumulator", ["$", "/acc"], ["$", "/item"]],
+      ["$", "/acc"]
     ]
-  ]
+  ],
+  ["create_initial_accumulator"]
 ]
 ```
 """
 
 [chapter.summary]
 content = """
-You have mastered the comprehensive best practices for creating production-ready Computo and Permuto transformations. These patterns will serve as your guide for building maintainable, efficient, and collaborative transformation projects.
+You have mastered essential best practices for creating production-ready transformations.
 
-**Core Principles Mastered:**
-- **Logic/Presentation Separation**: Clean architectural boundaries between data processing and output formatting
-- **Code Organization**: Structured project layouts and modular design patterns
-- **Team Collaboration**: Version control workflows and documentation standards
-- **Defensive Programming**: Robust error handling and validation strategies
-- **Performance Optimization**: Memory-efficient and scalable processing patterns
+**Core Principles:**
+- **Logic/Presentation Separation**: Clean boundaries between data processing and output formatting
+- **Code Organization**: Structured layouts and modular design
+- **Defensive Programming**: Robust error handling and validation
+- **Performance Optimization**: Memory-efficient processing patterns
 
-**Key Best Practices Checklist:**
+**Key Checklist:**
 1. ✅ Separate Computo logic from Permuto presentation
-2. ✅ Use descriptive names and clear project structure
-3. ✅ Implement comprehensive input validation
-4. ✅ Apply defensive programming patterns
-5. ✅ Optimize for performance and scalability
-6. ✅ Write testable and documentable code
-7. ✅ Follow team collaboration standards
+2. ✅ Use descriptive names and clear structure
+3. ✅ Implement input validation
+4. ✅ Apply defensive patterns
+5. ✅ Optimize for performance
 
-**Project Organization Essentials:**
-- Modular directory structure with clear separation of concerns
-- Shared components for common validation and processing logic
-- Environment-specific configuration management
-- Comprehensive documentation and testing strategies
-
-**Team Collaboration Standards:**
-- Clear commit message conventions and branching strategies
-- Code review guidelines focused on functionality, performance, and maintainability
-- Documentation templates and inline commenting standards
-- Version control best practices for transformation scripts
-
-**Performance and Scalability Patterns:**
-- Memory-efficient processing for large datasets
-- Caching strategies for expensive computations
-- Template reuse for consistent output formatting
-- Architecture patterns for microservice and event-driven systems
-
-These best practices ensure your transformations are not just functional, but also maintainable, efficient, and ready for production deployment in enterprise environments.
-
-**Next**: Chapter 15 explores advanced multiple input processing and JSON Patch operations for complex data integration workflows.
+**Next**: Chapter 15 explores multiple input processing and JSON Patch operations.
 """
 
 [[examples]]
