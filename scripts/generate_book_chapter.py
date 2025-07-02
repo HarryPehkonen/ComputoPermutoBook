@@ -166,22 +166,28 @@ class BookChapterGenerator:
             content_parts.append(chapter['learning_objectives']['summary'])
             content_parts.append("")
 
-        # Generate sections (sections are at top level, not inside chapter)
-        if 'sections' in self.chapter_data:
-            for section in self.chapter_data['sections']:
-                content_parts.append(f"### {section['title']}")
+        # Generate sections (sections are nested under chapter)
+        if 'sections' in chapter:
+            for section_key, section_data in chapter['sections'].items():
+                content_parts.append(f"### {section_data['title']}")
                 content_parts.append("")
-                content_parts.append(section['content'])
+                content_parts.append(section_data['content'])
                 content_parts.append("")
 
         # Add comprehensive examples at the end
+        examples = None
         if 'examples' in self.chapter_data:
+            examples = self.chapter_data['examples']
+        elif 'chapter' in self.chapter_data and 'examples' in self.chapter_data['chapter']:
+            examples = self.chapter_data['chapter']['examples']
+            
+        if examples:
             content_parts.append("## 💻 Hands-On Examples")
             content_parts.append("")
-            content_parts.append("These examples demonstrate the debugging concepts covered in this chapter. Each example includes the complete script, expected output, and instructions for running it yourself.")
+            content_parts.append("These examples demonstrate the concepts covered in this chapter. Each example includes the complete script, expected output, and instructions for running it yourself.")
             content_parts.append("")
             
-            for example in self.chapter_data['examples']:
+            for example in examples:
                 content_parts.extend(self._format_example_for_markdown(example))
 
         # Chapter summary
@@ -312,9 +318,10 @@ class BookChapterGenerator:
             
             parts.append("📤 RESULT:")
             parts.append("==========")
-            parts.append("")
+            parts.append("```")  # Close the first code block
+            parts.append("")     # Add spacing
         
-        # JSON result (stdout)
+        # JSON result (stdout) - separate code block
         parts.append("```json")
         expected = example.get('expected')
         if expected:
@@ -437,7 +444,14 @@ pause
 
     def save_examples_organized(self):
         """Save all examples in organized directory structure with downloadable features."""
-        if 'examples' not in self.chapter_data:
+        # Handle both direct examples and chapter.examples structures
+        examples = None
+        if 'examples' in self.chapter_data:
+            examples = self.chapter_data['examples']
+        elif 'chapter' in self.chapter_data and 'examples' in self.chapter_data['chapter']:
+            examples = self.chapter_data['chapter']['examples']
+        
+        if not examples:
             return
 
         chapter_num = self.chapter_data['chapter']['number']
@@ -449,7 +463,7 @@ pause
 
         # Group examples by section
         examples_by_section = {}
-        for example in self.chapter_data['examples']:
+        for example in examples:
             section = example.get('section', 'general')
             if section not in examples_by_section:
                 examples_by_section[section] = []
@@ -565,9 +579,15 @@ computo script.json
 """
         
         # Group examples by section for the README
+        examples = None
         if 'examples' in self.chapter_data:
+            examples = self.chapter_data['examples']
+        elif 'chapter' in self.chapter_data and 'examples' in self.chapter_data['chapter']:
+            examples = self.chapter_data['chapter']['examples']
+            
+        if examples:
             examples_by_section = {}
-            for example in self.chapter_data['examples']:
+            for example in examples:
                 section = example.get('section', 'general')
                 if section not in examples_by_section:
                     examples_by_section[section] = []

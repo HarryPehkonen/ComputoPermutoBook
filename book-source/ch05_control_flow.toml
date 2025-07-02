@@ -1,0 +1,309 @@
+# Chapter 5: Control Flow and Conditionals
+# Complete source for generating 05_control_flow.md and examples
+
+[chapter]
+number = 5
+title = "Control Flow and Conditionals"
+description = "Conditional logic, boolean operations, and decision-making in transformations"
+
+[chapter.learning_objectives]
+summary = """
+So far, our scripts have been linear. They execute from the inside out, following a single, predetermined path. To build truly dynamic transformations, we need the ability to make decisions. We need to be able to say: "If this condition is met, do this; otherwise, do that."
+
+This is the role of the `if` operator in Computo.
+"""
+
+operators_introduced = [
+  "if", "&&", "||", "not", "approx"
+]
+
+[chapter.sections]
+
+[chapter.sections.if_operator]
+title = "The `if` Operator"
+content = '''
+The `if` operator is the primary tool for conditional logic in Computo. Its structure is simple and should be familiar from other programming languages.
+
+`["if", <condition>, <then_expression>, <else_expression>]`
+
+The engine evaluates the `<condition>` expression first.
+*   If the result is "truthy", the engine evaluates and returns the result of the `<then_expression>`.
+*   If the result is "falsy", the engine evaluates and returns the result of the `<else_expression>`.
+
+A crucial feature of `if` is **lazy evaluation**: only the branch that is chosen gets evaluated. The other branch is completely ignored, which is important for both performance and preventing errors.
+'''
+
+[chapter.sections.truthiness]
+title = "Computo's Definition of \"Truthy\" and \"Falsy\""
+content = '''
+Since JSON has several data types, Computo has clear rules for what it considers `true` or `false` in a conditional context. These rules are very similar to those in languages like Python or JavaScript.
+
+| Value Type | Falsy (evaluates to `false`) | Truthy (evaluates to `true`) |
+| :--- | :--- | :--- |
+| **Boolean** | `false` | `true` |
+| **Number** | `0` and `0.0` | Any non-zero number |
+| **String** | The empty string `""` | Any non-empty string |
+| **Object** | The empty object `{}` | Any object with one or more keys |
+| **Array** | The empty array `[]` or `{"array": []}` | Any array with one or more elements |
+| **Null** | `null` | (never truthy; always falsy) |
+'''
+
+[chapter.sections.conditional_greeting]
+title = "Example: Conditional Greeting"
+content = '''
+Let's build scripts that make decisions based on input data. We'll start simple and work toward more realistic examples.
+
+**Basic conditional logic:**
+```json
+["if", true, "yes", "no"]    // Simple true/false
+```
+
+**Accessing nested data with `get`:**
+```json
+["if", ["get", ["$input"], "/user/active"], "Welcome!", "Access Denied"]
+```
+
+**Selecting from arrays:**
+You can manually select a specific user from an array using `["get", ["$input"], "/users/0"]` to get the first user, then check their properties:
+```json
+["if", ["get", ["get", ["$input"], "/users/0"], "/active"], "User is active", "User is inactive"]
+```
+
+These patterns of accessing individual items from arrays will become the foundation for the array processing techniques we'll learn in the next chapter.
+'''
+
+[chapter.sections.logical_operators]
+title = "Logical Operators: `&&` and `||`"
+content = '''
+For more complex conditional logic, Computo provides logical AND (`&&`) and OR (`||`) operators. These operators support **short-circuit evaluation**, meaning they stop evaluating as soon as the result is determined.
+
+#### The `&&` (Logical AND) Operator
+
+The `&&` operator returns `true` only if **all** of its arguments are truthy. It evaluates arguments from left to right and stops as soon as it encounters a falsy value.
+
+`["&&", <expr1>, <expr2>, <expr3>, ...]`
+
+#### The `||` (Logical OR) Operator
+
+The `||` operator returns `true` if **any** of its arguments are truthy. It evaluates arguments from left to right and stops as soon as it encounters a truthy value.
+
+`["||", <expr1>, <expr2>, <expr3>, ...]`
+
+#### Short-Circuit Evaluation: Safety and Performance
+
+The most powerful feature of these operators is **short-circuit evaluation**. This provides two key benefits:
+
+**1. Safety - Preventing Errors:**
+```json
+["&&", ["!=", divisor, 0], [">", ["/", dividend, divisor], 10]]
+```
+If `divisor` is 0, the `&&` operator stops at the first condition and never attempts the division, preventing a divide-by-zero error.
+
+**2. Performance - Avoiding Unnecessary Work:**
+```json
+["||", ["==", user_role, "admin"], [">=", user_credits, 1000]]
+```
+If the user is an admin, the credit check is never performed, saving computation.
+
+These operators are particularly powerful when used as conditions in `if` statements, allowing you to build complex business rules that are both safe and efficient.
+'''
+
+[chapter.sections.not_operator]
+title = "Logical NOT: The `not` Operator"
+content = '''
+Sometimes you need to negate a boolean value or invert the truthiness of an expression. The `not` operator provides this functionality.
+
+`["not", <expression>]`
+
+The `not` operator evaluates its argument and returns the logical opposite:
+- If the argument is truthy, `not` returns `false`
+- If the argument is falsy, `not` returns `true`
+
+**Examples:**
+
+```json
+// Basic boolean negation
+["not", true]        // Result: false
+["not", false]       // Result: true
+
+// Negating comparison results
+["not", [">", 5, 10]]    // Result: true (because 5 > 10 is false)
+["not", ["==", "a", "a"]] // Result: false (because "a" == "a" is true)
+```
+
+#### Practical Use Cases
+
+**Checking for empty collections:**
+
+```json
+// Check if an array is NOT empty
+["not", ["==", ["count", ["$", "/items"]], 0]]
+
+// Check if a string is NOT empty  
+["not", ["==", ["$", "/message"], ""]]
+
+// Check if an object is NOT empty
+["not", ["==", ["$", "/config"], {}]]
+```
+
+**Inverting complex conditions:**
+
+The `not` operator is particularly useful when you want to deny access if conditions are NOT met, rather than grant access when they are met.
+'''
+
+[chapter.sections.approx_operator]
+title = "Approximate Equality: The `approx` Operator"
+content = '''
+When working with floating-point numbers, exact equality comparisons can be problematic due to precision issues. The `approx` operator provides a solution for comparing numbers within a specified tolerance.
+
+`["approx", <number1>, <number2>, <epsilon>]`
+
+The `approx` operator returns `true` if the absolute difference between the two numbers is less than or equal to the epsilon value.
+
+#### Basic Floating-Point Comparison
+
+```json
+[
+  /* Compare a calculated result with an expected value */
+  "approx", 
+  ["/", 22, 7],        /* 22/7 = 3.142857... */
+  3.14159,             /* Expected π approximation */
+  0.01                 /* Tolerance of 0.01 */
+]
+```
+
+**Output:** `true` (because the difference is less than 0.01)
+
+The `approx` operator is particularly useful in financial calculations where rounding errors are common, and in quality control systems where measurements need to be within acceptable tolerances.
+'''
+
+# =============================================================================
+# EXAMPLES - Using the same structure as working chapters (Ch 2, 4)
+# =============================================================================
+
+[[examples]]
+name = "conditional_basic"
+section = "conditional_greeting"
+description = "Basic conditional logic with true/false"
+script = ["if", true, "yes", "no"]
+input = {}
+expected = "yes"
+
+[[examples]]
+name = "conditional_false"
+section = "conditional_greeting"
+description = "Conditional logic with false condition"
+script = ["if", false, "yes", "no"]
+input = {}
+expected = "no"
+
+[[examples]]
+name = "conditional_with_user"
+section = "conditional_greeting"
+description = "Check user active status with get operator"
+script = ["if", ["get", ["$input"], "/user/active"], "Welcome!", "Access Denied"]
+input = {user = {name = "Alice", active = true}}
+expected = "Welcome!"
+
+[[examples]]
+name = "conditional_user_array"
+section = "conditional_greeting"
+description = "Access first user from array - pattern for Chapter 6"
+script = ["if", ["get", ["get", ["$input"], "/users/0"], "/active"], "User is active", "User is inactive"]
+input = {users = [{name = "Alice", active = true}, {name = "Bob", active = false}]}
+expected = "User is active"
+
+[[examples]]
+name = "logical_and_basic"
+section = "logical_operators"
+description = "Simple logical AND operation"
+script = ["&&", true, [">", 10, 5]]
+input = {}
+expected = true
+
+[[examples]]
+name = "logical_or_basic"
+section = "logical_operators"
+description = "Simple logical OR operation"
+script = ["||", false, ["==", 2, 2]]
+input = {}
+expected = true
+
+[[examples]]
+name = "short_circuit_safety"
+section = "logical_operators"
+description = "Short-circuit evaluation prevents division by zero"
+script = ["&&", ["!=", ["get", ["$input"], "/divisor"], 0], [">", ["/", ["get", ["$input"], "/dividend"], ["get", ["$input"], "/divisor"]], 10]]
+input = {dividend = 100, divisor = 0}
+expected = false
+notes = "The division never happens because divisor is 0, so && stops at the first false condition"
+
+[[examples]]
+name = "short_circuit_success"
+section = "logical_operators"
+description = "When divisor is non-zero, the division proceeds safely"
+script = '''
+["&&",
+    ["!=",
+        ["get", ["$input"], "/divisor"],
+        0
+    ],
+    [">",
+        ["/",
+            ["get", ["$input"], "/dividend"],
+            ["get", ["$input"], "/divisor"]
+        ],
+        10
+    ]
+]
+'''
+input = {dividend = 100, divisor = 5}
+expected = true
+notes = "Divisor is 5 (non-zero), so division 100/5=20 > 10 evaluates to true"
+
+[[examples]]
+name = "not_operator_basic"
+section = "not_operator"
+description = "Basic negation with the not operator"
+script = ["not", false]
+input = {}
+expected = true
+
+[[examples]]
+name = "not_with_null"
+section = "not_operator"
+description = "Your example - demonstrates null is falsy"
+script = '["if", ["not", null], "Right", "Wrong"]'
+input = {}
+expected = "Right"
+
+[[examples]]
+name = "approx_pi"
+section = "approx_operator"
+description = "Approximate equality for pi calculation"
+script = ["approx", ["/", 22, 7], 3.14159, 0.01]
+input = {}
+expected = true
+
+[[examples]]
+name = "approx_financial"
+section = "approx_operator"
+description = "Financial precision with penny tolerance"
+script = ["approx", 48.5452, 48.53, 0.01]
+input = {}
+expected = true
+
+[chapter.summary]
+content = '''
+### In This Chapter
+
+You've learned how to add decision-making to your transformations:
+*   The **`if`** operator for conditional logic with lazy evaluation.
+*   **Truthiness rules** for different JSON data types.
+*   **Logical operators** `&&` and `||` with short-circuit evaluation.
+*   The **`not`** operator for negating boolean values and inverting conditions.
+*   The **`approx`** operator for reliable floating-point comparisons.
+*   How to combine these operators to build complex conditional logic and business rules.
+
+These conditional tools transform your scripts from simple linear transformations into dynamic, intelligent data processing systems that can adapt their behavior based on input conditions.
+'''

@@ -1,0 +1,885 @@
+# Chapter 11: Advanced Permuto Techniques
+# Complete source for generating 11_advanced_permuto_techniques.md and examples
+
+[chapter]
+number = 11
+title = "Advanced Permuto Techniques"
+description = "Sophisticated templating patterns, composition techniques, and enterprise-grade Permuto usage"
+
+[chapter.learning_objectives]
+summary = """
+You've learned Permuto basics and the template-driven pattern. Now it's time to master **advanced Permuto techniques** that power sophisticated, enterprise-grade applications.
+
+This chapter explores complex template composition, conditional templating logic, reusable template libraries, and dynamic template generation. You'll learn patterns that transform Permuto from a simple templating tool into a powerful presentation engine for complex business requirements.
+"""
+
+operators_introduced = []  # No new operators - focusing on advanced patterns
+
+[chapter.sections]
+
+[chapter.sections.template_composition]
+title = "Template Composition and Nesting"
+content = '''
+Complex applications require sophisticated template structures. Instead of building monolithic templates, you can compose smaller, focused templates into larger structures.
+
+#### Nested Template Patterns
+
+**Hierarchical Data Presentation:**
+```json
+// Complex nested structure
+["let",
+  [["user_data", ["get", ["$input"], "/user"]],
+   ["order_data", ["get", ["$input"], "/orders"]],
+   ["context", ["obj",
+     ["user", ["$", "/user_data"]],
+     ["order_summary", ["reduce", ["$", "/order_data"], 
+       ["obj", ["count", 0], ["total", 0]],
+       ["lambda", ["acc", "order"],
+         ["obj",
+           ["count", ["+", ["get", ["$", "/acc"], "/count"], 1]],
+           ["total", ["+", ["get", ["$", "/acc"], "/total"], ["get", ["$", "/order"], "/amount"]]]
+         ]
+       ]
+     ]],
+     ["recent_orders", ["take", ["$", "/order_data"], 3]]
+   ]]],
+  ["permuto.apply",
+    {
+      "customer_profile": {
+        "basic_info": {
+          "name": "${/user/name}",
+          "email": "${/user/email}",
+          "status": "${/user/status}"
+        },
+        "order_analytics": {
+          "total_orders": "${/order_summary/count}",
+          "lifetime_value": "${/order_summary/total}",
+          "avg_order_value": "${/order_summary/total}"
+        },
+        "recent_activity": "${/recent_orders}"
+      }
+    },
+    ["$", "/context"]
+  ]
+]
+```
+
+#### Multi-Level Data Transformation
+
+**Progressive Data Enrichment:**
+```json
+// Stage 1: Basic data preparation
+["let",
+  [["raw_user", ["get", ["$input"], "/user_record"]],
+   ["level1_context", ["obj",
+     ["id", ["get", ["$", "/raw_user"], "/user_id"]],
+     ["name", ["str_concat", 
+       ["get", ["$", "/raw_user"], "/first_name"], 
+       " ", 
+       ["get", ["$", "/raw_user"], "/last_name"]
+     ]],
+     ["joined", ["get", ["$", "/raw_user"], "/created_date"]]
+   ]],
+   // Stage 2: Add computed fields
+   ["level2_context", ["obj",
+     ["basic", ["$", "/level1_context"]],
+     ["computed", ["obj",
+       ["membership_days", 365],
+       ["tier", ["if", [">", ["get", ["$input"], "/total_spent"], 1000], "premium", "standard"]]
+     ]]
+   ]],
+   // Stage 3: Final presentation layer
+   ["final_context", ["obj",
+     ["user_profile", ["merge", ["get", ["$", "/level2_context"], "/basic"], ["get", ["$", "/level2_context"], "/computed"]]],
+     ["metadata", ["obj", ["generated_at", "2024-01-15T10:30:00Z"], ["version", "v2"]]]
+   ]]],
+  ["permuto.apply",
+    {
+      "profile": "${/user_profile}",
+      "meta": "${/metadata}"
+    },
+    ["$", "/final_context"]
+  ]
+]
+```
+'''
+
+[chapter.sections.conditional_templating]
+title = "Conditional Templating Logic"
+content = '''
+Advanced templates often need to adapt their structure based on data conditions. Permuto templates can include dynamic sections that appear or transform based on runtime data.
+
+#### Conditional Template Sections
+
+**Dynamic Field Inclusion:**
+```json
+["let",
+  [["user", ["get", ["$input"], "/user"]],
+   ["has_premium", ["==", ["get", ["$", "/user"], "/tier"], "premium"]],
+   ["has_orders", [">", ["count", ["get", ["$input"], "/orders"]], 0]],
+   ["template_context", ["obj",
+     ["user", ["$", "/user"]],
+     ["show_premium_features", ["$", "/has_premium"]],
+     ["show_order_history", ["$", "/has_orders"]],
+     ["orders", ["if", ["$", "/has_orders"], ["get", ["$input"], "/orders"], []]],
+     ["premium_data", ["if", ["$", "/has_premium"], 
+       ["get", ["$input"], "/premium_analytics"], 
+       {}
+     ]]
+   ]]],
+  ["permuto.apply",
+    {
+      "user_dashboard": {
+        "profile": {
+          "name": "${/user/name}",
+          "tier": "${/user/tier}"
+        },
+        "sections": {
+          "orders": "${/orders}",
+          "premium_analytics": "${/premium_data}"
+        },
+        "features": {
+          "premium_enabled": "${/show_premium_features}",
+          "orders_available": "${/show_order_history}"
+        }
+      }
+    },
+    ["$", "/template_context"]
+  ]
+]
+```
+
+#### Multi-Format Output Generation
+
+**Format-Specific Templates:**
+```json
+["let",
+  [["base_data", ["get", ["$input"], "/report_data"]],
+   ["output_format", ["get", ["$input"], "/format", "json"]],
+   ["shared_context", ["obj",
+     ["title", ["get", ["$", "/base_data"], "/title"]],
+     ["summary", ["get", ["$", "/base_data"], "/summary"]],
+     ["data", ["get", ["$", "/base_data"], "/metrics"]]
+   ]]],
+  ["if", ["==", ["$", "/output_format"], "email"],
+    // Email template format
+    ["permuto.apply",
+      {
+        "subject": "Report: ${/title}",
+        "body": {
+          "greeting": "Please find your report below:",
+          "summary": "${/summary}",
+          "metrics": "${/data}",
+          "footer": "Generated automatically"
+        }
+      },
+      ["$", "/shared_context"]
+    ],
+    ["if", ["==", ["$", "/output_format"], "api"],
+      // API response format
+      ["permuto.apply",
+        {
+          "data": {
+            "report": {
+              "title": "${/title}",
+              "content": "${/summary}",
+              "metrics": "${/data}"
+            }
+          },
+          "meta": {
+            "format": "api_v1",
+            "generated": "2024-01-15T10:30:00Z"
+          }
+        },
+        ["$", "/shared_context"]
+      ],
+      // Default JSON format
+      ["permuto.apply",
+        {
+          "report_title": "${/title}",
+          "report_summary": "${/summary}",
+          "report_data": "${/data}"
+        },
+        ["$", "/shared_context"]
+      ]
+    ]
+  ]
+]
+```
+'''
+
+[chapter.sections.template_libraries]
+title = "Template Libraries and Reusable Components"
+content = '''
+Enterprise applications benefit from reusable template components. By building libraries of common patterns, you can ensure consistency and reduce duplication across your transformation pipeline.
+
+#### Component-Based Template Design
+
+**Reusable Address Formatter:**
+```json
+// Component: Standard address template
+["let",
+  [["address_data", ["get", ["$input"], "/address"]],
+   ["formatted_address", ["permuto.apply",
+     {
+       "street": "${/street}",
+       "city": "${/city}",
+       "state": "${/state}",
+       "zip": "${/zip}",
+       "formatted": "${/street}, ${/city}, ${/state} ${/zip}",
+       "country": "${/country}"
+     },
+     ["$", "/address_data"]
+   ]]],
+  ["$", "/formatted_address"]
+]
+```
+
+**User Profile Component:**
+```json
+// Component: Standard user profile template
+["let",
+  [["user_data", ["get", ["$input"], "/user"]],
+   ["profile_template", ["permuto.apply",
+     {
+       "display_name": "${/first_name} ${/last_name}",
+       "contact": {
+         "email": "${/email}",
+         "phone": "${/phone}"
+       },
+       "status": {
+         "active": "${/is_active}",
+         "verified": "${/is_verified}",
+         "tier": "${/membership_tier}"
+       },
+       "metadata": {
+         "joined": "${/created_date}",
+         "updated": "${/last_modified}"
+       }
+     },
+     ["$", "/user_data"]
+   ]]],
+  ["$", "/profile_template"]
+]
+```
+
+#### Template Composition Strategies
+
+**Combining Multiple Components:**
+```json
+["let",
+  [["user", ["get", ["$input"], "/user"]],
+   ["billing", ["get", ["$input"], "/billing_address"]],
+   ["shipping", ["get", ["$input"], "/shipping_address"]],
+   
+   // Apply user profile component template
+   ["user_profile", ["permuto.apply",
+     {
+       "display_name": "${/first_name} ${/last_name}",
+       "contact": {"email": "${/email}"},
+       "status": {"tier": "${/membership_tier}"}
+     },
+     ["$", "/user"]
+   ]],
+   
+   // Apply address components
+   ["billing_address", ["permuto.apply",
+     {"formatted": "${/street}, ${/city}, ${/state} ${/zip}"},
+     ["$", "/billing"]
+   ]],
+   ["shipping_address", ["permuto.apply",
+     {"formatted": "${/street}, ${/city}, ${/state} ${/zip}"},
+     ["$", "/shipping"]
+   ]],
+   
+   // Compose final structure
+   ["complete_context", ["obj",
+     ["profile", ["$", "/user_profile"]],
+     ["addresses", ["obj",
+       ["billing", ["$", "/billing_address"]],
+       ["shipping", ["$", "/shipping_address"]]
+     ]]
+   ]]],
+  
+  ["permuto.apply",
+    {
+      "customer_record": {
+        "profile": "${/profile}",
+        "billing_info": "${/addresses/billing}",
+        "shipping_info": "${/addresses/shipping}",
+        "account_summary": {
+          "name": "${/profile/display_name}",
+          "contact": "${/profile/contact/email}",
+          "status": "${/profile/status/tier}"
+        }
+      }
+    },
+    ["$", "/complete_context"]
+  ]
+]
+```
+'''
+
+[chapter.sections.dynamic_templates]
+title = "Dynamic Template Generation"
+content = '''
+The most advanced Permuto applications generate templates dynamically based on runtime conditions, configuration, or user preferences.
+
+#### Schema-Driven Template Generation
+
+**Dynamic Form Templates:**
+```json
+["let",
+  [["schema", ["get", ["$input"], "/form_schema"]],
+   ["user_data", ["get", ["$input"], "/user_data"]],
+   ["form_fields", ["map", ["get", ["$", "/schema"], "/fields"],
+     ["lambda", ["field"],
+       ["obj",
+         ["name", ["get", ["$", "/field"], "/name"]],
+         ["type", ["get", ["$", "/field"], "/type"]],
+         ["value", ["get", ["$", "/user_data"], ["get", ["$", "/field"], "/name"], ""]],
+         ["required", ["get", ["$", "/field"], "/required", false]],
+         ["label", ["get", ["$", "/field"], "/label"]]
+       ]
+     ]
+   ]],
+   ["template_context", ["obj",
+     ["form_title", ["get", ["$", "/schema"], "/title"]],
+     ["fields", ["$", "/form_fields"]],
+     ["metadata", ["obj", ["version", "v1"], ["generated", "2024-01-15T10:30:00Z"]]]
+   ]]],
+  ["permuto.apply",
+    {
+      "form": {
+        "title": "${/form_title}",
+        "fields": "${/fields}",
+        "meta": "${/metadata}"
+      }
+    },
+    ["$", "/template_context"]
+  ]
+]
+```
+
+#### Configuration-Driven Templates
+
+**Multi-Tenant Template Customization:**
+```json
+["let",
+  [["tenant_config", ["get", ["$input"], "/tenant_settings"]],
+   ["base_data", ["get", ["$input"], "/data"]],
+   ["theme", ["get", ["$", "/tenant_config"], "/theme", "default"]],
+   ["features", ["get", ["$", "/tenant_config"], "/enabled_features", []]],
+   ["branding", ["get", ["$", "/tenant_config"], "/branding"]],
+   
+   ["template_vars", ["obj",
+     ["data", ["$", "/base_data"]],
+     ["theme_class", ["str_concat", "theme-", ["$", "/theme"]]],
+     ["show_advanced", ["includes", ["$", "/features"], "advanced_analytics"]],
+     ["show_export", ["includes", ["$", "/features"], "data_export"]],
+     ["brand_name", ["get", ["$", "/branding"], "/company_name", "Application"]],
+     ["brand_logo", ["get", ["$", "/branding"], "/logo_url", "/default-logo.png"]],
+     ["custom_colors", ["get", ["$", "/branding"], "/colors", {}]]
+   ]]],
+  
+  ["permuto.apply",
+    {
+      "dashboard": {
+        "branding": {
+          "name": "${/brand_name}",
+          "logo": "${/brand_logo}",
+          "theme": "${/theme_class}",
+          "colors": "${/custom_colors}"
+        },
+        "content": {
+          "main_data": "${/data}",
+          "advanced_section": "${/show_advanced}",
+          "export_tools": "${/show_export}"
+        },
+        "layout": {
+          "theme": "${/theme_class}",
+          "features": {
+            "advanced_enabled": "${/show_advanced}",
+            "export_enabled": "${/show_export}"
+          }
+        }
+      }
+    },
+    ["$", "/template_vars"]
+  ]
+]
+```
+'''
+
+[chapter.sections.performance_considerations]
+title = "Template Performance and Optimization"
+content = '''
+Advanced Permuto usage requires attention to performance, especially when dealing with large datasets or complex template hierarchies.
+
+#### Template Caching Strategies
+
+**Pre-computed Template Components:**
+```json
+["let",
+  [["raw_data", ["get", ["$input"], "/raw_data"]],
+   ["expensive_calculation", ["reduce", ["$", "/raw_data"], 
+     ["obj", ["sum", 0], ["max", 0]], 
+     ["lambda", ["acc", "item"], 
+       ["obj", 
+         ["sum", ["+", ["get", ["$", "/acc"], "/sum"], ["get", ["$", "/item"], "/value"]]], 
+         ["max", ["if", [">", ["get", ["$", "/item"], "/value"], ["get", ["$", "/acc"], "/max"]], ["get", ["$", "/item"], "/value"], ["get", ["$", "/acc"], "/max"]]]
+       ]
+     ]
+   ]],
+   ["cached_metrics", ["obj",
+     ["summary", ["$", "/expensive_calculation"]],
+     ["top_items", ["take", ["sort", ["$", "/raw_data"], "value", "desc"], 10]],
+     ["computed_at", "2024-01-15T10:30:00Z"]
+   ]],
+   ["lightweight_context", ["obj",
+     ["user_id", ["get", ["$input"], "/user_id"]],
+     ["metrics", ["$", "/cached_metrics"]],
+     ["preferences", ["get", ["$input"], "/user_preferences", {}]]
+   ]]],
+  ["permuto.apply",
+    {
+      "dashboard": {
+        "user": "${/user_id}",
+        "analytics": {
+          "summary": "${/metrics/summary}",
+          "top_performers": "${/metrics/top_items}",
+          "last_updated": "${/metrics/computed_at}"
+        },
+        "settings": "${/preferences}"
+      }
+    },
+    ["$", "/lightweight_context"]
+  ]
+]
+```
+
+#### Efficient Template Patterns
+
+**Minimize Template Complexity:**
+```json
+// Efficient: Pre-process complex logic, simple template
+["let",
+  [["processed_data", ["obj",
+     ["user_name", ["str_concat", 
+       ["get", ["$input"], "/user/first"], 
+       " ", 
+       ["get", ["$input"], "/user/last"]
+     ]],
+     ["order_count", ["count", ["get", ["$input"], "/orders"]]],
+     ["total_spent", ["reduce", ["get", ["$input"], "/orders"], 0,
+       ["lambda", ["acc", "order"], ["+", ["$", "/acc"], ["get", ["$", "/order"], "/amount"]]]
+     ]],
+     ["avg_order", ["if", [">", ["count", ["get", ["$input"], "/orders"]], 0],
+       ["/", 
+         ["reduce", ["get", ["$input"], "/orders"], 0,
+           ["lambda", ["acc", "order"], ["+", ["$", "/acc"], ["get", ["$", "/order"], "/amount"]]]
+         ],
+         ["count", ["get", ["$input"], "/orders"]]
+       ],
+       0
+     ]]
+   ]]],
+  // Simple, fast template application
+  ["permuto.apply",
+    {
+      "customer": {
+        "name": "${/user_name}",
+        "stats": {
+          "orders": "${/order_count}",
+          "total": "${/total_spent}",
+          "average": "${/avg_order}"
+        }
+      }
+    },
+    ["$", "/processed_data"]
+  ]
+]
+```
+'''
+
+# =============================================================================
+# EXAMPLES
+# =============================================================================
+
+[[chapter.examples]]
+name = "nested_template_composition"
+section = "template_composition"
+description = "Complex nested template with hierarchical data presentation"
+script = '''
+["let",
+  [
+    ["user_data", ["get", ["$input"], "/user"]],
+    ["orders", ["get", ["$input"], "/orders"]],
+    ["context", ["obj",
+      ["user", ["$", "/user_data"]],
+      ["order_summary", ["reduce", ["$", "/orders"],
+        ["obj", ["count", 0], ["total", 0]],
+        ["lambda", ["acc", "order"],
+          ["obj",
+            ["count", ["+", ["get", ["$", "/acc"], "/count"], 1]],
+            ["total", ["+", ["get", ["$", "/acc"], "/total"], ["get", ["$", "/order"], "/amount"]]]
+          ]
+        ]
+      ]],
+      ["order_stats", ["obj",
+        ["count", ["get", ["$", "/order_summary"], "/count"]],
+        ["total", ["get", ["$", "/order_summary"], "/total"]],
+        ["avg", ["if", [">", ["get", ["$", "/order_summary"], "/count"], 0],
+          ["/", ["get", ["$", "/order_summary"], "/total"], ["get", ["$", "/order_summary"], "/count"]],
+          0
+        ]]
+      ]],
+      ["recent_orders", ["take", ["$", "/orders"], 3]]
+    ]]
+  ],
+  ["permuto.apply",
+    {
+      "customer_profile": {
+        "personal": {
+          "id": "${/user/id}",
+          "name": "${/user/name}",
+          "email": "${/user/email}",
+          "status": "${/user/status}"
+        },
+        "analytics": {
+          "total_orders": "${/order_stats/count}",
+          "lifetime_value": "${/order_stats/total}",
+          "avg_order_value": "${/order_stats/avg}"
+        },
+        "recent_activity": "${/recent_orders}"
+      }
+    },
+    ["$", "/context"]
+  ]
+]
+'''
+input = {user = {id = "u-123", name = "Alice Johnson", email = "alice@example.com", status = "premium"}, orders = [{id = "o1", amount = 150}, {id = "o2", amount = 200}, {id = "o3", amount = 75}]}
+expected = {customer_profile = {personal = {id = "u-123", name = "Alice Johnson", email = "alice@example.com", status = "premium"}, analytics = {total_orders = 3, lifetime_value = 425, avg_order_value = 141.666667}, recent_activity = [{id = "o1", amount = 150}, {id = "o2", amount = 200}, {id = "o3", amount = 75}]}}
+cli_flags = ["--interpolation"]
+
+[[chapter.examples]]
+name = "conditional_template_sections"
+section = "conditional_templating"
+description = "Dynamic template sections based on user tier and data availability"
+script = '''
+["let",
+  [
+    ["user", ["get", ["$input"], "/user"]],
+    ["has_premium", ["==", ["get", ["$", "/user"], "/tier"], "premium"]],
+    ["has_orders", [">", ["count", ["get", ["$input"], "/orders"]], 0]],
+    ["template_context", ["obj",
+      ["user_name", ["get", ["$", "/user"], "/name"]],
+      ["user_tier", ["get", ["$", "/user"], "/tier"]],
+      ["show_premium", ["$", "/has_premium"]],
+      ["show_orders", ["$", "/has_orders"]],
+      ["orders", ["if", ["$", "/has_orders"], ["get", ["$input"], "/orders"], []]],
+      ["premium_benefits", ["if", ["$", "/has_premium"], ["get", ["$input"], "/premium_data"], {}]]
+    ]]
+  ],
+  ["permuto.apply",
+    {
+      "dashboard": {
+        "user": {
+          "name": "${/user_name}",
+          "tier": "${/user_tier}"
+        },
+        "content": {
+          "orders": "${/orders}",
+          "premium_features": "${/premium_benefits}"
+        },
+        "capabilities": {
+          "premium_access": "${/show_premium}",
+          "order_history": "${/show_orders}"
+        }
+      }
+    },
+    ["$", "/template_context"]
+  ]
+]
+'''
+input = {user = {name = "Bob Wilson", tier = "premium"}, orders = [{id = "o1", total = 299}], premium_data = {analytics = true, support = "priority"}}
+expected = {dashboard = {user = {name = "Bob Wilson", tier = "premium"}, content = {orders = [{id = "o1", total = 299}], premium_features = {analytics = true, support = "priority"}}, capabilities = {premium_access = true, order_history = true}}}
+cli_flags = ["--interpolation"]
+
+[[chapter.examples]]
+name = "multi_format_output"
+section = "conditional_templating"
+description = "Generate different output formats based on request parameters"
+script = '''
+["let",
+  [
+    ["report_data", ["get", ["$input"], "/data"]],
+    ["format", ["get", ["$input"], "/output_format", "json"]],
+    ["context", ["obj",
+      ["title", ["get", ["$", "/report_data"], "/title"]],
+      ["summary", ["get", ["$", "/report_data"], "/summary"]],
+      ["metrics", ["get", ["$", "/report_data"], "/metrics"]]
+    ]]
+  ],
+  ["if", ["==", ["$", "/format"], "email"],
+    ["permuto.apply",
+      {
+        "subject": "Report: ${/title}",
+        "body": {
+          "intro": "Your requested report is ready:",
+          "summary": "${/summary}",
+          "data": "${/metrics}",
+          "footer": "This report was generated automatically."
+        }
+      },
+      ["$", "/context"]
+    ],
+    ["if", ["==", ["$", "/format"], "api"],
+      ["permuto.apply",
+        {
+          "response": {
+            "data": {
+              "title": "${/title}",
+              "content": "${/summary}",
+              "metrics": "${/metrics}"
+            },
+            "meta": {
+              "format": "api_v1",
+              "timestamp": "2024-01-15T10:30:00Z"
+            }
+          }
+        },
+        ["$", "/context"]
+      ],
+      ["permuto.apply",
+        {
+          "report": {
+            "title": "${/title}",
+            "summary": "${/summary}",
+            "data": "${/metrics}"
+          }
+        },
+        ["$", "/context"]
+      ]
+    ]
+  ]
+]
+'''
+input = {data = {title = "Monthly Sales", summary = "Sales increased 15% over last month", metrics = {total = 50000, growth = 15}}, output_format = "email"}
+expected = {subject = "Report: Monthly Sales", body = {intro = "Your requested report is ready:", summary = "Sales increased 15% over last month", data = {total = 50000, growth = 15}, footer = "This report was generated automatically."}}
+cli_flags = ["--interpolation"]
+
+[[chapter.examples]]
+name = "reusable_address_component"
+section = "template_libraries"
+description = "Reusable address formatting component with standardized output"
+script = '''
+["let",
+  [
+    ["address_data", ["get", ["$input"], "/address"]],
+    ["formatted_address", ["permuto.apply",
+      {
+        "components": {
+          "street": "${/street}",
+          "city": "${/city}",
+          "state": "${/state}",
+          "zip": "${/zip}",
+          "country": "${/country}"
+        },
+        "formatted": "${/street}, ${/city}, ${/state} ${/zip}",
+        "short_format": "${/city}, ${/state}",
+        "international": "${/street}, ${/city}, ${/country}"
+      },
+      ["$", "/address_data"]
+    ]]
+  ],
+  ["obj",
+    ["address", ["$", "/formatted_address"]],
+    ["display_format", ["get", ["$", "/formatted_address"], "/formatted"]]
+  ]
+]
+'''
+input = {address = {street = "123 Main St", city = "Springfield", state = "IL", zip = "62701", country = "USA"}}
+expected = {address = {components = {street = "123 Main St", city = "Springfield", state = "IL", zip = "62701", country = "USA"}, formatted = "123 Main St, Springfield, IL 62701", short_format = "Springfield, IL", international = "123 Main St, Springfield, USA"}, display_format = "123 Main St, Springfield, IL 62701"}
+cli_flags = ["--interpolation"]
+
+[[chapter.examples]]
+name = "dynamic_form_generation"
+section = "dynamic_templates"
+description = "Generate form templates dynamically based on schema configuration"
+script = '''
+["let",
+  [
+    ["schema", ["get", ["$input"], "/form_schema"]],
+    ["user_data", ["get", ["$input"], "/current_values"]],
+    ["form_fields", ["map", ["get", ["$", "/schema"], "/fields"],
+      ["lambda", ["field"],
+        ["obj",
+          ["name", ["get", ["$", "/field"], "/name"]],
+          ["type", ["get", ["$", "/field"], "/type"]],
+          ["label", ["get", ["$", "/field"], "/label"]],
+          ["value", ["get", ["$", "/user_data"], ["get", ["$", "/field"], "/name"], ""]],
+          ["required", ["get", ["$", "/field"], "/required", false]]
+        ]
+      ]
+    ]],
+    ["form_context", ["obj",
+      ["title", ["get", ["$", "/schema"], "/title"]],
+      ["fields", ["$", "/form_fields"]],
+      ["metadata", ["obj", ["version", "v1"], ["field_count", ["count", ["$", "/form_fields"]]]]]
+    ]]
+  ],
+  ["permuto.apply",
+    {
+      "form": {
+        "title": "${/title}",
+        "fields": "${/fields}",
+        "meta": "${/metadata}"
+      }
+    },
+    ["$", "/form_context"]
+  ]
+]
+'''
+input = {form_schema = {title = "User Profile", fields = [{name = "first_name", type = "text", label = "First Name", required = true}, {name = "email", type = "email", label = "Email Address", required = true}]}, current_values = {first_name = "John", email = "john@example.com"}}
+expected = {form = {title = "User Profile", fields = [{name = "first_name", type = "text", label = "First Name", value = "John", required = true}, {name = "email", type = "email", label = "Email Address", value = "john@example.com", required = true}], meta = {version = "v1", field_count = 2}}}
+cli_flags = ["--interpolation"]
+
+[[chapter.examples]]
+name = "tenant_customization"
+section = "dynamic_templates"
+description = "Multi-tenant template customization with branding and feature toggles"
+script = '''
+["let",
+  [
+    ["tenant_config", ["get", ["$input"], "/tenant"]],
+    ["base_data", ["get", ["$input"], "/data"]],
+    ["features", ["get", ["$", "/tenant_config"], "/enabled_features", []]],
+    ["branding", ["get", ["$", "/tenant_config"], "/branding"]],
+    ["template_context", ["obj",
+      ["data", ["$", "/base_data"]],
+      ["theme", ["get", ["$", "/tenant_config"], "/theme", "default"]],
+      ["show_analytics", ["includes", ["$", "/features"], "analytics"]],
+      ["show_export", ["includes", ["$", "/features"], "export"]],
+      ["company_name", ["get", ["$", "/branding"], "/name", "Application"]],
+      ["logo_url", ["get", ["$", "/branding"], "/logo", "/default-logo.png"]],
+      ["primary_color", ["get", ["$", "/branding"], "/color", "#007bff"]]
+    ]]
+  ],
+  ["permuto.apply",
+    {
+      "app": {
+        "branding": {
+          "name": "${/company_name}",
+          "logo": "${/logo_url}",
+          "theme": "${/theme}",
+          "primary_color": "${/primary_color}"
+        },
+        "content": {
+          "data": "${/data}",
+          "analytics_enabled": "${/show_analytics}",
+          "export_enabled": "${/show_export}"
+        },
+        "features": {
+          "analytics": "${/show_analytics}",
+          "export": "${/show_export}"
+        }
+      }
+    },
+    ["$", "/template_context"]
+  ]
+]
+'''
+input = {tenant = {theme = "dark", enabled_features = ["analytics", "export"], branding = {name = "Acme Corp", logo = "/acme-logo.png", color = "#ff6b35"}}, data = {users = 150, revenue = 75000}}
+expected = {app = {branding = {name = "Acme Corp", logo = "/acme-logo.png", theme = "dark", primary_color = "#ff6b35"}, content = {data = {users = 150, revenue = 75000}, analytics_enabled = true, export_enabled = true}, features = {analytics = true, export = true}}}
+cli_flags = ["--interpolation"]
+
+[[chapter.examples]]
+name = "performance_optimized_template"
+section = "performance_considerations"
+description = "Template optimized for performance with pre-computed expensive operations"
+script = '''
+["let",
+  [
+    ["raw_orders", ["get", ["$input"], "/orders"]],
+    ["expensive_stats", ["reduce", ["$", "/raw_orders"],
+      ["obj", ["total", 0], ["count", 0], ["avg", 0]],
+      ["lambda", ["acc", "order"],
+        ["let",
+          [["new_total", ["+", ["get", ["$", "/acc"], "/total"], ["get", ["$", "/order"], "/amount"]]],
+           ["new_count", ["+", ["get", ["$", "/acc"], "/count"], 1]]],
+          ["obj",
+            ["total", ["$", "/new_total"]],
+            ["count", ["$", "/new_count"]],
+            ["avg", ["/", ["$", "/new_total"], ["$", "/new_count"]]]
+          ]
+        ]
+      ]
+    ]],
+    ["optimized_context", ["obj",
+      ["user_id", ["get", ["$input"], "/user_id"]],
+      ["stats", ["$", "/expensive_stats"]],
+      ["top_orders", ["take", ["sort", ["$", "/raw_orders"], "amount", "desc"], 5]],
+      ["summary_generated", "2024-01-15T10:30:00Z"]
+    ]]
+  ],
+  ["permuto.apply",
+    {
+      "dashboard": {
+        "user": "${/user_id}",
+        "summary": {
+          "total_spent": "${/stats/total}",
+          "order_count": "${/stats/count}",
+          "average_order": "${/stats/avg}"
+        },
+        "highlights": {
+          "top_orders": "${/top_orders}"
+        },
+        "meta": {
+          "generated_at": "${/summary_generated}"
+        }
+      }
+    },
+    ["$", "/optimized_context"]
+  ]
+]
+'''
+input = {user_id = "u-456", orders = [{id = "o1", amount = 150}, {id = "o2", amount = 300}, {id = "o3", amount = 75}, {id = "o4", amount = 200}]}
+expected = {dashboard = {user = "u-456", summary = {total_spent = 725, order_count = 4, average_order = 181.25}, highlights = {top_orders = [{id = "o2", amount = 300}, {id = "o4", amount = 200}, {id = "o1", amount = 150}, {id = "o3", amount = 75}]}, meta = {generated_at = "2024-01-15T10:30:00Z"}}}
+cli_flags = ["--interpolation"]
+
+[chapter.summary]
+content = '''
+### In This Chapter
+
+You've mastered advanced Permuto techniques that power enterprise-grade applications:
+
+- **Template Composition and Nesting** - Building complex, hierarchical template structures
+- **Conditional Templating Logic** - Dynamic templates that adapt to data and runtime conditions
+- **Template Libraries and Components** - Reusable template patterns for consistency and maintainability
+- **Dynamic Template Generation** - Schema-driven and configuration-based template creation
+- **Performance Optimization** - Efficient template patterns for large-scale applications
+
+**Advanced Patterns Mastered:**
+
+1. **Nested Template Hierarchies** - Multi-level data transformation with progressive enrichment
+2. **Conditional Template Sections** - Dynamic content inclusion based on user roles and data availability
+3. **Multi-Format Output** - Single logic generating different output formats (JSON, email, API responses)
+4. **Component-Based Design** - Reusable address, profile, and form template components
+5. **Schema-Driven Generation** - Dynamic form and UI generation from configuration
+6. **Multi-Tenant Customization** - Brand-aware templates with feature toggles
+7. **Performance-Optimized Templates** - Pre-computed expensive operations with lightweight templates
+
+**Enterprise-Ready Capabilities:**
+
+With these advanced techniques, you can build Permuto solutions that:
+- Scale to complex enterprise requirements
+- Maintain consistency across large applications
+- Adapt dynamically to changing business needs
+- Perform efficiently with large datasets
+- Support multi-tenant and white-label scenarios
+
+**The Advanced Permuto Toolkit** transforms simple templating into a powerful presentation architecture that separates business logic from output formatting while maintaining flexibility and performance.
+
+These patterns form the foundation for the sophisticated data presentation layers that power modern applications.
+''' 

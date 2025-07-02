@@ -1,0 +1,213 @@
+# Chapter 7: Object Construction and Manipulation
+# Complete source for generating 07_object_manipulation.md and examples
+
+[chapter]
+number = 7
+title = "Object Construction and Manipulation"
+description = "Learn to build, reshape, and combine JSON objects using obj and merge operators"
+
+[chapter.learning_objectives]
+summary = """
+In modern data exchange, much of the work involves creating, reshaping, and merging JSON objects. In previous chapters, we've seen how to construct objects piece-by-piece using `obj`. This chapter will formalize those patterns and introduce new tools for more complex object manipulation.
+"""
+
+operators_introduced = [
+  "merge"
+]
+
+[chapter.sections]
+
+[chapter.sections.obj_review]
+title = "Review: The obj Operator"
+content = '''
+As a quick refresher, the `obj` operator is the most fundamental way to build a new JSON object. It takes a series of `[key, value]` pairs and assembles them into an object.
+
+```
+["obj", ["key1", <value_expr1>], ["key2", <value_expr2>], ...]
+```
+
+The keys must be literal strings, but the values can be any valid Computo expression. This allows you to construct objects from a mix of static and dynamic data.
+'''
+
+[chapter.sections.merge_operator]
+title = "New Operator: merge"
+content = '''
+A common task is to combine multiple objects. For example, you might have a set of default configuration values that you want to override with user-specific settings. Doing this manually with `obj` and `if` would be tedious.
+
+Computo provides the `merge` operator for this exact purpose.
+
+```
+["merge", <object1>, <object2>, <object3>, ...]
+```
+
+The `merge` operator takes two or more expressions that evaluate to objects and combines them into a single new object. If multiple source objects contain the same key, the value from the **rightmost** object wins.
+'''
+
+[chapter.sections.dynamic_construction]
+title = "Working with Dynamic Object Construction"
+content = '''
+The `obj` operator requires literal string keys, but sometimes you need to build objects where the key names come from your data. While we'll learn advanced techniques for this in Chapter 8, here are some simpler approaches for common scenarios.
+
+### Manual Construction for Known Keys
+
+When you have a small, known set of possible keys, you can use conditional logic to build objects piece by piece.
+'''
+
+[chapter.sections.advanced_preview]
+title = "Advanced Preview: Fully Dynamic Keys"
+content = '''
+For cases where you need to process arrays of key-value pairs into objects, or handle completely dynamic object construction, we'll explore powerful techniques in Chapter 8 using the `reduce` operator. These advanced patterns can transform arrays like:
+
+```json
+[
+  {"key": "user_theme", "value": "dark"},
+  {"key": "user_font_size", "value": 14}
+]
+```
+
+Into objects like:
+
+```json
+{
+  "user_theme": "dark",
+  "user_font_size": 14
+}
+```
+
+This preview gives you a sense of what's possible when combining object manipulation with advanced array processing.
+'''
+
+# =============================================================================
+# EXAMPLES
+# =============================================================================
+
+[[chapter.examples]]
+name = "obj_metadata"
+section = "obj_review"
+description = "Construct an object mixing literal values and input data"
+script = '''
+["obj",
+    ["timestamp", 1672531200],
+    ["source", "api-gateway"],
+    ["user_id", ["get", ["$input"], "/user/id"]],
+    ["is_premium_user", [">", ["get", ["$input"], "/user/credits"], 100]]
+]
+'''
+input = {user = {id = "u-123", credits = 150}}
+expected = {timestamp = 1672531200, source = "api-gateway", user_id = "u-123", is_premium_user = true}
+
+[[chapter.examples]]
+name = "merge_basic"
+section = "merge_operator"
+description = "Combine two objects with the rightmost values taking precedence"
+script = '''
+["merge",
+    ["obj", ["name", "Default"], ["theme", "light"], ["version", "1.0"]],
+    ["obj", ["name", "Custom"], ["theme", "dark"]]
+]
+'''
+input = {}
+expected = {name = "Custom", theme = "dark", version = "1.0"}
+
+[[chapter.examples]]
+name = "merge_preferences"
+section = "merge_operator"
+description = "Override default settings with user-specific preferences"
+script = '''
+["let",
+    [
+        ["defaults", ["obj",
+            ["theme", "light"],
+            ["notifications", ["obj",
+                ["email", true],
+                ["sms", true]
+            ]],
+            ["language", "en-US"]
+        ]],
+        ["user_prefs", ["get", ["$input"], "/user_preferences"]]
+    ],
+    ["merge", ["$", "/defaults"], ["$", "/user_prefs"]]
+]
+'''
+input = {user_preferences = {theme = "dark", notifications = {email = false}}}
+expected = {language = "en-US", notifications = {email = false}, theme = "dark"}
+
+[[chapter.examples]]
+name = "merge_multiple"
+section = "merge_operator"
+description = "Combine system defaults, user preferences, and session overrides"
+script = '''
+["let",
+    [
+        ["system_defaults", ["obj", ["timeout", 30], ["retries", 3], ["debug", false]]],
+        ["user_config", ["get", ["$input"], "/user_config"]],
+        ["session_overrides", ["get", ["$input"], "/session_overrides"]]
+    ],
+    ["merge", 
+        ["$", "/system_defaults"], 
+        ["$", "/user_config"], 
+        ["$", "/session_overrides"]
+    ]
+]
+'''
+input = {user_config = {timeout = 60, theme = "blue"}, session_overrides = {debug = true}}
+expected = {timeout = 60, retries = 3, debug = true, theme = "blue"}
+
+[[chapter.examples]]
+name = "conditional_construction"
+section = "dynamic_construction"
+description = "Build objects with keys determined by input data"
+script = '''
+["let",
+    [
+        ["item", ["get", ["$input"], "/item"]],
+        ["key_name", ["get", ["$", "/item"], "/key"]],
+        ["value", ["get", ["$", "/item"], "/value"]]
+    ],
+    ["if", ["==", ["$", "/key_name"], "user_theme"],
+        ["obj", ["user_theme", ["$", "/value"]]],
+        ["if", ["==", ["$", "/key_name"], "user_font_size"],
+            ["obj", ["user_font_size", ["$", "/value"]]],
+            ["obj", ["unknown_key", ["$", "/value"]]]
+        ]
+    ]
+]
+'''
+input = {item = {key = "user_theme", value = "dark"}}
+expected = {user_theme = "dark"}
+
+[[chapter.examples]]
+name = "merge_kvpairs"
+section = "dynamic_construction"
+description = "Combine multiple single-key objects into a final result"
+script = '''
+["merge",
+    ["obj", ["id", ["get", ["$input"], "/user_id"]]],
+    ["obj", ["status", ["get", ["$input"], "/status"]]],
+    ["obj", ["metadata", ["obj",
+        ["created_at", ["get", ["$input"], "/timestamp"]],
+        ["source", "api"]
+    ]]]
+]
+'''
+input = {user_id = "u-456", status = "active", timestamp = 1672531200}
+expected = {id = "u-456", status = "active", metadata = {created_at = 1672531200, source = "api"}}
+
+[chapter.summary]
+content = '''
+### In This Chapter
+
+You've deepened your understanding of how to work with objects in Computo:
+
+- **Reviewed the `obj` operator** for explicit object construction with literal keys
+- **Learned the `merge` operator** to combine multiple objects with clear precedence rules
+- **Explored patterns for dynamic object construction** using conditional logic and strategic merging
+- **Previewed advanced techniques** that we'll cover in the next chapter
+
+**Operators introduced in this chapter:**
+- `merge` - Combine multiple objects into one
+
+**Running count: 34 operators total**
+
+With these tools, you have strong control over the shape and content of the JSON objects you produce. In the next chapter, we'll explore advanced array and object operations that unlock even more powerful data transformation patterns.
+''' 

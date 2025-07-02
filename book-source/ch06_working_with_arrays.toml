@@ -1,0 +1,157 @@
+# Chapter 6: Working with Arrays
+# Complete source for generating 06_working_with_arrays.md and examples
+
+[chapter]
+number = 6
+title = "Working with Arrays"
+description = "Array processing, transformations, and the map operator"
+
+[chapter.learning_objectives]
+summary = """
+In our previous examples, we manually selected a single user from an array with `["get", ..., "/users/0"]`. This is fine for demonstration, but real-world tasks require processing *every* item in a collection. You might need to transform a list of products, summarize a series of log entries, or, in our case, process a list of users.
+
+This is where Computo's array operators come into play. We'll start with the most fundamental one: `map`.
+"""
+
+operators_introduced = [
+  "map", "lambda", "str_concat"
+]
+
+[chapter.sections]
+
+[chapter.sections.map_operator]
+title = "The `map` Operator"
+content = '''
+The `map` operator iterates over an input array and applies a transformation to each item, producing a new array of the transformed items. The original array is not changed.
+
+Its syntax introduces a new concept: the `lambda` (or anonymous function).
+
+`["map", <array_expression>, ["lambda", ["<item_variable>"], <transform_expression>]]`
+
+Let's break that down:
+*   `<array_expression>`: An expression that must evaluate to a JSON array.
+*   `["lambda", ... ]`: A special expression that defines an operation to be performed on each item.
+*   `<item_variable>`: The name you choose for the variable that will hold the current item during each iteration.
+*   `<transform_expression>`: The expression that transforms the item. Inside this expression, you can access the current item using `["$", "/<item_variable>"]`.
+'''
+
+[chapter.sections.first_map]
+title = "Your First `map`: Extracting Usernames"
+content = '''
+Let's use input containing a list of users. Our goal is to produce a simple JSON array containing only the names of all the users.
+
+The script will use `map` to iterate over the users array and extract just the name from each user object, demonstrating the basic map syntax and lambda functions.
+'''
+
+[chapter.sections.array_syntax]
+title = "Unambiguous Array Syntax: `{\"array\": [...]}`"
+content = '''
+Before we continue, we need to address a crucial piece of syntax. In Computo, a JSON array `[...]` is always treated as an operator call. So how do you represent a *literal* array of data? You use a special object wrapper:
+
+`{"array": [item1, item2, ...]}`
+
+When the interpreter sees `{"array": ...}`, it knows you mean "this is a literal array of data," not an action to perform.
+
+For example, to map over a hardcoded array, you would write:
+```json
+["map",
+  {"array": [10, 20, 30]},
+  ["lambda", ["n"], ["+", ["$", "/n"], 5]]
+]
+```
+This would produce `[15, 25, 35]`. This syntax prevents any ambiguity between operator calls and literal array data.
+'''
+
+[chapter.sections.str_concat]
+title = "String Concatenation with `str_concat`"
+content = '''
+When working with array transformations, you'll often need to build strings from multiple values. The `str_concat` operator allows you to concatenate (join together) multiple strings into a single string.
+
+`["str_concat", <string1>, <string2>, <string3>, ...]`
+
+The `str_concat` operator accepts any number of arguments and converts them to strings before joining them. This makes it perfect for building formatted messages, labels, or identifiers within your array transformations.
+
+#### Basic String Concatenation
+
+**Simple example:**
+```json
+["str_concat", "Hello, ", "World", "!"]
+```
+**Result:** `"Hello, World!"`
+
+#### Type Conversion with `str_concat`
+
+The `str_concat` operator automatically converts non-string values to strings, making it useful for combining different data types:
+
+```json
+["str_concat", "Item #", 42, ": ", "Widget", " ($", 25.99, ")"]
+```
+**Result:** `"Item #42: Widget ($25.99)"`
+
+#### Practical Example: Building URLs
+
+String concatenation is particularly useful for building URLs or paths:
+
+```json
+["str_concat", "/users/", ["$", "/username"], "/profile"]
+```
+
+This operator is essential for creating human-readable output, building identifiers, and formatting data for display or further processing.
+'''
+
+# =============================================================================
+# EXAMPLES
+# =============================================================================
+
+[[chapter.examples]]
+name = "extract_names"
+section = "first_map"
+description = "Extract user names from array using map"
+script = '["map", {"array": ["Alice", "Bob", "Charlie"]}, ["lambda", ["name"], ["$", "/name"]]]'
+input = {}
+expected = ["Alice", "Bob", "Charlie"]
+
+[[chapter.examples]]
+name = "map_with_numbers"
+section = "array_syntax"
+description = "Map over hardcoded array of numbers"
+script = '["map", {"array": [10, 20, 30]}, ["lambda", ["n"], ["+", ["$", "/n"], 5]]]'
+input = {}
+expected = [15, 25, 35]
+
+[[chapter.examples]]
+name = "str_concat_basic"
+section = "str_concat"
+description = "Basic string concatenation example"
+script = '["str_concat", "Hello, ", "World", "!"]'
+input = {}
+expected = "Hello, World!"
+
+[[chapter.examples]]
+name = "str_concat_with_numbers"
+section = "str_concat"
+description = "String concatenation with automatic type conversion"
+script = '["str_concat", "Item #", 42, ": Widget ($", 25.99, ")"]'
+input = {}
+expected = "Item #42: Widget ($25.99)"
+
+[[chapter.examples]]
+name = "map_with_str_concat"
+section = "str_concat"
+description = "Combine map and str_concat for formatting"
+script = '["map", {"array": ["Alice", "Bob", "Charlie"]}, ["lambda", ["name"], ["str_concat", "User: ", ["$", "/name"]]]]'
+input = {}
+expected = ["User: Alice", "User: Bob", "User: Charlie"]
+
+[chapter.summary]
+content = '''
+### In This Chapter
+
+You've added array processing to your skillset. You have learned:
+*   How to iterate over an array and transform each item using the **`map`** operator.
+*   The syntax for **`lambda`** expressions to define the per-item transformation.
+*   The special **`{"array": [...]}`** syntax for representing literal arrays.
+*   The **`str_concat`** operator for combining multiple strings and building formatted text within transformations.
+
+`map` is the first of several array operators. In the next chapters, we will explore others like `filter` and `reduce` to further refine our data pipelines.
+'''

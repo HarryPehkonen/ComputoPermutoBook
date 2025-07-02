@@ -1,0 +1,202 @@
+# Chapter 8: Advanced Array Operations
+# Complete source for generating 08_advanced_array_ops.md and examples
+
+[chapter]
+number = 8
+title = "Advanced Array Operations"
+description = "Filter, reduce, array queries, and array pairing operations"
+
+[chapter.learning_objectives]
+summary = """
+In Chapter 6, we introduced `map`, the fundamental tool for transforming arrays. However, transformation is only one part of the story. Often, you need to select a subset of items from an array or aggregate an entire array into a single value.
+
+This chapter introduces the remaining array operators: `filter`, `reduce`, specialized query operators (`find`, `some`, `every`, `flatMap`), and array pairing operations (`zip`, `zipWith`, `mapWithIndex`, `enumerate`).
+"""
+
+operators_introduced = [
+  "filter", "reduce", "find", "some", "every", "flatMap", 
+  "zip", "zipWith", "mapWithIndex", "enumerate"
+]
+
+[chapter.sections]
+
+[chapter.sections.filter_operator]
+title = "`filter`: Selecting Items from an Array"
+content = '''
+While `map` transforms every item in an array, `filter` *selects* items from an array. It iterates over an array and returns a new array containing only the items for which a given condition is "truthy".
+
+The syntax is nearly identical to `map`:
+
+`["filter", <array_expression>, ["lambda", ["<item_variable>"], <condition_expression>]]`
+
+The `<condition_expression>` must evaluate to a "truthy" or "falsy" value, following the same rules as the `if` operator. If the condition is truthy, the item is kept; if falsy, it is discarded.
+'''
+
+[chapter.sections.reduce_operator]
+title = "`reduce`: Aggregating an Array to a Single Value"
+content = '''
+While `map` and `filter` produce new arrays, `reduce` (sometimes called "fold" or "accumulate") boils an entire array down to a single value. This is used for tasks like summing numbers, concatenating strings, or flattening a list of lists.
+
+The `reduce` operator is the most complex of the three, introducing an "accumulator".
+
+`["reduce", <array_expression>, <lambda>, <initial_value>]`
+
+The `lambda` for `reduce` takes **two** arguments:
+`["lambda", ["<accumulator>", "<current_item>"], <expression>]`
+
+Here's how it works:
+1.  The `<accumulator>` is initialized with the `<initial_value>`.
+2.  The lambda is called for the first item in the array. The result of its `<expression>` becomes the **new value of the accumulator**.
+3.  The lambda is called for the second item, using the updated accumulator. This repeats for all items.
+4.  The final value of the accumulator is the result of the `reduce` operation.
+'''
+
+[chapter.sections.array_queries]
+title = "Array Query Operators"
+content = '''
+Beyond the core transformation operators (`map`, `filter`, `reduce`), Computo provides specialized operators for common array query patterns. These operators make it easy to answer questions like "Does any item match this condition?" or "What's the first item that meets my criteria?"
+
+#### `find`: Locating the First Match
+
+The `find` operator searches through an array and returns the **first item** that matches a condition. If no item matches, it returns `null`.
+
+#### `some`: Testing for Any Match
+
+The `some` operator returns `true` if **at least one** item in the array matches the condition, `false` otherwise.
+
+#### `every`: Testing for Universal Match
+
+The `every` operator returns `true` if **all** items in the array match the condition, `false` otherwise.
+
+#### `flatMap`: Transforming and Flattening
+
+The `flatMap` operator is like `map`, but if the transformation function returns an array, those arrays are flattened into a single result array.
+'''
+
+[chapter.sections.array_pairing]
+title = "Array Pairing and Indexing Operations"
+content = '''
+Beyond filtering and aggregation, Computo provides specialized operators for working with multiple arrays simultaneously and for accessing positional information within arrays.
+
+#### `zip`: Combining Arrays Element-Wise
+
+The `zip` operator takes two arrays and combines them into an array of pairs (two-element arrays). Each pair contains corresponding elements from the two input arrays.
+
+`["zip", <array1_expression>, <array2_expression>]`
+
+#### `zipWith`: Custom Array Combination
+
+While `zip` creates pairs, `zipWith` allows you to specify a custom function for combining corresponding elements from two arrays.
+
+`["zipWith", <array1_expression>, <array2_expression>, ["lambda", ["item1", "item2"], <combination_expression>]]`
+
+#### `mapWithIndex`: Position-Aware Transformation
+
+The `mapWithIndex` operator is like `map`, but the lambda function receives both the item and its index position within the array.
+
+`["mapWithIndex", <array_expression>, ["lambda", ["item", "index"], <transform_expression>]]`
+
+#### `enumerate`: Creating Index-Value Pairs
+
+The `enumerate` operator creates pairs of [index, value] for each element in an array, similar to Python's enumerate function.
+
+`["enumerate", <array_expression>]`
+'''
+
+# =============================================================================
+# EXAMPLES
+# =============================================================================
+
+[[chapter.examples]]
+name = "filter_even_numbers"
+section = "filter_operator"
+description = "Filter array to find even numbers only"
+script = '["filter", {"array": [1, 2, 3, 4, 5, 6]}, ["lambda", ["n"], ["==", ["%", ["$", "/n"], 2], 0]]]'
+input = {}
+expected = [2, 4, 6]
+
+[[chapter.examples]]
+name = "reduce_sum"
+section = "reduce_operator"
+description = "Sum an array of numbers using reduce"
+script = '["reduce", {"array": [1, 2, 3, 4, 5]}, ["lambda", ["total", "n"], ["+", ["$", "/total"], ["$", "/n"]]], 0]'
+input = {}
+expected = 15
+
+[[chapter.examples]]
+name = "find_first_large"
+section = "array_queries"
+description = "Find first number greater than 3"
+script = '["find", {"array": [1, 2, 4, 5]}, ["lambda", ["n"], [">", ["$", "/n"], 3]]]'
+input = {}
+expected = 4
+
+[[chapter.examples]]
+name = "some_large_numbers"
+section = "array_queries"
+description = "Check if any numbers are greater than 10"
+script = '["some", {"array": [1, 2, 15, 4]}, ["lambda", ["n"], [">", ["$", "/n"], 10]]]'
+input = {}
+expected = true
+
+[[chapter.examples]]
+name = "every_positive"
+section = "array_queries"
+description = "Check if all numbers are positive"
+script = '["every", {"array": [1, 2, 3, 4]}, ["lambda", ["n"], [">", ["$", "/n"], 0]]]'
+input = {}
+expected = true
+
+[[chapter.examples]]
+name = "flatmap_double_arrays"
+section = "array_queries"
+description = "Flatten array of arrays using flatMap"
+script = '["flatMap", {"array": [[1, 2], [3, 4], [5]]}, ["lambda", ["arr"], ["$", "/arr"]]]'
+input = {}
+expected = [1, 2, 3, 4, 5]
+
+[[chapter.examples]]
+name = "zip_names_scores"
+section = "array_pairing"
+description = "Pair names with scores using zip"
+script = '["zip", {"array": ["Alice", "Bob", "Charlie"]}, {"array": [95, 87, 92]}]'
+input = {}
+expected = [["Alice", 95], ["Bob", 87], ["Charlie", 92]]
+
+[[chapter.examples]]
+name = "zipwith_add_numbers"
+section = "array_pairing"
+description = "Add corresponding numbers using zipWith"
+script = '["zipWith", {"array": [1, 2, 3]}, {"array": [10, 20, 30]}, ["lambda", ["a", "b"], ["+", ["$", "/a"], ["$", "/b"]]]]'
+input = {}
+expected = [11, 22, 33]
+
+[[chapter.examples]]
+name = "mapwithindex_numbered"
+section = "array_pairing"
+description = "Create numbered items with mapWithIndex"
+script = '["mapWithIndex", {"array": ["apple", "banana", "cherry"]}, ["lambda", ["fruit", "index"], ["+", ["$", "/index"], 1]]]'
+input = {}
+expected = [1, 2, 3]
+
+[[chapter.examples]]
+name = "enumerate_fruits"
+section = "array_pairing"
+description = "Create index-value pairs using enumerate"
+script = '["enumerate", {"array": ["apple", "banana", "cherry"]}]'
+input = {}
+expected = [[0, "apple"], [1, "banana"], [2, "cherry"]]
+
+[chapter.summary]
+content = '''
+### In This Chapter
+
+You've mastered the complete array processing toolkit:
+*   **`filter`** for selecting items that meet specific conditions.
+*   **`reduce`** for aggregating arrays into single values with accumulator patterns.
+*   **Query operators** (`find`, `some`, `every`, `flatMap`) for common array interrogation patterns.
+*   **Array pairing operations** (`zip`, `zipWith`, `mapWithIndex`, `enumerate`) for correlating data and position-aware transformations.
+*   **Pipeline patterns** for chaining these operators to answer complex questions about your data.
+
+These operators give you the power to process arrays in sophisticated ways, from simple filtering to complex data analysis and correlation. Combined with the conditional operators from Chapter 5, you now have a complete toolkit for building intelligent, data-driven transformations.
+'''

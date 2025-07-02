@@ -1,0 +1,367 @@
+# Chapter 9: Template-Driven Transformations
+# Complete source for generating 09_template_driven_transformations.md and examples
+
+[chapter]
+number = 9
+title = "Template-Driven Transformations"
+description = "Introduction to Permuto templating and building clean, maintainable data pipelines"
+
+[chapter.learning_objectives]
+summary = """
+Welcome to Part III of our guide. By now, you have a solid grasp of Computo's logic - you can make decisions with `if`, iterate with `map`, process arrays with `filter` and `reduce`, and manipulate objects with `merge`. Now it's time to learn about Computo's companion tool: **Permuto**.
+
+While Computo excels at data logic and transformation, Permuto specializes in **templating** - taking clean data and presenting it in exactly the format you need. This chapter introduces Permuto basics and shows how to combine both tools in powerful template-driven transformation patterns.
+"""
+
+operators_introduced = [
+  "permuto.apply"
+]
+
+[chapter.sections]
+
+[chapter.sections.what_is_permuto]
+title = "What is Permuto?"
+content = '''
+Permuto is a JSON templating engine that works alongside Computo. While Computo transforms and processes data through logical operations, Permuto focuses on **presentation** - taking clean data and formatting it into your desired output structure.
+
+Think of the relationship this way:
+- **Computo**: The "smart" processor that handles logic, calculations, and data reshaping
+- **Permuto**: The "presentation layer" that takes clean data and applies it to templates
+
+### Why Two Tools?
+
+You might wonder: "Why not just use Computo for everything?" Here's why the separation is powerful:
+
+**Before (Computo only):**
+```json
+["obj",
+  ["title", ["get", ["$input"], "/product/name"]],
+  ["price", ["str_concat", "USD $", ["/", ["get", ["$input"], "/price_cents"], 100]]],
+  ["description", ["get", ["$input"], "/product/description"]]
+]
+```
+
+**After (Computo + Permuto):**
+```json
+// Computo prepares clean data
+["let",
+  [["clean_data", ["obj",
+    ["title", ["get", ["$input"], "/product/name"]],
+    ["price", ["/", ["get", ["$input"], "/price_cents"], 100]],
+    ["description", ["get", ["$input"], "/product/description"]]
+  ]]],
+  // Permuto handles presentation
+  ["permuto.apply",
+    {
+      "title": "${/title}",
+      "price": "USD $${/price}",
+      "description": "${/description}"
+    },
+    ["$", "/clean_data"]
+  ]
+]
+```
+
+The second approach cleanly separates **data preparation** from **presentation formatting**.
+'''
+
+[chapter.sections.permuto_basics]
+title = "Permuto Template Syntax"
+content = '''
+Permuto templates look like JSON, but with special interpolation syntax that gets replaced with actual data values.
+
+### Basic Interpolation: ${/path}
+
+The core Permuto feature is **variable interpolation** using `${/path}` syntax:
+
+```json
+{
+  "greeting": "Hello, ${/name}!",
+  "age_message": "You are ${/age} years old"
+}
+```
+
+When applied to data like `{"name": "Alice", "age": 30}`, this produces:
+
+```json
+{
+  "greeting": "Hello, Alice!",
+  "age_message": "You are 30 years old"
+}
+```
+
+### Path Syntax
+
+Permuto uses **JSON Pointer** paths (just like Computo's `get` operator):
+
+- `${/name}` - Root level property
+- `${/user/name}` - Nested property  
+- `${/users/0/name}` - Array index access
+
+### The permuto.apply Operator
+
+To use a Permuto template in Computo, use the `permuto.apply` operator:
+
+```json
+["permuto.apply", <template>, <data>]
+```
+
+**Important**: You need the `--interpolation` flag when running scripts that use Permuto:
+
+```bash
+computo --interpolation script.json input.json
+```
+'''
+
+[chapter.sections.template_driven_pattern]
+title = "The Template-Driven Pattern"
+content = '''
+Now that you understand Permuto basics, let's learn the powerful **Template-Driven Transformation** pattern. This approach separates your transformation into two clean phases:
+
+1. **Data Preparation** (Computo): Transform messy input into clean, template-ready data
+2. **Presentation** (Permuto): Apply the clean data to a well-designed template
+
+### The Core Workflow
+
+**Instead of this tightly-coupled approach:**
+```json
+["permuto.apply", <template>, ["$input"]]  // Template must match raw input structure
+```
+
+**Use this decoupled approach:**
+```json
+["let",
+  [["clean_context", 
+    // Build perfect data for your template
+    ["obj", 
+      ["field1", /* transform raw input */],
+      ["field2", /* more transformations */]
+    ]
+  ]],
+  ["permuto.apply", <template>, ["$", "/clean_context"]]
+]
+```
+
+This pattern makes your transformations:
+- **More maintainable**: Changes to input format only affect the data preparation phase
+- **More testable**: You can verify the clean context separately from the final output  
+- **More reusable**: The same template can work with data prepared from different sources
+'''
+
+[chapter.sections.practical_examples]
+title = "Practical Examples"
+content = '''
+Let's see this pattern in action with real-world scenarios.
+
+### Example 1: User Profile Card
+
+Transform backend user data into a frontend display card:
+
+**Raw Input:** Complex backend format with internal IDs and mixed data types
+**Goal:** Clean, UI-ready card with formatted information
+
+### Example 2: Product Listing
+
+Convert e-commerce product data with variants and pricing into a simplified display format:
+
+**Raw Input:** Product with variants, stock levels, and prices in cents
+**Goal:** Display card showing available options and formatted pricing
+
+The examples demonstrate how the template-driven pattern handles real complexity while keeping the final templates clean and readable.
+'''
+
+# =============================================================================
+# EXAMPLES
+# =============================================================================
+
+[[chapter.examples]]
+name = "before_computo_only"
+section = "what_is_permuto"
+description = "Before: Building output structure directly with Computo (tightly coupled)"
+script = '''
+["obj",
+  ["title", ["get", ["$input"], "/product/name"]],
+  ["price", ["str_concat", "USD $", ["/", ["get", ["$input"], "/price_cents"], 100]]],
+  ["description", ["get", ["$input"], "/product/description"]]
+]
+'''
+input = {product = {name = "Quantum Widget", description = "A revolutionary quantum device"}, price_cents = 4999}
+expected = {title = "Quantum Widget", price = "USD $49.99", description = "A revolutionary quantum device"}
+
+[[chapter.examples]]
+name = "after_template_driven"
+section = "what_is_permuto"
+description = "After: Template-driven approach separating data preparation from presentation"
+script = '''
+["let",
+  [["clean_data", ["obj",
+    ["title", ["get", ["$input"], "/product/name"]],
+    ["price", ["/", ["get", ["$input"], "/price_cents"], 100]],
+    ["description", ["get", ["$input"], "/product/description"]]
+  ]]],
+  ["permuto.apply",
+    {
+      "title": "${/title}",
+      "price": "USD $${/price}",
+      "description": "${/description}"
+    },
+    ["$", "/clean_data"]
+  ]
+]
+'''
+input = {product = {name = "Quantum Widget", description = "A revolutionary quantum device"}, price_cents = 4999}
+expected = {title = "Quantum Widget", price = "USD $49.99", description = "A revolutionary quantum device"}
+cli_flags = ["--interpolation"]
+
+[[chapter.examples]]
+name = "simple_interpolation"
+section = "permuto_basics"
+description = "Basic Permuto template with string interpolation"
+script = '''
+["permuto.apply",
+  {
+    "greeting": "Hello, ${/name}!",
+    "message": "You have ${/count} messages"
+  },
+  ["$input"]
+]
+'''
+input = {name = "Alice", count = 5}
+expected = {greeting = "Hello, Alice!", message = "You have 5 messages"}
+cli_flags = ["--interpolation"]
+
+[[chapter.examples]]
+name = "nested_data_access"
+section = "permuto_basics"  
+description = "Access nested data using JSON Pointer paths"
+script = '''
+["permuto.apply",
+  {
+    "user_card": {
+      "name": "${/user/profile/name}",
+      "email": "${/user/contact/email}",
+      "role": "${/user/role}"
+    }
+  },
+  ["$input"]
+]
+'''
+input = {user = {profile = {name = "Bob Smith"}, contact = {email = "bob@example.com"}, role = "admin"}}
+expected = {user_card = {name = "Bob Smith", email = "bob@example.com", role = "admin"}}
+cli_flags = ["--interpolation"]
+
+[[chapter.examples]]
+name = "user_profile_card"
+section = "practical_examples"
+description = "Transform backend user data into frontend display card"
+script = '''
+["let",
+  [
+    ["user", ["get", ["$input"], "/user_data"]],
+    ["clean_context", ["obj",
+      ["display_name", ["get", ["$", "/user"], "/full_name"]],
+      ["join_date", ["get", ["$", "/user"], "/created_at"]],
+      ["status", ["if", ["get", ["$", "/user"], "/is_active"], "Active", "Inactive"]],
+      ["role", ["get", ["$", "/user"], "/permissions/role"]]
+    ]]
+  ],
+  ["permuto.apply",
+    {
+      "profile_card": {
+        "name": "${/display_name}",
+        "member_since": "${/join_date}",
+        "status": "${/status}",
+        "access_level": "${/role}"
+      }
+    },
+    ["$", "/clean_context"]
+  ]
+]
+'''
+input = {user_data = {id = "u-123", full_name = "Alice Johnson", created_at = "2023-01-15", is_active = true, permissions = {role = "editor"}}}
+expected = {profile_card = {name = "Alice Johnson", member_since = "2023-01-15", status = "Active", access_level = "editor"}}
+cli_flags = ["--interpolation"]
+
+[[chapter.examples]]
+name = "product_display_card"
+section = "practical_examples"
+description = "Convert product data into clean display format using template-driven pattern"
+script = '''
+["let",
+  [
+    ["product", ["$input"]],
+    ["clean_context", ["obj",
+      ["title", ["get", ["$", "/product"], "/name"]],
+      ["price", ["/", ["get", ["$", "/product"], "/base_price_cents"], 100]],
+      ["category", ["get", ["$", "/product"], "/category"]],
+      ["in_stock", [">", ["get", ["$", "/product"], "/stock"], 0]]
+    ]]
+  ],
+  ["permuto.apply",
+    {
+      "display_card": {
+        "title": "${/title}",
+        "price": "USD $${/price}",
+        "category": "${/category}",
+        "availability": "${/in_stock}"
+      }
+    },
+    ["$", "/clean_context"]
+  ]
+]
+'''
+input = {product_id = "prod-xyz-789", base_price_cents = 2999, name = "Quantum T-Shirt", category = "Apparel", stock = 15}
+expected = {display_card = {title = "Quantum T-Shirt", price = "USD $29.99", category = "Apparel", availability = true}}
+cli_flags = ["--interpolation"]
+
+[[chapter.examples]]
+name = "api_response_formatting"
+section = "template_driven_pattern"
+description = "Transform internal API data into client-friendly format"
+script = '''
+["let",
+  [
+    ["response_data", ["get", ["$input"], "/api_response"]],
+    ["clean_context", ["obj",
+      ["success", ["==", ["get", ["$", "/response_data"], "/status_code"], 200]],
+      ["data_count", ["count", ["get", ["$", "/response_data"], "/results"]]],
+      ["items", ["get", ["$", "/response_data"], "/results"]]
+    ]]
+  ],
+  ["permuto.apply",
+    {
+      "response": {
+        "ok": "${/success}",
+        "message": "Found ${/data_count} items",
+        "data": "${/items}"
+      }
+    },
+    ["$", "/clean_context"]
+  ]
+]
+'''
+input = {api_response = {status_code = 200, results = ["item1", "item2", "item3"], metadata = {source = "db"}}}
+expected = {response = {ok = true, message = "Found 3 items", data = ["item1", "item2", "item3"]}}
+cli_flags = ["--interpolation"]
+
+[chapter.summary]
+content = '''
+### In This Chapter
+
+You've learned how to combine Computo's logic with Permuto's templating:
+
+- **Introduced Permuto**, the templating companion to Computo's logic engine
+- **Learned template syntax** with `${/path}` interpolation and JSON Pointer paths  
+- **Mastered the `permuto.apply` operator** for applying templates to data
+- **Discovered the Template-Driven Pattern** for separating data preparation from presentation
+- **Built practical examples** showing real-world template-driven transformations
+
+**Operators introduced in this chapter:**
+- `permuto.apply` - Apply Permuto templates to data
+
+**Running count: 35 operators total**
+
+This pattern is the foundation of maintainable data transformations. **Computo prepares the data, Permuto presents the data.** This clean separation makes your pipelines robust, testable, and easy to modify as requirements change.
+
+In the next chapter, we'll explore additional data pipeline patterns that build on this template-driven foundation.
+''' 
