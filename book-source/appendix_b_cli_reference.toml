@@ -1,0 +1,512 @@
+[appendix]
+letter = "B"
+title = "CLI Reference and Flags"
+description = "Complete command-line interface documentation for both Computo and Permuto tools"
+
+[appendix.learning_objectives]
+primary = "Master the complete command-line interface for both Computo and Permuto"
+secondary = [
+    "Understand all available CLI flags and their usage",
+    "Learn input/output patterns and automation techniques", 
+    "Know debugging and development workflow commands",
+    "Understand exit codes and error handling"
+]
+
+[appendix.prerequisites]
+knowledge = ["Basic command-line usage", "Understanding of Computo/Permuto basics"]
+tools = ["Built Computo and Permuto binaries", "Terminal/shell access"]
+
+[[sections]]
+title = "Computo CLI Reference"
+content = """
+The `computo` command-line tool is the primary interface for executing Computo transformation scripts.
+
+## Basic Usage
+
+### Single Input Processing
+```bash
+# Basic transformation
+computo script.json input.json
+
+# With pretty-printed output (recommended for development)
+computo --pretty=2 script.json input.json
+
+# Compact output (default, good for production/piping)
+computo script.json input.json
+```
+
+### Multiple Input Processing
+```bash
+# Process multiple input files
+computo script.json input1.json input2.json input3.json
+
+# No input files (script only)
+computo script.json
+```
+
+The script will have read-only access to:
+
+- `["$input"]` - First input file
+
+- `["$inputs"]` - Array of all input files
+
+## Output Formatting Options
+
+### `--pretty=N`
+Controls JSON output formatting with N-space indentation.
+
+```bash
+# 2-space indentation (recommended for development)
+computo --pretty=2 script.json input.json
+
+# 4-space indentation  
+computo --pretty=4 script.json input.json
+
+# Compact output (default)
+computo script.json input.json
+```
+
+**Examples:**
+
+- **Default (compact):** `{"name":"Alice","age":30}`
+
+- **`--pretty=2`:** 
+  ```json
+  {
+    "name": "Alice", 
+    "age": 30
+  }
+  ```
+
+## Permuto Integration
+
+### `--interpolation`
+Enables string interpolation in Permuto templates.
+
+```bash
+# Enable string interpolation
+computo --interpolation script.json input.json
+
+# Disable string interpolation (default)
+computo --no-interpolation script.json input.json
+```
+
+**Example with interpolation:**
+```json
+// Script
+["permuto.apply", {"message": "Hello ${/name}!"}, ["$input"]]
+
+// Input: {"name": "Alice"}
+// Output: {"message": "Hello Alice!"}
+```
+
+**Example without interpolation:**
+```json
+// Same script and input
+// Output: {"message": "Hello ${/name}!"}
+```
+
+## JSON Patch Operations
+
+### `--diff`
+Generates RFC 6902 JSON Patch instead of applying transformation.
+
+```bash
+# Generate patch from transformation
+computo --diff script.json input.json
+
+# Save patch to file
+computo --diff script.json input.json > changes.patch
+```
+
+**Example:**
+```bash
+# Input: {"status": "active", "id": 123}
+# Script transforms status to "archived"
+# Output: [{"op": "replace", "path": "/status", "value": "archived"}]
+```
+
+**Important:** `--diff` only works with single input files, not multiple inputs.
+
+## Development and Debugging
+
+### `--comments`
+Allows comments in script files (CLI only, not in library usage).
+
+```bash
+# Enable comment parsing in script files
+computo --comments script_with_comments.json input.json
+```
+
+**Supported comment styles:**
+```json
+[
+  // Single line comments
+  "obj",
+  /* Multi-line
+     comments */
+  ["name", "Alice"]
+]
+```
+
+**Note:** Comments are only supported in script files, not input files.
+
+## Exit Codes
+
+The `computo` command returns standard exit codes:
+
+- **0:** Success - transformation completed without errors
+- **1:** Error - transformation failed (invalid script, runtime error, file not found, etc.)
+"""
+
+[[sections]]
+title = "Permuto CLI Reference"
+content = """
+The `permuto` command-line tool provides standalone templating capabilities with additional features beyond what's available through Computo's `permuto.apply`.
+
+## Basic Usage
+
+### Template Processing
+```bash
+# Basic template application
+permuto template.json context.json
+
+# With string interpolation
+permuto --interpolation template.json context.json
+```
+
+## Template Control Options
+
+### String Interpolation
+```bash
+# Enable string interpolation (default: disabled)
+permuto --interpolation template.json context.json
+
+# Explicitly disable string interpolation  
+permuto --no-interpolation template.json context.json
+```
+
+### Custom Delimiters
+```bash
+# Custom placeholder markers (default: ${ and })
+permuto --start='{{' --end='}}' template.json context.json
+
+# Example template with custom delimiters: {"name": "{{/user/name}}"}
+```
+
+### Recursion and Safety
+```bash
+# Set maximum recursion depth (default: 64)
+permuto --max-depth=32 template.json context.json
+```
+
+## Missing Key Behavior
+
+### `--missing-key=MODE`
+Controls how missing keys in the context are handled.
+
+```bash
+# Ignore missing keys (default behavior)
+permuto --missing-key=ignore template.json context.json
+
+# Throw error on missing keys
+permuto --missing-key=error template.json context.json
+```
+
+**Examples:**
+```json
+// Template: {"user": "${/missing/key}"}
+// Context: {}
+
+// --missing-key=ignore → {"user": ""}
+// --missing-key=error → Error: Missing key '/missing/key'
+```
+
+## Reverse Operations
+
+### `--reverse`
+Performs reverse template operations to extract context from results.
+
+```bash
+# Extract context from processed template
+permuto --reverse template.json result.json
+```
+
+**Example workflow:**
+```bash
+# 1. Apply template
+permuto template.json context.json > result.json
+
+# 2. Extract original context
+permuto --reverse template.json result.json
+# Should output the original context.json content
+```
+
+## Information and Help
+
+### `--help`
+```bash
+# Show help message with all options
+permuto --help
+```
+
+### `--version`
+```bash
+# Show version information
+permuto --version
+```
+
+## Advanced Usage Examples
+
+### Configuration Generation
+```bash
+# Generate environment-specific configs
+for env in dev staging prod; do
+    permuto config_template.json "contexts/${env}.json" > "configs/${env}.json"
+done
+```
+
+### Template Validation
+```bash
+# Validate template with test context
+if permuto --missing-key=error template.json test_context.json > /dev/null; then
+    echo "Template validation passed"
+else
+    echo "Template has missing key references"
+fi
+```
+
+### Reverse Engineering
+```bash
+# Extract template context from existing data
+permuto --reverse user_template.json existing_user.json > extracted_context.json
+```
+"""
+
+[[sections]]
+title = "Integration and Automation Patterns"
+content = """
+## Build System Integration
+
+### Makefile Integration
+```makefile
+# Makefile example
+configs: config_template.json
+	for env in dev staging prod; do \\
+		computo --pretty=2 generate_config.json "env/$${env}.json" > "dist/$${env}.json"; \\
+	done
+
+validate: 
+	computo validate_schema.json input.json
+```
+
+### CI/CD Pipeline Integration
+```yaml
+# GitHub Actions example
+- name: Generate configurations
+  run: |
+    computo --pretty=2 config_generator.json env/production.json > dist/prod-config.json
+    computo --diff config_generator.json env/staging.json > changes.patch
+
+- name: Validate transformations
+  run: |
+    for script in scripts/*.json; do
+      if ! computo "$script" test_data.json > /dev/null; then
+        echo "Validation failed for $script"
+        exit 1
+      fi
+    done
+```
+
+### Shell Scripting Patterns
+```bash
+# Process multiple files in a loop
+for file in data/*.json; do
+    computo process.json "$file" > "processed/$(basename "$file")"
+done
+
+# Error handling in scripts
+if computo validate.json input.json > /dev/null 2>&1; then
+    echo "Validation passed"
+    computo transform.json input.json
+else
+    echo "Validation failed" >&2
+    exit 1
+fi
+
+# Piping and chaining
+computo step1.json input.json | computo step2.json | jq '.result'
+```
+
+## Docker Integration
+```dockerfile
+# Multi-stage build for configuration generation
+FROM alpine:latest AS config-builder
+COPY --from=computo:latest /usr/local/bin/computo /usr/local/bin/
+COPY config_template.json .
+COPY environment.json .
+RUN computo config_template.json environment.json > app_config.json
+
+FROM node:alpine
+COPY --from=config-builder app_config.json /app/
+```
+
+## Performance Optimization
+
+### Large File Processing
+```bash
+# Monitor memory usage
+/usr/bin/time -v computo script.json large_input.json
+
+# Batch processing pattern
+split -l 1000 large_input.json chunk_
+for chunk in chunk_*; do
+    computo process_chunk.json "$chunk" > "processed_$chunk" &
+done
+wait
+```
+
+### Parallel Processing
+```bash
+# Process multiple inputs in parallel
+parallel computo transform.json {} > {.}_output.json ::: input*.json
+
+# GNU parallel with progress
+parallel --progress computo script.json {} ::: data/*.json
+```
+"""
+
+[[sections]]
+title = "Common CLI Troubleshooting"
+content = """
+## File and Path Issues
+
+### File Not Found Errors
+```bash
+# Error: Cannot open file 'script.json'
+# Solutions:
+ls -la script.json                    # Check if file exists
+computo ./script.json input.json      # Use relative path
+computo "$(pwd)/script.json" input.json  # Use absolute path
+```
+
+### Permission Issues
+```bash
+# Error: Permission denied
+# Solutions:
+chmod +r script.json input.json       # Make files readable
+ls -la script.json                    # Check file permissions
+```
+
+## JSON Syntax Problems
+
+### Invalid JSON in Scripts
+```bash
+# Error: Parse error in script.json
+# Validation and debugging:
+cat script.json | jq .               # Validate JSON syntax
+computo --comments script.json input.json  # If using comments
+jq '.' script.json > validated_script.json  # Clean formatting
+```
+
+### Input File Issues
+```bash
+# Error: Parse error in input.json
+# Solutions:
+cat input.json | jq .               # Validate input JSON
+jq --tab . input.json > clean_input.json  # Reformat input
+```
+
+## Runtime and Logic Errors
+
+### Common Operator Typos
+```bash
+# Error: Unknown operator 'fliter'
+# Common mistakes:
+'fliter' → 'filter'
+'redcue' → 'reduce'
+'mpa' → 'map'
+'premuto.apply' → 'permuto.apply'
+```
+
+### Type Mismatch Errors
+```bash
+# Error: Type mismatch in arithmetic operation
+# Debug step by step with temporary files:
+
+# Create test input
+echo '{"test": 5}' > test_input.json
+
+# Step 1: Test data extraction
+echo '["get", ["$input"], "/test"]' > get_test.json
+computo get_test.json test_input.json
+
+# Step 2: Test arithmetic operation
+echo '["+", ["get", ["$input"], "/test"], 1]' > add_test.json
+computo add_test.json test_input.json
+
+# Cleanup
+rm test_input.json get_test.json add_test.json
+```
+
+### Missing Key Errors
+```bash
+# Error: Key not found
+# Debug with defensive patterns:
+
+# Create test files
+echo '{}' > empty_input.json
+echo '["if", ["get", ["$input"], "/missing"], "found", "not found"]' > defensive_test.json
+
+# Test defensive pattern
+computo defensive_test.json empty_input.json
+
+# Cleanup
+rm empty_input.json defensive_test.json
+```
+
+## Performance Troubleshooting
+
+### Slow Transformations
+```bash
+# Profile execution time
+time computo script.json input.json
+
+# Break down complex scripts into steps
+computo step1.json input.json > intermediate.json
+time computo step2.json intermediate.json
+```
+
+### Memory Issues
+```bash
+# Monitor memory usage
+/usr/bin/time -v computo script.json large_input.json
+
+# Limit memory for testing
+ulimit -m 1048576  # 1GB limit
+computo transform.json input.json
+```
+
+## Exit Code Debugging
+
+### Script Automation Issues
+```bash
+# Proper error handling
+if computo script.json input.json; then
+    echo "Success: $?"
+else
+    echo "Failed with exit code: $?"
+    exit 1
+fi
+
+# Capture both output and error status
+OUTPUT=$(computo script.json input.json 2>&1)
+STATUS=$?
+if [ $STATUS -eq 0 ]; then
+    echo "$OUTPUT"
+else
+    echo "Error: $OUTPUT" >&2
+    exit $STATUS
+fi
+```
+""" 

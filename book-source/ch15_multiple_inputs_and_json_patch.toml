@@ -1,0 +1,675 @@
+[chapter]
+number = 15
+title = "Multiple Input Processing and JSON Patch Operations"
+description = "Master advanced multi-document processing and standardized JSON diff/patch operations for complex data integration workflows"
+
+[chapter.learning_objectives]
+primary = "Leverage multiple input processing and JSON Patch operations for sophisticated data integration and versioning workflows"
+secondary = [
+    "Process multiple input documents simultaneously using the $inputs system variable",
+    "Apply JSON Patch operations for standardized document comparison and modification",
+    "Implement functional list processing with car, cdr, and cons operators",
+    "Design complex multi-document transformation pipelines",
+    "Create robust version control and audit trail systems"
+]
+
+[chapter.prerequisites]
+knowledge = ["Advanced array operations", "Error handling", "Performance optimization", "Best practices"]
+tools = ["Computo CLI", "Multiple JSON input files", "Version control understanding"]
+
+[[sections]]
+title = "The $inputs System Variable: Working with Multiple Documents"
+content = """
+Computo supports processing multiple input files simultaneously through the `$inputs` system variable, enabling sophisticated multi-document workflows.
+
+## Basic Multiple Input Usage
+
+```bash
+# Single input (traditional)
+computo script.json input1.json
+
+# Multiple inputs (new capability)
+computo script.json input1.json input2.json input3.json
+```
+
+The `$inputs` variable returns an array containing all input documents:
+
+```json
+["$inputs"]                    // Returns array of all inputs
+["get", ["$inputs"], "/0"]     // First input
+["get", ["$inputs"], "/1"]     // Second input
+["count", ["$inputs"]]         // Number of inputs
+```
+
+## Backward Compatibility
+
+The familiar `$input` variable remains supported and equals the first input:
+
+```json
+// These are equivalent:
+["$input"]
+["get", ["$inputs"], "/0"]
+```
+
+## Practical Multi-Document Examples
+
+### Example 1: Profile Merging
+
+**Merging user data from multiple sources:**
+
+```json
+["let", [
+    ["profile_data", ["get", ["$inputs"], "/0"]],
+    ["preferences_data", ["get", ["$inputs"], "/1"]],
+    ["activity_data", ["get", ["$inputs"], "/2"]]
+  ],
+  ["obj",
+    ["user_id", ["get", ["$", "/profile_data"], "/id"]],
+    ["name", ["get", ["$", "/profile_data"], "/name"]],
+    ["email", ["get", ["$", "/profile_data"], "/email"]],
+    ["preferences", ["get", ["$", "/preferences_data"], "/preferences"]],
+    ["last_activity", ["get", ["$", "/activity_data"], "/last_seen"]],
+    ["merged_timestamp", "2024-01-15T12:00:00Z"]
+  ]
+]
+```
+
+### Example 2: Cross-Document Validation
+
+**Checking consistency across multiple data sources:**
+
+```json
+["let", [
+    ["doc1", ["get", ["$inputs"], "/0"]],
+    ["doc2", ["get", ["$inputs"], "/1"]],
+    ["id_match", ["==", 
+      ["get", ["$", "/doc1"], "/user_id"],
+      ["get", ["$", "/doc2"], "/user_id"]
+    ]]
+  ],
+  ["obj",
+    ["consistent", ["$", "/id_match"]],
+    ["doc1_id", ["get", ["$", "/doc1"], "/user_id"]],
+    ["doc2_id", ["get", ["$", "/doc2"], "/user_id"]],
+    ["total_documents", ["count", ["$inputs"]]],
+    ["validation_result", ["if", ["$", "/id_match"], "passed", "failed"]]
+  ]
+]
+```
+"""
+
+[[sections]]
+title = "JSON Patch Operations: Diff and Patch"
+content = """
+Computo implements RFC 6902 JSON Patch standard for precise document comparison and modification.
+
+## The `diff` Operator
+
+Generates a JSON Patch array describing differences between documents:
+
+```json
+["diff", <original_document>, <modified_document>]
+```
+
+**Example:**
+```json
+["diff", 
+  {"status": "active", "id": 123},
+  {"status": "archived", "id": 123, "archived_at": "2024-01-15"}
+]
+```
+
+**Output:**
+```json
+[
+  {"op": "replace", "path": "/status", "value": "archived"},
+  {"op": "add", "path": "/archived_at", "value": "2024-01-15"}
+]
+```
+
+## The `patch` Operator
+
+Applies JSON Patch operations to a document:
+
+```json
+["patch", <document_to_modify>, <patch_array>]
+```
+
+**Example:**
+```json
+["patch",
+  {"status": "active", "id": 123},
+  [{"op": "replace", "path": "/status", "value": "archived"}]
+]
+```
+
+## Complete Diff/Patch Workflow
+
+### Step 1: Generate Patches Using CLI
+
+```bash
+# Generate patch from transformation
+computo --diff transform.json original.json > changes.patch
+```
+
+### Step 2: Apply Patches in Scripts
+
+```json
+["let", [
+    ["original_doc", ["get", ["$inputs"], "/0"]],
+    ["patch_operations", ["get", ["$inputs"], "/1"]]
+  ],
+  ["obj",
+    ["original", ["$", "/original_doc"]],
+    ["patch_ops", ["$", "/patch_operations"]],
+    ["patched_result", ["patch", ["$", "/original_doc"], ["$", "/patch_operations"]]]
+  ]
+]
+```
+
+## Advanced Patch Patterns
+
+### Version Control Integration
+
+```json
+["let", [
+    ["current_version", ["get", ["$inputs"], "/0"]],
+    ["target_version", ["get", ["$inputs"], "/1"]],
+    ["forward_patch", ["diff", ["$", "/current_version"], ["$", "/target_version"]]],
+    ["rollback_patch", ["diff", ["$", "/target_version"], ["$", "/current_version"]]]
+  ],
+  ["obj",
+    ["version_info", ["obj",
+      ["current", ["get", ["$", "/current_version"], "/version"]],
+      ["target", ["get", ["$", "/target_version"], "/version"]]
+    ]],
+    ["forward_patch", ["$", "/forward_patch"]],
+    ["rollback_patch", ["$", "/rollback_patch"]],
+    ["patch_preview", ["patch", ["$", "/current_version"], ["$", "/forward_patch"]]]
+  ]
+]
+```
+
+### Safe Patch Application
+
+```json
+["let", [
+    ["document", ["get", ["$inputs"], "/0"]],
+    ["patches", ["get", ["$inputs"], "/1"]],
+    ["patch_count", ["count", ["$", "/patches"]]]
+  ],
+  ["obj",
+    ["safe_to_apply", ["<", ["$", "/patch_count"], 10]],
+    ["result", ["if", ["$", "/safe_to_apply"],
+      ["patch", ["$", "/document"], ["$", "/patches"]],
+      ["obj", ["error", "too_many_patches"], ["original", ["$", "/document"]]]
+    ]],
+    ["patches_applied", ["if", ["$", "/safe_to_apply"], ["$", "/patch_count"], 0]]
+  ]
+]
+```
+"""
+
+[[sections]]
+title = "Functional List Processing with car, cdr, and cons"
+content = """
+Computo includes functional programming operators inspired by Lisp for elegant array manipulation.
+
+## Understanding car, cdr, and cons
+
+```json
+// car: Get first element
+["car", [1, 2, 3, 4]]          // Result: 1
+
+// cdr: Get all except first
+["cdr", [1, 2, 3, 4]]          // Result: [2, 3, 4]
+
+// cons: Prepend element
+["cons", 0, [1, 2, 3]]         // Result: [0, 1, 2, 3]
+
+// Composition: Get second element
+["car", ["cdr", [1, 2, 3, 4]]] // Result: 2
+```
+
+## Functional Multiple Input Processing
+
+### Processing Multiple Patches Functionally
+
+```json
+["let", [
+    ["initial_state", ["car", ["$inputs"]]],      // First input
+    ["all_patches", ["cdr", ["$inputs"]]],        // Remaining inputs
+    ["final_state", ["reduce", ["$", "/all_patches"],
+      ["lambda", ["state", "patch"],
+        ["patch", ["$", "/state"], ["$", "/patch"]]
+      ],
+      ["$", "/initial_state"]
+    ]]
+  ],
+  ["obj",
+    ["initial_version", ["get", ["$", "/initial_state"], "/version"]],
+    ["final_version", ["get", ["$", "/final_state"], "/version"]],
+    ["patches_applied", ["count", ["$", "/all_patches"]]],
+    ["result", ["$", "/final_state"]]
+  ]
+]
+```
+
+### Building Result Lists with cons
+
+```json
+["let", [
+    ["processing_log", []],
+    ["inputs", ["$inputs"]],
+    ["process_with_logging", ["lambda", ["item", "log"],
+      ["let", [
+          ["processed", ["transform_item", ["$", "/item"]]],
+          ["log_entry", ["obj", 
+            ["timestamp", "2024-01-15T12:00:00Z"],
+            ["item_id", ["get", ["$", "/item"], "/id"]],
+            ["status", "processed"]
+          ]]
+        ],
+        ["obj",
+          ["result", ["$", "/processed"]],
+          ["updated_log", ["cons", ["$", "/log_entry"], ["$", "/log"]]]
+        ]
+      ]
+    ]]
+  ],
+  ["reduce", ["$", "/inputs"],
+    ["lambda", ["acc", "item"],
+      ["let", [
+          ["process_result", ["$", "/process_with_logging"], ["$", "/item"], ["get", ["$", "/acc"], "/log"]]
+        ],
+        ["obj",
+          ["results", ["cons", ["get", ["$", "/process_result"], "/result"], ["get", ["$", "/acc"], "/results"]]],
+          ["log", ["get", ["$", "/process_result"], "/updated_log"]]
+        ]
+      ]
+    ],
+    ["obj", ["results", []], ["log", []]]
+  ]
+]
+```
+"""
+
+[[sections]]
+title = "Advanced Multi-Document Processing Patterns"
+content = """
+Complex real-world scenarios requiring sophisticated multi-document processing approaches.
+
+## Configuration Synchronization Pattern
+
+```json
+["let", [
+    ["prod_config", ["get", ["$inputs"], "/0"]],
+    ["staging_config", ["get", ["$inputs"], "/1"]],
+    ["sync_patches", ["diff", ["$", "/prod_config"], ["$", "/staging_config"]]],
+    ["requires_sync", [">", ["count", ["$", "/sync_patches"]], 0]]
+  ],
+  ["obj",
+    ["synchronization_required", ["$", "/requires_sync"]],
+    ["configuration_drift", ["obj",
+      ["prod_version", ["get", ["$", "/prod_config"], "/version"]],
+      ["staging_version", ["get", ["$", "/staging_config"], "/version"]],
+      ["differences_found", ["count", ["$", "/sync_patches"]]]
+    ]],
+    ["sync_operations", ["$", "/sync_patches"]],
+    ["preview_result", ["if", ["$", "/requires_sync"],
+      ["patch", ["$", "/staging_config"], ["$", "/sync_patches"]],
+      ["$", "/staging_config"]
+    ]]
+  ]
+]
+```
+
+## Multi-Source Data Aggregation
+
+```json
+["let", [
+    ["services", ["obj",
+      ["profile", ["get", ["$inputs"], "/0"]],
+      ["settings", ["get", ["$inputs"], "/1"]],
+      ["activity", ["get", ["$inputs"], "/2"]]
+    ]],
+    ["user_id", ["get", ["$", "/services"], "/profile/id"]]
+  ],
+  ["obj",
+    ["aggregation_metadata", ["obj",
+      ["user_id", ["$", "/user_id"]],
+      ["sources_count", ["count", ["$inputs"]]],
+      ["aggregated_at", "2024-01-15T12:00:00Z"]
+    ]],
+    ["unified_profile", ["obj",
+      ["basic_info", ["obj",
+        ["id", ["$", "/user_id"]],
+        ["name", ["get", ["$", "/services"], "/profile/name"]],
+        ["email", ["get", ["$", "/services"], "/profile/email"]]
+      ]],
+      ["preferences", ["get", ["$", "/services"], "/settings/preferences"]],
+      ["activity_summary", ["obj",
+        ["last_login", ["get", ["$", "/services"], "/activity/last_login"]],
+        ["session_count", ["get", ["$", "/services"], "/activity/total_sessions"]]
+      ]]
+    ]]
+  ]
+]
+```
+
+## Event Stream Processing
+
+```json
+["let", [
+    ["events", ["$inputs"]],
+    ["sorted_events", ["sort", ["$", "/events"], 
+      ["lambda", ["a", "b"], ["<", ["get", ["$", "/a"], "/timestamp"], ["get", ["$", "/b"], "/timestamp"]]]]
+    ],
+    ["event_summary", ["reduce", ["$", "/sorted_events"],
+      ["lambda", ["summary", "event"],
+        ["let", [
+            ["event_type", ["get", ["$", "/event"], "/type"]],
+            ["current_count", ["get", ["$", "/summary"], ["$", "/event_type"]]],
+            ["new_count", ["+", ["if", ["$", "/current_count"], ["$", "/current_count"], 0], 1]]
+          ],
+          ["merge", ["$", "/summary"], ["obj", [["$", "/event_type"], ["$", "/new_count"]]]]
+        ]
+      ],
+      {}
+    ]]
+  ],
+  ["obj",
+    ["total_events", ["count", ["$", "/events"]]],
+    ["event_types", ["$", "/event_summary"]],
+    ["time_range", ["obj",
+      ["earliest", ["get", ["get", ["$", "/sorted_events"], "/0"], "/timestamp"]],
+      ["latest", ["get", ["get", ["$", "/sorted_events"], ["/", ["-", ["count", ["$", "/sorted_events"]], 1]]], "/timestamp"]]
+    ]],
+    ["processed_events", ["map", ["$", "/sorted_events"],
+      ["lambda", ["event"],
+        ["obj",
+          ["id", ["get", ["$", "/event"], "/id"]],
+          ["type", ["get", ["$", "/event"], "/type"]],
+          ["processed_at", "2024-01-15T12:00:00Z"]
+        ]
+      ]
+    ]]
+  ]
+]
+```
+"""
+
+[[sections]]
+title = "Production Integration and CI/CD Patterns"
+content = """
+Advanced patterns for integrating multi-document processing in production environments and CI/CD pipelines.
+
+## CI/CD Configuration Validation
+
+```json
+["let", [
+    ["base_config", ["get", ["$inputs"], "/0"]],
+    ["environment_overrides", ["map", ["cdr", ["$inputs"]],
+      ["lambda", ["env_config"],
+        ["let", [
+            ["env_name", ["get", ["$", "/env_config"], "/environment"]],
+            ["config_diff", ["diff", ["$", "/base_config"], ["$", "/env_config"]]],
+            ["override_count", ["count", ["$", "/config_diff"]]]
+          ],
+          ["obj",
+            ["environment", ["$", "/env_name"]],
+            ["overrides", ["$", "/override_count"]],
+            ["changes", ["$", "/config_diff"]],
+            ["safe_deployment", ["<", ["$", "/override_count"], 10]]
+          ]
+        ]
+      ]
+    ]],
+    ["all_safe", ["reduce", ["$", "/environment_overrides"],
+      ["lambda", ["safe", "env"], ["and", ["$", "/safe"], ["get", ["$", "/env"], "/safe_deployment"]]],
+      true
+    ]]
+  ],
+  ["obj",
+    ["deployment_validation", ["obj",
+      ["base_config_version", ["get", ["$", "/base_config"], "/version"]],
+      ["environments_validated", ["count", ["$", "/environment_overrides"]]],
+      ["all_environments_safe", ["$", "/all_safe"]],
+      ["validation_timestamp", "2024-01-15T12:00:00Z"]
+    ]],
+    ["environment_reports", ["$", "/environment_overrides"]],
+    ["deployment_decision", ["if", ["$", "/all_safe"], "approved", "requires_review"]]
+  ]
+]
+```
+
+## Audit Trail Generation
+
+```json
+["let", [
+    ["original_state", ["car", ["$inputs"]]],
+    ["change_history", ["cdr", ["$inputs"]]],
+    ["audit_entries", ["map", ["$", "/change_history"],
+      ["lambda", ["change"],
+        ["obj",
+          ["change_id", ["get", ["$", "/change"], "/id"]],
+          ["timestamp", ["get", ["$", "/change"], "/timestamp"]],
+          ["author", ["get", ["$", "/change"], "/author"]],
+          ["operation_type", ["get", ["$", "/change"], "/operation"]],
+          ["changes_count", ["count", ["get", ["$", "/change"], "/patches"]]],
+          ["risk_level", ["if", [">", ["count", ["get", ["$", "/change"], "/patches"]], 5], "high", "low"]]
+        ]
+      ]
+    ]],
+    ["final_state", ["reduce", ["$", "/change_history"],
+      ["lambda", ["state", "change"],
+        ["patch", ["$", "/state"], ["get", ["$", "/change"], "/patches"]]
+      ],
+      ["$", "/original_state"]
+    ]]
+  ],
+  ["obj",
+    ["audit_summary", ["obj",
+      ["total_changes", ["count", ["$", "/change_history"]]],
+      ["high_risk_changes", ["count", ["filter", ["$", "/audit_entries"], 
+        ["lambda", ["entry"], ["==", ["get", ["$", "/entry"], "/risk_level"], "high"]]
+      ]]],
+      ["audit_period", ["obj",
+        ["start_state", ["get", ["$", "/original_state"], "/version"]],
+        ["end_state", ["get", ["$", "/final_state"], "/version"]]
+      ]]
+    ]],
+    ["change_log", ["$", "/audit_entries"]],
+    ["final_configuration", ["$", "/final_state"]],
+    ["compliance_status", ["if", ["<", ["count", ["filter", ["$", "/audit_entries"], 
+      ["lambda", ["entry"], ["==", ["get", ["$", "/entry"], "/risk_level"], "high"]]
+    ]], 3], "compliant", "requires_approval"]]
+  ]
+]
+```
+"""
+
+[chapter.summary]
+content = """
+You have mastered advanced multiple input processing and JSON Patch operations, enabling sophisticated data integration and versioning workflows.
+
+**Key Capabilities Acquired:**
+- **Multi-Document Processing**: Using `$inputs` for simultaneous processing of multiple input files
+- **JSON Patch Operations**: Standardized diff and patch operations following RFC 6902
+- **Functional List Processing**: Elegant array manipulation with `car`, `cdr`, and `cons` operators
+- **Complex Integration Patterns**: Multi-source data aggregation and configuration synchronization
+- **Production Workflows**: CI/CD integration and audit trail generation
+
+**Multiple Input Mastery:**
+- Process multiple JSON documents simultaneously with `$inputs`
+- Maintain backward compatibility using `$input` for single-document workflows
+- Implement cross-document validation and consistency checking
+- Design scalable multi-source data aggregation patterns
+
+**JSON Patch Expertise:**
+- Generate standardized patches using the `diff` operator
+- Apply patches safely with comprehensive error handling
+- Create version control and rollback mechanisms
+- Build audit trails for change tracking and compliance
+
+**Functional Programming Patterns:**
+- Use `car` and `cdr` for elegant list manipulation
+- Build lists incrementally with `cons` operations
+- Process variable numbers of inputs functionally
+- Compose complex operations through functional composition
+
+**Advanced Integration Scenarios:**
+- Configuration synchronization across environments
+- Event stream processing and aggregation
+- CI/CD pipeline validation and deployment safety
+- Audit trail generation for compliance and governance
+
+These advanced patterns enable you to build sophisticated data integration systems that handle complex real-world scenarios with reliability and maintainability.
+
+**Congratulations!** You have completed the comprehensive Computo and Permuto transformation guide. You now possess the knowledge to tackle any JSON transformation challenge, from simple data restructuring to complex multi-document processing workflows.
+"""
+
+[[examples]]
+name = "multi_source_profile_merge"
+description = "Merge user profile data from multiple API sources"
+section = "general"
+tutorial_text = "This example demonstrates merging user data from multiple sources: profile service, preferences service, and activity service."
+
+script = ["let", [
+    ["profile_service", ["get", ["$inputs"], "/0"]],
+    ["preferences_service", ["get", ["$inputs"], "/1"]],
+    ["activity_service", ["get", ["$inputs"], "/2"]],
+    ["user_id", ["get", ["$", "/profile_service"], "/id"]]
+  ],
+  ["obj",
+    ["user_id", ["$", "/user_id"]],
+    ["basic_profile", ["obj",
+      ["name", ["get", ["$", "/profile_service"], "/name"]],
+      ["email", ["get", ["$", "/profile_service"], "/email"]],
+      ["created_at", ["get", ["$", "/profile_service"], "/created_at"]]
+    ]],
+    ["user_preferences", ["get", ["$", "/preferences_service"], "/preferences"]],
+    ["activity_summary", ["obj",
+      ["last_login", ["get", ["$", "/activity_service"], "/last_login"]],
+      ["login_count", ["get", ["$", "/activity_service"], "/total_logins"]],
+      ["is_active", [">", ["get", ["$", "/activity_service"], "/days_since_login"], 0]]
+    ]],
+    ["merge_metadata", ["obj",
+      ["sources_used", 3],
+      ["merged_at", "2024-01-15T12:00:00Z"],
+      ["data_consistency", ["==", ["$", "/user_id"], ["get", ["$", "/preferences_service"], "/user_id"]]]
+    ]]
+  ]
+]
+
+input_files = 3
+input_0 = '{"id": "user123", "name": "Alice Johnson", "email": "alice@example.com", "created_at": "2024-01-01T00:00:00Z"}'
+input_1 = '{"user_id": "user123", "preferences": {"theme": "dark", "notifications": true, "language": "en"}}'
+input_2 = '{"user_id": "user123", "last_login": "2024-01-14T15:30:00Z", "total_logins": 847, "days_since_login": 1}'
+
+expected = '''
+{
+  "user_id": "user123",
+  "basic_profile": {
+    "name": "Alice Johnson",
+    "email": "alice@example.com",
+    "created_at": "2024-01-01T00:00:00Z"
+  },
+  "user_preferences": {
+    "theme": "dark",
+    "notifications": true,
+    "language": "en"
+  },
+  "activity_summary": {
+    "last_login": "2024-01-14T15:30:00Z",
+    "login_count": 847,
+    "is_active": true
+  },
+  "merge_metadata": {
+    "sources_used": 3,
+    "merged_at": "2024-01-15T12:00:00Z",
+    "data_consistency": true
+  }
+}
+'''
+
+notes = "This pattern is essential for microservice architectures where user data is distributed across multiple services."
+cli_flags = ["--pretty=2"]
+
+[[examples]]
+name = "json_patch_version_control"
+description = "Generate and apply version control patches for configuration management"
+section = "general"
+tutorial_text = "This example shows how to create forward and rollback patches for configuration version control."
+
+script = ["let", [
+    ["current_config", ["get", ["$inputs"], "/0"]],
+    ["target_config", ["get", ["$inputs"], "/1"]],
+    ["forward_patches", ["diff", ["$", "/current_config"], ["$", "/target_config"]]],
+    ["rollback_patches", ["diff", ["$", "/target_config"], ["$", "/current_config"]]],
+    ["patch_preview", ["patch", ["$", "/current_config"], ["$", "/forward_patches"]]]
+  ],
+  ["obj",
+    ["version_control", ["obj",
+      ["current_version", ["get", ["$", "/current_config"], "/version"]],
+      ["target_version", ["get", ["$", "/target_config"], "/version"]],
+      ["changes_required", ["count", ["$", "/forward_patches"]]],
+      ["rollback_available", [">", ["count", ["$", "/rollback_patches"]], 0]]
+    ]],
+    ["forward_migration", ["obj",
+      ["patches", ["$", "/forward_patches"]],
+      ["preview_result", ["$", "/patch_preview"]],
+      ["safe_to_apply", ["<", ["count", ["$", "/forward_patches"]], 10]]
+    ]],
+    ["rollback_plan", ["obj",
+      ["patches", ["$", "/rollback_patches"]],
+      ["restoration_possible", ["!=", ["count", ["$", "/rollback_patches"]], 0]]
+    ]],
+    ["deployment_recommendation", ["if", ["<", ["count", ["$", "/forward_patches"]], 5], 
+      "auto_deploy", 
+      "manual_review_required"
+    ]]
+  ]
+]
+
+input_files = 2
+input_0 = '{"version": "1.0", "database": {"host": "localhost", "port": 5432}, "cache": {"enabled": false}}'
+input_1 = '{"version": "1.1", "database": {"host": "prod-db.example.com", "port": 5432, "ssl": true}, "cache": {"enabled": true, "ttl": 3600}}'
+
+expected = '''
+{
+  "version_control": {
+    "current_version": "1.0",
+    "target_version": "1.1",
+    "changes_required": 4,
+    "rollback_available": true
+  },
+  "forward_migration": {
+    "patches": [
+      {"op": "replace", "path": "/version", "value": "1.1"},
+      {"op": "replace", "path": "/database/host", "value": "prod-db.example.com"},
+      {"op": "add", "path": "/database/ssl", "value": true},
+      {"op": "replace", "path": "/cache", "value": {"enabled": true, "ttl": 3600}}
+    ],
+    "preview_result": {
+      "version": "1.1",
+      "database": {"host": "prod-db.example.com", "port": 5432, "ssl": true},
+      "cache": {"enabled": true, "ttl": 3600}
+    },
+    "safe_to_apply": true
+  },
+  "rollback_plan": {
+    "patches": [
+      {"op": "replace", "path": "/version", "value": "1.0"},
+      {"op": "replace", "path": "/database/host", "value": "localhost"},
+      {"op": "remove", "path": "/database/ssl"},
+      {"op": "replace", "path": "/cache", "value": {"enabled": false}}
+    ],
+    "restoration_possible": true
+  },
+  "deployment_recommendation": "auto_deploy"
+}
+'''
+
+notes = "This pattern provides safe configuration deployment with automatic rollback capability, essential for production environment management."
+cli_flags = ["--pretty=2"] 

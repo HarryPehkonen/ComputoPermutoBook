@@ -1,0 +1,191 @@
+[appendix]
+letter = "A"
+title = "Complete Operator Reference"
+description = "Quick reference for all Computo operators with syntax and examples"
+
+[appendix.learning_objectives]
+primary = "Provide quick reference access to all Computo operators with complete syntax and examples"
+secondary = [
+    "Understand operator categories and their relationships",
+    "Access quick syntax references for all 40+ operators",
+    "Find practical examples for each operator",
+    "Understand operator precedence and evaluation rules"
+]
+
+[[sections]]
+title = "Data Access & Scoping"
+content = """
+**`let`** - Variable Binding
+- Syntax: `["let", [["var", <expr>], ...], <body>]`
+- Example: `["let", [["x", 5]], ["+", ["$", "/x"], 10]]` → `15`
+
+**`$`** - Variable Access  
+- Syntax: `["$", "/variable_name"]`
+- Example: `["let", [["name", "Alice"]], ["$", "/name"]]` → `"Alice"`
+
+**`get`** - JSON Pointer Access
+- Syntax: `["get", <object>, <path>]`
+- Example: `["get", {"user": {"name": "Bob"}}, "/user/name"]` → `"Bob"`
+
+**`$input`** - Single Input
+- Syntax: `["$input"]`
+- Returns the entire input document
+
+**`$inputs`** - Multiple Inputs
+- Syntax: `["$inputs"]`
+- Returns array of all input documents
+"""
+
+[[sections]]
+title = "Logic & Control Flow"
+content = """
+**`if`** - Conditional
+- Syntax: `["if", <condition>, <then>, <else>]`
+- Example: `["if", [">", 5, 3], "bigger", "smaller"]` → `"bigger"`
+
+**`&&`** - Logical AND (short-circuit)
+- Syntax: `["&&", <expr1>, <expr2>, ...]`
+- Example: `["&&", true, [">", 10, 5]]` → `true`
+
+**`||`** - Logical OR (short-circuit)
+- Syntax: `["||", <expr1>, <expr2>, ...]`
+- Example: `["||", false, ["==", 2, 2]]` → `true`
+
+**`not`** - Logical NOT
+- Syntax: `["not", <expr>]`
+- Example: `["not", false]` → `true`
+
+**Comparisons:** `==`, `!=`, `>`, `<`, `>=`, `<=`
+- Syntax: `["<op>", <expr1>, <expr2>]`
+- Example: `[">", 10, 5]` → `true`
+
+**`approx`** - Approximate Equality
+- Syntax: `["approx", <num1>, <num2>, <epsilon>]`
+- Example: `["approx", 3.14, 3.141, 0.01]` → `true`
+"""
+
+[[sections]]
+title = "Data Construction"
+content = """
+**`obj`** - Object Creation
+- Syntax: `["obj", ["key1", <val1>], ["key2", <val2>], ...]`
+- Example: `["obj", ["name", "Alice"], ["age", 30]]` → `{"name": "Alice", "age": 30}`
+
+**`merge`** - Object Merging
+- Syntax: `["merge", <obj1>, <obj2>, ...]`
+- Example: `["merge", {"a": 1}, {"b": 2}]` → `{"a": 1, "b": 2}`
+
+**`permuto.apply`** - Template Application
+- Syntax: `["permuto.apply", <template>, <context>]`
+- Example: `["permuto.apply", {"msg": "Hello ${/name}"}, {"name": "World"}]`
+"""
+
+[[sections]]
+title = "String & Math Operations"
+content = """
+**`str_concat`** - String Concatenation
+- Syntax: `["str_concat", <str1>, <str2>, ...]`
+- Example: `["str_concat", "Hello", " ", "World"]` → `"Hello World"`
+
+**Math Operators:** `+`, `-`, `*`, `/`, `%`
+- Syntax: `["<op>", <num1>, <num2>]`
+- Examples: `["+", 3, 4]` → `7`, `["%", 17, 5]` → `2`
+"""
+
+[[sections]]
+title = "JSON Patch (RFC 6902)"
+content = """
+**`diff`** - Generate Patches
+- Syntax: `["diff", <original>, <modified>]`
+- Example: `["diff", {"status": "active"}, {"status": "archived"}]`
+
+**`patch`** - Apply Patches
+- Syntax: `["patch", <document>, <patch_array>]`
+- Example: `["patch", {"status": "active"}, [{"op": "replace", "path": "/status", "value": "archived"}]]`
+"""
+
+[[sections]]
+title = "Array Operations"
+content = """
+**Note:** Literal arrays use `{"array": [...]}` syntax.
+
+**Core Operations:**
+- **`map`**: `["map", <array>, <lambda>]` - Transform each element
+- **`filter`**: `["filter", <array>, <lambda>]` - Select elements
+- **`reduce`**: `["reduce", <array>, <lambda>, <initial>]` - Aggregate to single value
+- **`count`**: `["count", <array>]` - Get array length
+
+**Query Operations:**
+- **`find`**: `["find", <array>, <lambda>]` - First matching element
+- **`some`**: `["some", <array>, <lambda>]` - True if any match
+- **`every`**: `["every", <array>, <lambda>]` - True if all match
+
+**Advanced Operations:**
+- **`zip`**: `["zip", <array1>, <array2>]` - Combine element-wise
+- **`zipWith`**: `["zipWith", <array1>, <array2>, <lambda>]` - Custom combine
+- **`flatMap`**: `["flatMap", <array>, <lambda>]` - Map and flatten
+- **`mapWithIndex`**: `["mapWithIndex", <array>, <lambda>]` - Map with index
+- **`enumerate`**: `["enumerate", <array>]` - Create [index, value] pairs
+
+**Functional List Processing:**
+- **`car`**: `["car", <array>]` - First element
+- **`cdr`**: `["cdr", <array>]` - All except first
+- **`cons`**: `["cons", <item>, <array>]` - Prepend element
+- **`append`**: `["append", <array1>, <array2>, ...]` - Concatenate arrays
+- **`chunk`**: `["chunk", <array>, <size>]` - Split into groups
+- **`partition`**: `["partition", <array>, <lambda>]` - Split by condition
+"""
+
+[[sections]]
+title = "Lambda Functions"
+content = """
+**`lambda`** - Anonymous Functions
+- Syntax: `["lambda", ["param1", "param2", ...], <body>]`
+- Parameter access: `["$", "/param_name"]`
+
+**Examples:**
+```json
+// Single parameter
+["lambda", ["x"], ["*", ["$", "/x"], 2]]
+
+// Two parameters (for reduce)
+["lambda", ["acc", "item"], ["+", ["$", "/acc"], ["$", "/item"]]]
+
+// Complex transformation
+["lambda", ["user"], 
+  ["obj", 
+    ["id", ["get", ["$", "/user"], "/id"]], 
+    ["name", ["get", ["$", "/user"], "/name"]]
+  ]
+]
+```
+
+**Usage with arrays:**
+```json
+["map", {"array": [1, 2, 3]}, ["lambda", ["x"], ["*", ["$", "/x"], 2]]]
+["filter", {"array": [1, 2, 3, 4]}, ["lambda", ["x"], [">", ["$", "/x"], 2]]]
+["reduce", {"array": [1, 2, 3]}, ["lambda", ["acc", "x"], ["+", ["$", "/acc"], ["$", "/x"]]], 0]
+```
+"""
+
+[appendix.summary]
+content = """
+This reference covers all Computo operators organized by category:
+
+**Categories:**
+- **Data Access**: `let`, `$`, `get`, `$input`, `$inputs`
+- **Logic**: `if`, `&&`, `||`, `not`, comparisons, `approx`
+- **Construction**: `obj`, `merge`, `permuto.apply`
+- **String/Math**: `str_concat`, `+`, `-`, `*`, `/`, `%`
+- **JSON Patch**: `diff`, `patch`
+- **Arrays**: `map`, `filter`, `reduce`, `find`, `some`, `every`, `zip`, `flatMap`, etc.
+- **Functional**: `car`, `cdr`, `cons`, `append`, `chunk`, `partition`
+- **Lambda**: Anonymous functions for array operations
+
+**Key Patterns:**
+- Use `let` for variable binding and performance
+- Array literals need `{"array": [...]}` syntax
+- Lambda parameters accessed with `["$", "/param"]`
+- Short-circuit evaluation in `&&` and `||`
+- Functional programming principles (immutable, composable)
+""" 

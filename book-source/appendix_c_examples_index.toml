@@ -1,0 +1,75 @@
+[appendix]
+letter = "C"
+title = "Complete Examples Index"
+description = "Practical examples organized by real-world use cases"
+
+[[sections]]
+title = "API Integration"
+content = """
+**REST APIs**
+- User Profile Extraction: Ch6 → `extract_names`
+- Order Data Merging: Ch7 → `merge_preferences`  
+- Pagination Processing: Ch8 → `mapwithindex_numbered`
+
+**GraphQL & Multi-API**
+- Data Flattening: Ch8 → `zip_names_scores`
+- Service Aggregation: Ch15 → `multi_source_profile_merge`
+- Webhook Processing: Ch5 → `conditional_user_array`
+"""
+
+[[sections]]
+title = "Configuration Management"
+content = """
+**Environment Configs**
+- Multi-Environment: Ch15 → `json_patch_version_control`
+- Database Configs: Ch3 → `variable_binding_basic`
+- Feature Flags: Ch5 → `conditional_greeting`
+
+**Deployment**
+- Credential Templates: Ch9 → `permuto_basics`
+- Config Validation: Ch13 → Error handling examples
+- Drift Detection: Ch15 → Configuration sync patterns
+"""
+
+[[sections]]
+title = "Data Processing"
+content = """
+**Migration & ETL**
+- Schema Migration: Ch7 → `obj_metadata`
+- Data Validation: Ch14 → `modular_validation_system`
+- Legacy Integration: Ch6 → `str_concat` examples
+
+**Business Logic**
+- Order Processing: Ch5 → `approx_financial`
+- Inventory Tracking: Ch8 → `find_first_large`
+- User Permissions: Ch5 → `logical_operators`
+"""
+
+[[sections]]
+title = "DevOps & Automation"
+content = """
+**CI/CD**
+- Build Configs: Ch9 → Template-driven patterns
+- Infrastructure as Code: Ch7 → `merge_operator`
+- Deployment Manifests: Ch11 → Advanced Permuto
+
+**Monitoring**
+- Log Processing: Ch6 → `map_with_str_concat`
+- Error Aggregation: Ch8 → `filter_operator`
+- Metrics Collection: Ch8 → Array aggregation patterns
+"""
+
+[appendix.summary]
+content = """
+Examples organized by use case:
+
+**API Integration**: REST/GraphQL transformation, multi-API aggregation
+**Configuration Management**: Environment configs, feature flags, deployment
+**Data Processing**: Migration, ETL, business logic transformation
+**DevOps & Automation**: CI/CD, infrastructure, monitoring
+
+**Format**: `Use Case: Chapter → Example Name`
+
+Start with basic examples (Ch1-5), progress to advanced (Ch10-15).
+Many patterns are composable for complex scenarios.
+""" 

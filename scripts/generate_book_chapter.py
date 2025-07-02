@@ -32,6 +32,15 @@ class BookChapterGenerator:
         self.computo_path = computo_path
         self.chapter_data = self._load_chapter()
         self.example_results = []
+        
+        # Determine if this is a chapter or appendix
+        self.is_appendix = 'appendix' in self.chapter_data
+        if self.is_appendix:
+            self.content_data = self.chapter_data['appendix']
+            self.sections = self.chapter_data.get('sections', [])
+        else:
+            self.content_data = self.chapter_data['chapter']
+            self.sections = self.chapter_data.get('sections', [])
 
     def _load_chapter(self):
         """Load and parse the TOML chapter file."""
@@ -153,26 +162,27 @@ class BookChapterGenerator:
         return all_passed
 
     def _generate_markdown_content(self):
-        """Generate the markdown content for the chapter."""
-        chapter = self.chapter_data['chapter']
+        """Generate the markdown content for the chapter or appendix."""
         content_parts = []
 
-        # Chapter header
-        content_parts.append(f"## **Chapter {chapter['number']}: {chapter['title']}**")
+        # Header (different for chapters vs appendices)
+        if self.is_appendix:
+            content_parts.append(f"## **Appendix {self.content_data['letter']}: {self.content_data['title']}**")
+        else:
+            content_parts.append(f"## **Chapter {self.content_data['number']}: {self.content_data['title']}**")
         content_parts.append("")
 
         # Learning objectives summary if present
-        if 'learning_objectives' in chapter and 'summary' in chapter['learning_objectives']:
-            content_parts.append(chapter['learning_objectives']['summary'])
+        if 'learning_objectives' in self.content_data and 'summary' in self.content_data['learning_objectives']:
+            content_parts.append(self.content_data['learning_objectives']['summary'])
             content_parts.append("")
 
-        # Generate sections (sections are nested under chapter)
-        if 'sections' in chapter:
-            for section_key, section_data in chapter['sections'].items():
-                content_parts.append(f"### {section_data['title']}")
-                content_parts.append("")
-                content_parts.append(section_data['content'])
-                content_parts.append("")
+        # Generate sections
+        for section in self.sections:
+            content_parts.append(f"### {section['title']}")
+            content_parts.append("")
+            content_parts.append(section['content'])
+            content_parts.append("")
 
         # Add comprehensive examples at the end
         examples = None
@@ -190,9 +200,9 @@ class BookChapterGenerator:
             for example in examples:
                 content_parts.extend(self._format_example_for_markdown(example))
 
-        # Chapter summary
-        if 'summary' in chapter:
-            content_parts.append(chapter['summary']['content'])
+        # Chapter/Appendix summary
+        if 'summary' in self.content_data:
+            content_parts.append(self.content_data['summary']['content'])
             content_parts.append("")
 
         return "\n".join(content_parts)
@@ -248,9 +258,20 @@ class BookChapterGenerator:
         flags_str = ' '.join(cli_flags) if cli_flags else ''
         input_arg = "input.json" if has_input else ""
         command = f"computo {flags_str} script.json {input_arg}".strip()
+        
+        # Generate directory path based on type
+        if self.is_appendix:
+            letter = self.content_data['letter']
+            title = self.content_data['title'].lower().replace(' ', '_').replace('-', '_')
+            dir_path = f"appendix_{letter.lower()}_{title}"
+        else:
+            chapter_num = self.content_data['number']
+            title = self.content_data['title'].lower().replace(' ', '_').replace('-', '_')
+            dir_path = f"ch{chapter_num:02d}_{title}"
+        
         parts.append("```bash")
         parts.append(f"# Navigate to the example directory")
-        parts.append(f"cd code/ch{self.chapter_data['chapter']['number']:02d}_{self.chapter_data['chapter']['title'].lower().replace(' ', '_').replace('-', '_')}/general/{example['name']}/")
+        parts.append(f"cd code/{dir_path}/general/{example['name']}/")
         parts.append("")
         parts.append(f"# Run the example")
         parts.append(command)
@@ -358,11 +379,16 @@ class BookChapterGenerator:
             parts.append("")
         
         # Download section
-        chapter_num = self.chapter_data['chapter']['number']
-        chapter_title = self.chapter_data['chapter']['title'].lower().replace(' ', '_').replace('-', '_')
         parts.append("**📁 Download**:")
-        parts.append(f"- [📂 This example's files](code/ch{chapter_num:02d}_{chapter_title}/general/{example['name']}/)")
-        parts.append(f"- [📦 Chapter {chapter_num} examples](code/ch{chapter_num:02d}_examples.zip)")
+        parts.append(f"- [📂 This example's files](code/{dir_path}/general/{example['name']}/)")
+        
+        if self.is_appendix:
+            letter = self.content_data['letter']
+            parts.append(f"- [📦 Appendix {letter} examples](code/appendix_{letter.lower()}_examples.zip)")
+        else:
+            chapter_num = self.content_data['number']
+            parts.append(f"- [📦 Chapter {chapter_num} examples](code/ch{chapter_num:02d}_examples.zip)")
+        
         parts.append(f"- [📚 All book examples](download_all_examples.zip)")
         parts.append("")
         
@@ -375,9 +401,14 @@ class BookChapterGenerator:
         """Generate the markdown file."""
         content = self._generate_markdown_content()
         
-        # Get chapter number for filename
-        chapter_num = self.chapter_data['chapter']['number']
-        filename = f"{chapter_num:02d}_{self.chapter_file.stem.replace('ch' + str(chapter_num).zfill(2) + '_', '')}.md"
+        # Generate filename based on type
+        if self.is_appendix:
+            letter = self.content_data['letter']
+            title_slug = self.content_data['title'].lower().replace(' ', '_').replace('-', '_')
+            filename = f"appendix_{letter.lower()}_{title_slug}.md"
+        else:
+            chapter_num = self.content_data['number']
+            filename = f"{chapter_num:02d}_{self.chapter_file.stem.replace('ch' + str(chapter_num).zfill(2) + '_', '')}.md"
         
         output_file = self.output_dir / filename
         with open(output_file, 'w') as f:
@@ -454,11 +485,18 @@ pause
         if not examples:
             return
 
-        chapter_num = self.chapter_data['chapter']['number']
-        chapter_title = self.chapter_data['chapter']['title'].lower().replace(' ', '_').replace('-', '_')
+        # Create directory name based on type
+        if self.is_appendix:
+            letter = self.content_data['letter']
+            title = self.content_data['title'].lower().replace(' ', '_').replace('-', '_')
+            dir_name = f"appendix_{letter.lower()}_{title}"
+        else:
+            chapter_num = self.content_data['number']
+            title = self.content_data['title'].lower().replace(' ', '_').replace('-', '_')
+            dir_name = f"ch{chapter_num:02d}_{title}"
         
-        # Create organized structure: code/ch03_computo_basics/
-        code_dir = self.output_dir / "code" / f"ch{chapter_num:02d}_{chapter_title}"
+        # Create organized structure
+        code_dir = self.output_dir / "code" / dir_name
         code_dir.mkdir(parents=True, exist_ok=True)
 
         # Group examples by section

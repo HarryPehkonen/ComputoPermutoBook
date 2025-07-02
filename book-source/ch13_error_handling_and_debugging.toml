@@ -1,0 +1,1240 @@
+[chapter]
+number = 13
+title = "Error Handling and Debugging"
+description = "Build robust, production-ready transformations with comprehensive error handling and debugging strategies"
+
+[chapter.learning_objectives]
+primary = "Write defensive transformations that handle errors gracefully and provide clear debugging information"
+secondary = [
+    "Understand Computo's structured exception types and error messages",
+    "Implement defensive programming patterns with conditional guards",
+    "Master the 'debug by deconstruction' technique for complex scripts",
+    "Use template-driven debugging for runtime state inspection",
+    "Apply production-grade error handling and recovery strategies"
+]
+
+[chapter.prerequisites]
+knowledge = ["Complex transformations", "Array operations", "Template usage", "Performance optimization"]
+tools = ["Computo CLI", "Text editor", "JSON validation tools"]
+
+[[sections]]
+title = "Understanding Computo Error Types"
+content = """
+When a Computo script fails, the engine throws structured exceptions that provide specific information about what went wrong. Understanding these error types helps you quickly diagnose and fix problems.
+
+## Main Error Categories
+
+### InvalidScriptException
+**What it means**: Fundamental structural problem with your script's JSON.
+
+```bash
+# Example error message:
+Error: InvalidScriptException: Script is not valid JSON
+```
+
+**Common causes**:
+- Malformed JSON syntax (missing quotes, brackets, commas)
+- Invalid UTF-8 encoding
+- Empty or null script files
+
+**Quick fixes**:
+```bash
+# Validate JSON syntax
+cat script.json | jq .
+
+# Check file encoding
+file script.json
+
+# Verify file isn't empty
+wc -l script.json
+```
+
+### InvalidOperatorException
+**What it means**: You've used an operator name that doesn't exist.
+
+```bash
+# Example error message:
+Error: InvalidOperatorException: Unknown operator 'fliter'
+```
+
+**Common typos**:
+- `fliter` → `filter`
+- `redcue` → `reduce`
+- `mpa` → `map`
+- `premuto.apply` → `permuto.apply`
+- `obj_merge` → `merge`
+
+**Prevention**: Use IDE syntax highlighting or maintain an operator reference list.
+
+### InvalidArgumentException
+**What it means**: An operator was called with wrong number or type of arguments.
+
+**Common scenarios**:
+
+#### Wrong Argument Count
+```json
+// Error: '+' expects 2 arguments, got 1
+["+", 5]
+
+// Correct:
+["+", 5, 3]
+```
+
+#### Wrong Argument Type
+```json
+// Error: '+' expects numbers, got string
+["+", 5, "hello"]
+
+// Correct:
+["+", 5, 10]
+```
+
+#### Invalid JSON Pointer
+```json
+// Error: Path '/nonexistent/path' not found
+["get", {"name": "Alice"}, "/nonexistent/path"]
+
+// Defensive:
+["if", ["get", {"name": "Alice"}, "/name"],
+  ["get", {"name": "Alice"}, "/name"],
+  "default_value"
+]
+```
+
+#### Malformed Lambda
+```json
+// Error: Lambda requires ["lambda", [params], body]
+["map", [1, 2, 3], ["invalid_lambda"]]
+
+// Correct:
+["map", [1, 2, 3], ["lambda", ["x"], ["*", ["$", "/x"], 2]]]
+```
+
+## Error Context and Stack Traces
+
+When errors occur in nested operations, Computo provides context about where the error happened:
+
+```bash
+Error: InvalidArgumentException at '/map/lambda/+': 
+Expected number, got string "hello" in argument 2
+```
+
+This tells you:
+- **Error type**: `InvalidArgumentException`
+- **Location**: Inside a `map` operation's lambda, at the `+` operator
+- **Problem**: Second argument to `+` was a string instead of number
+"""
+
+[[sections]]
+title = "Defensive Programming with Conditional Guards"
+content = """
+The most effective way to prevent runtime errors is defensive programming - anticipating what could go wrong and handling those cases explicitly.
+
+## The Problem: Assuming Data Structure
+
+```json
+// Fragile: Assumes nested structure exists
+["get", ["$input"], "/user/profile/name"]
+```
+
+**Failure scenarios**:
+- `/user` key missing
+- `/user` is null
+- `/profile` key missing  
+- `/profile` is null
+- `/name` key missing
+
+## The Solution: Defensive Patterns
+
+### Basic Existence Check
+```json
+["let", [
+    ["user", ["get", ["$input"], "/user"]]
+  ],
+  ["if", ["$", "/user"],
+    ["let", [
+        ["profile", ["get", ["$", "/user"], "/profile"]]
+      ],
+      ["if", ["$", "/profile"],
+        ["get", ["$", "/profile"], "/name"],
+        "No profile name"
+      ]
+    ],
+    "No user data"
+  ]
+]
+```
+
+### Advanced Defensive Pattern
+```json
+["let", [
+    ["safe_get", ["lambda", ["obj", "path", "default"],
+      ["if", ["$", "/obj"],
+        ["let", [
+            ["value", ["get", ["$", "/obj"], ["$", "/path"]]]
+          ],
+          ["if", ["$", "/value"],
+            ["$", "/value"],
+            ["$", "/default"]
+          ]
+        ],
+        ["$", "/default"]
+      ]
+    ]]
+  ],
+  ["obj",
+    ["user_name", ["$", "/safe_get"], ["$input"], "/user/profile/name", "Unknown"],
+    ["user_email", ["$", "/safe_get"], ["$input"], "/user/contact/email", "no-email@example.com"],
+    ["user_role", ["$", "/safe_get"], ["$input"], "/user/permissions/role", "guest"]
+  ]
+]
+```
+
+### Array Safety Patterns
+
+#### Safe Array Access
+```json
+["let", [
+    ["items", ["get", ["$input"], "/items"]]
+  ],
+  ["if", ["$", "/items"],
+    ["if", [">", ["count", ["$", "/items"]], 0],
+      ["map", ["$", "/items"],
+        ["lambda", ["item"],
+          ["if", ["get", ["$", "/item"], "/active"],
+            ["obj", ["status", "processed"], ["item", ["$", "/item"]]],
+            ["obj", ["status", "skipped"], ["item", ["$", "/item"]]]
+          ]
+        ]
+      ],
+      []
+    ],
+    []
+  ]
+]
+```
+
+#### Safe Array Operations
+```json
+["let", [
+    ["numbers", ["get", ["$input"], "/numbers"]]
+  ],
+  ["if", ["and", 
+          ["$", "/numbers"],
+          [">", ["count", ["$", "/numbers"]], 0]],
+    ["reduce", ["$", "/numbers"],
+      ["lambda", ["acc", "num"],
+        ["if", ["and", 
+                ["!=", ["$", "/num"], ""],
+                ["==", ["type", ["$", "/num"]], "number"]],
+          ["+", ["$", "/acc"], ["$", "/num"]],
+          ["$", "/acc"]
+        ]
+      ],
+      0
+    ],
+    0
+  ]
+]
+```
+
+### Type Safety Patterns
+
+#### Safe Type Conversion
+```json
+["let", [
+    ["raw_value", ["get", ["$input"], "/user_input"]]
+  ],
+  ["if", ["$", "/raw_value"],
+        ["if", ["==", ["type", ["$", "/raw_value"]], "number"],
+      ["$", "/raw_value"],
+      0
+    ],
+    0
+  ]
+]
+```
+
+## Error Boundary Pattern
+
+Create a reusable error boundary that catches and handles errors gracefully:
+
+```json
+["let", [
+    ["try_with_default", ["lambda", ["operation", "default_value"],
+      ["if", ["$", "/operation"],
+        ["$", "/operation"],
+        ["$", "/default_value"]
+      ]
+    ]]
+  ],
+  ["obj",
+    ["user_data", ["$", "/try_with_default"],
+      ["get", ["$input"], "/user"],
+      {"name": "Guest", "role": "visitor"}
+    ],
+    ["preferences", ["$", "/try_with_default"],
+      ["get", ["$input"], "/user/preferences"],
+      {"theme": "default", "language": "en"}
+    ]
+  ]
+]
+```
+"""
+
+[[sections]]
+title = "Debug by Deconstruction Technique"
+content = """
+When complex scripts fail, the most effective debugging approach is to break the problem down into smaller, testable pieces.
+
+## The Problem: Complex Nested Operations
+
+```json
+// This complex script fails - where's the bug?
+["reduce",
+  ["map",
+    ["filter", 
+      ["get", ["$input"], "/transactions"],
+      ["lambda", ["tx"], 
+        ["and",
+          ["==", ["get", ["$", "/tx"], "/status"], "completed"],
+          [">", ["get", ["$", "/tx"], "/amount"], 100]
+        ]
+      ]
+    ],
+    ["lambda", ["tx"],
+      ["obj",
+        ["id", ["get", ["$", "/tx"], "/id"]],
+        ["fee", ["*", ["get", ["$", "/tx"], "/amount"], 0.03]],
+        ["net", ["-", ["get", ["$", "/tx"], "/amount"], 
+                ["*", ["get", ["$", "/tx"], "/amount"], 0.03]]]
+      ]
+    ]
+  ],
+  ["lambda", ["acc", "tx"],
+    ["+", ["get", ["$", "/acc"], "/total_net"], ["get", ["$", "/tx"], "/net"]]
+  ],
+  {"total_net": 0}
+]
+```
+
+## The Solution: Systematic Deconstruction
+
+### Step 1: Test Data Extraction
+```json
+// Test: Can we get the transactions?
+["get", ["$input"], "/transactions"]
+```
+
+**Expected output**: Array of transaction objects
+
+### Step 2: Test Filtering Logic
+```json
+// Test: Does the filter work correctly?
+["filter", 
+  ["get", ["$input"], "/transactions"],
+  ["lambda", ["tx"], 
+    ["and",
+      ["==", ["get", ["$", "/tx"], "/status"], "completed"],
+      [">", ["get", ["$", "/tx"], "/amount"], 100]
+    ]
+  ]
+]
+```
+
+**Expected output**: Filtered array with only completed transactions > 100
+
+### Step 3: Test Mapping Logic
+```json
+// Test: Does the map transformation work?
+["map",
+  ["filter", 
+    ["get", ["$input"], "/transactions"],
+    ["lambda", ["tx"], 
+      ["and",
+        ["==", ["get", ["$", "/tx"], "/status"], "completed"],
+        [">", ["get", ["$", "/tx"], "/amount"], 100]
+      ]
+    ]
+  ],
+  ["lambda", ["tx"],
+    ["obj",
+      ["id", ["get", ["$", "/tx"], "/id"]],
+      ["fee", ["*", ["get", ["$", "/tx"], "/amount"], 0.03]],
+      ["net", ["-", ["get", ["$", "/tx"], "/amount"], 
+              ["*", ["get", ["$", "/tx"], "/amount"], 0.03]]]
+    ]
+  ]
+]
+```
+
+**Expected output**: Array of processed transaction objects
+
+### Step 4: Test Reduction Logic
+```json
+// Test: Does the reduce work with known data?
+["reduce",
+  [
+    {"id": 1, "fee": 3.0, "net": 97.0},
+    {"id": 2, "fee": 6.0, "net": 194.0}
+  ],
+  ["lambda", ["acc", "tx"],
+    ["+", ["get", ["$", "/acc"], "/total_net"], ["get", ["$", "/tx"], "/net"]]
+  ],
+  {"total_net": 0}
+]
+```
+
+**Expected output**: `{"total_net": 291.0}`
+
+## Advanced Debugging Patterns
+
+### Use let for Intermediate Inspection
+```json
+["let", [
+    ["all_transactions", ["get", ["$input"], "/transactions"]],
+    ["filtered_transactions", ["filter", ["$", "/all_transactions"],
+      ["lambda", ["tx"], 
+        ["and",
+          ["==", ["get", ["$", "/tx"], "/status"], "completed"],
+          [">", ["get", ["$", "/tx"], "/amount"], 100]
+        ]
+      ]
+    ]],
+    ["processed_transactions", ["map", ["$", "/filtered_transactions"],
+      ["lambda", ["tx"],
+        ["obj",
+          ["id", ["get", ["$", "/tx"], "/id"]],
+          ["amount", ["get", ["$", "/tx"], "/amount"]],
+          ["fee", ["*", ["get", ["$", "/tx"], "/amount"], 0.03]],
+          ["net", ["-", ["get", ["$", "/tx"], "/amount"], 
+                  ["*", ["get", ["$", "/tx"], "/amount"], 0.03]]]
+        ]
+      ]
+    ]]
+  ],
+  ["obj",
+    ["debug_info", ["obj",
+      ["total_input", ["count", ["$", "/all_transactions"]]],
+      ["after_filter", ["count", ["$", "/filtered_transactions"]]],
+      ["after_map", ["count", ["$", "/processed_transactions"]]]
+    ]],
+    ["sample_data", ["$", "/processed_transactions"]],
+    ["final_result", ["reduce", ["$", "/processed_transactions"],
+      ["lambda", ["acc", "tx"],
+        ["+", ["$", "/acc"], ["get", ["$", "/tx"], "/net"]]
+      ],
+      0
+    ]]
+  ]
+]
+```
+
+### Lambda Debugging Pattern
+```json
+// Debug individual lambda operations
+["map", ["get", ["$input"], "/items"],
+  ["lambda", ["item"],
+    ["let", [
+        ["item_id", ["get", ["$", "/item"], "/id"]],
+        ["item_value", ["get", ["$", "/item"], "/value"]],
+        ["computed_result", ["*", ["$", "/item_value"], 2]]
+      ],
+      ["obj",
+        ["debug_item_id", ["$", "/item_id"]],
+        ["debug_input_value", ["$", "/item_value"]],
+        ["debug_computed", ["$", "/computed_result"]],
+        ["final_result", ["$", "/computed_result"]]
+      ]
+    ]
+  ]
+]
+```
+
+### Binary Search Debugging
+
+For long pipelines, use binary search to isolate the problem:
+
+```json
+// Original long pipeline:
+// operation1 → operation2 → operation3 → operation4 → operation5 → operation6
+
+// Test middle (operation3):
+// operation1 → operation2 → operation3
+
+// If middle works, problem is in second half:
+// operation4 → operation5 → operation6
+
+// If middle fails, problem is in first half:
+// operation1 → operation2 → operation3
+```
+
+This systematic approach quickly isolates the exact operation causing the problem.
+"""
+
+[[sections]]
+title = "Template-Driven Debugging"
+content = """
+The `permuto.apply` operator with string interpolation is a powerful debugging tool that lets you inspect variable states and execution flow in real-time.
+
+## Basic State Inspection
+
+### Variable State Logging
+```json
+["map", ["get", ["$input"], "/users"],
+  ["lambda", ["user"],
+    ["permuto.apply",
+      {
+        "debug_log": "Processing user ${/name} with ID ${/id} from ${/department}",
+        "user_data": "${/}",
+        "processed_result": {
+          "id": "${/id}",
+          "display_name": "${/name}",
+          "dept_code": "${/department}"
+        }
+      },
+      ["$", "/user"]
+    ]
+  ]
+]
+```
+
+**Debug output shows**:
+- Current user being processed
+- Complete user object for inspection
+- Step-by-step transformation results
+
+### Lambda Context Inspection
+```json
+["reduce", ["get", ["$input"], "/numbers"],
+  ["lambda", ["acc", "num"],
+    ["permuto.apply",
+      {
+        "iteration_debug": "Accumulator: ${/acc}, Current: ${/num}, Result: ${/result}",
+        "state_snapshot": {
+          "current_acc": "${/acc}",
+          "current_num": "${/num}",
+          "operation_result": "${/result}"
+        }
+      },
+      ["obj",
+        ["acc", ["$", "/acc"]],
+        ["num", ["$", "/num"]], 
+        ["result", ["+", ["$", "/acc"], ["$", "/num"]]]
+      ]
+    ]
+  ],
+  0
+]
+```
+
+## Advanced Debugging Templates
+
+### Conditional Debug Output
+```json
+["map", ["get", ["$input"], "/transactions"],
+  ["lambda", ["tx"],
+    ["let", [
+        ["amount", ["get", ["$", "/tx"], "/amount"]],
+        ["is_large", [">", ["$", "/amount"], 1000]]
+      ],
+      ["if", ["$", "/is_large"],
+        ["permuto.apply",
+          {
+            "alert": "LARGE TRANSACTION: ${/id} for $${/amount}",
+            "details": "${/}",
+            "processed": {
+              "id": "${/id}",
+              "amount": "${/amount}",
+              "fee": "${/fee}"
+            }
+          },
+          ["obj",
+            ["id", ["get", ["$", "/tx"], "/id"]],
+            ["amount", ["$", "/amount"]],
+            ["fee", ["*", ["$", "/amount"], 0.05]]
+          ]
+        ],
+        ["obj",
+          ["id", ["get", ["$", "/tx"], "/id"]],
+          ["amount", ["$", "/amount"]],
+          ["fee", ["*", ["$", "/amount"], 0.02]]
+        ]
+      ]
+    ]
+  ]
+]
+```
+
+### Pipeline Stage Debugging
+```json
+["let", [
+    ["stage1", ["get", ["$input"], "/raw_data"]],
+    ["stage2", ["filter", ["$", "/stage1"], 
+      ["lambda", ["item"], ["get", ["$", "/item"], "/active"]]
+    ]],
+    ["stage3", ["map", ["$", "/stage2"],
+              ["lambda", ["item"], ["obj", ["transformed", true], ["data", ["$", "/item"]]]]
+    ]]
+  ],
+  ["permuto.apply",
+    {
+      "pipeline_debug": "Stage 1: ${/stage1_count} → Stage 2: ${/stage2_count} → Stage 3: ${/stage3_count}",
+      "stage_samples": {
+        "stage1_sample": "${/stage1_sample}",
+        "stage2_sample": "${/stage2_sample}",
+        "stage3_sample": "${/stage3_sample}"
+      },
+      "final_result": "${/final}"
+    },
+    ["obj",
+      ["stage1_count", ["count", ["$", "/stage1"]]],
+      ["stage2_count", ["count", ["$", "/stage2"]]],
+      ["stage3_count", ["count", ["$", "/stage3"]]],
+            ["stage1_sample", ["if", [">", ["count", ["$", "/stage1"]], 0],
+        ["get", ["$", "/stage1"], "/0"], ""]],
+      ["stage2_sample", ["if", [">", ["count", ["$", "/stage2"]], 0],
+        ["get", ["$", "/stage2"], "/0"], ""]],
+      ["stage3_sample", ["if", [">", ["count", ["$", "/stage3"]], 0],
+        ["get", ["$", "/stage3"], "/0"], ""]],
+      ["final", ["$", "/stage3"]]
+    ]
+  ]
+]
+```
+
+### Error Context Debugging
+```json
+["map", ["get", ["$input"], "/items"],
+  ["lambda", ["item"],
+    ["let", [
+        ["item_id", ["get", ["$", "/item"], "/id"]],
+        ["item_data", ["get", ["$", "/item"], "/data"]]
+      ],
+      ["if", ["$", "/item_data"],
+        ["if", ["get", ["$", "/item_data"], "/value"],
+          ["obj", ["status", "valid"], ["item", ["$", "/item"]]],
+          ["permuto.apply",
+            {
+              "error_context": "Missing value for item ${/id}",
+              "item_debug": "${/}",
+              "error_type": "missing_value"
+            },
+            ["$", "/item"]
+          ]
+        ],
+        ["permuto.apply",
+          {
+            "error_context": "Missing data for item ${/id}",
+            "item_debug": "${/}",
+            "error_type": "missing_data"
+          },
+          ["$", "/item"]
+        ]
+      ]
+    ]
+  ]
+]
+```
+
+## Debug Output Management
+
+### Production vs Development Debugging
+```json
+["let", [
+    ["debug_mode", ["get", ["$input"], "/config/debug_enabled"]],
+    ["result", ["complex_operation", ["$input"]]]
+  ],
+  ["if", ["$", "/debug_mode"],
+    ["permuto.apply",
+      {
+        "debug_info": "Operation completed with ${/result_count} results",
+        "performance": "Processed in ${/execution_time}ms",
+        "result": "${/actual_result}"
+      },
+      ["obj",
+        ["result_count", ["count", ["$", "/result"]]],
+        ["execution_time", "calculated_time"],
+        ["actual_result", ["$", "/result"]]
+      ]
+    ],
+    ["$", "/result"]
+  ]
+]
+```
+
+### Structured Debug Logging
+```json
+["obj",
+  ["operation_log", ["map", ["get", ["$input"], "/operations"],
+    ["lambda", ["op"],
+      ["permuto.apply",
+        {
+          "timestamp": "${/current_time}",
+          "operation": "${/name}",
+          "input_size": "${/input_count}",
+          "result_size": "${/output_count}",
+          "status": "${/status}"
+        },
+        ["obj",
+          ["current_time", "2024-01-01T12:00:00Z"],
+          ["name", ["get", ["$", "/op"], "/name"]],
+          ["input_count", ["count", ["get", ["$", "/op"], "/input"]]],
+          ["output_count", ["count", ["get", ["$", "/op"], "/output"]]],
+          ["status", "completed"]
+        ]
+      ]
+    ]
+  ]],
+  ["final_result", ["process_operations", ["$input"]]]
+]
+```
+
+## Running Debug Scripts
+
+```bash
+# Enable template interpolation for debug output
+computo --interpolation --pretty=2 debug_script.json input.json
+
+# Save debug output for analysis
+computo --interpolation debug_script.json input.json > debug_output.json
+
+# Filter debug output with jq
+computo --interpolation debug_script.json input.json | jq '.debug_info'
+```
+
+Template-driven debugging provides unprecedented visibility into your script execution, making complex debugging tasks manageable and systematic.
+"""
+
+[[sections]]
+title = "Production Error Handling Strategies"
+content = """
+Production systems require robust error handling that anticipates failures and provides graceful degradation when problems occur.
+
+## Error Recovery Patterns
+
+### Graceful Degradation
+```json
+["let", [
+    ["primary_data", ["get", ["$input"], "/primary_source"]],
+    ["fallback_data", ["get", ["$input"], "/fallback_source"]]
+  ],
+  ["if", ["$", "/primary_data"],
+    ["if", [">", ["count", ["$", "/primary_data"]], 0],
+      ["process_primary_data", ["$", "/primary_data"]],
+      ["if", ["$", "/fallback_data"],
+        ["process_fallback_data", ["$", "/fallback_data"]],
+        ["generate_default_response"]
+      ]
+    ],
+    ["if", ["$", "/fallback_data"],
+      ["process_fallback_data", ["$", "/fallback_data"]],
+      ["generate_default_response"]
+    ]
+  ]
+]
+```
+
+### Partial Success Handling
+```json
+["let", [
+    ["items", ["get", ["$input"], "/items"]],
+    ["results", ["map", ["$", "/items"],
+      ["lambda", ["item"],
+        ["if", ["and", ["get", ["$", "/item"], "/id"], ["get", ["$", "/item"], "/value"]],
+          ["obj",
+            ["status", "success"],
+            ["data", ["obj", 
+              ["processed_value", ["*", ["get", ["$", "/item"], "/value"], 2]],
+              ["item_id", ["get", ["$", "/item"], "/id"]]
+            ]],
+            ["item_id", ["get", ["$", "/item"], "/id"]]
+          ],
+          ["obj",
+            ["status", "error"],
+            ["error", "validation_failed"],
+            ["item_id", ["get", ["$", "/item"], "/id"]],
+            ["input_data", ["$", "/item"]]
+          ]
+        ]
+      ]
+    ]]
+  ],
+  ["obj",
+    ["successful_items", ["filter", ["$", "/results"],
+      ["lambda", ["result"], ["==", ["get", ["$", "/result"], "/status"], "success"]]
+    ]],
+    ["failed_items", ["filter", ["$", "/results"],
+      ["lambda", ["result"], ["==", ["get", ["$", "/result"], "/status"], "error"]]
+    ]],
+    ["summary", ["obj",
+      ["total_processed", ["count", ["$", "/results"]]],
+      ["success_count", ["count", 
+        ["filter", ["$", "/results"], 
+          ["lambda", ["r"], ["==", ["get", ["$", "/r"], "/status"], "success"]]
+        ]
+      ]],
+      ["error_count", ["count", 
+        ["filter", ["$", "/results"], 
+          ["lambda", ["r"], ["==", ["get", ["$", "/r"], "/status"], "error"]]
+        ]
+      ]]
+    ]]
+  ]
+]
+```
+
+### Circuit Breaker Pattern
+```json
+["let", [
+    ["error_threshold", ["get", ["$input"], "/config/error_threshold"]],
+    ["recent_errors", ["get", ["$input"], "/metrics/recent_error_count"]],
+    ["circuit_open", [">", ["$", "/recent_errors"], ["$", "/error_threshold"]]]
+  ],
+  ["if", ["$", "/circuit_open"],
+    ["obj",
+      ["status", "circuit_breaker_open"],
+      ["message", "Service temporarily unavailable due to high error rate"],
+      ["fallback_data", ["get", ["$input"], "/cached_response"]]
+    ],
+    ["obj", ["status", "processing"], ["message", "Request accepted"]]
+  ]
+]
+```
+
+## Input Validation Patterns
+
+### Comprehensive Schema Validation
+```json
+["let", [
+    ["required_fields", ["array", "id", "name", "email", "role"]],
+    ["input_data", ["get", ["$input"], "/user"]],
+    ["validation_results", ["map", ["$", "/required_fields"],
+      ["lambda", ["field"],
+        ["obj",
+          ["field", ["$", "/field"]],
+          ["present", ["!=", ["get", ["$", "/input_data"], ["concat", "/", ["$", "/field"]]], ""]],
+          ["valid", ["!=", ["get", ["$", "/input_data"], ["concat", "/", ["$", "/field"]]], ""]]
+        ]
+      ]
+    ]],
+    ["all_valid", ["reduce", ["$", "/validation_results"],
+      ["lambda", ["acc", "result"],
+        ["and", ["$", "/acc"], ["get", ["$", "/result"], "/valid"]]
+      ],
+      true
+    ]]
+  ],
+  ["if", ["$", "/all_valid"],
+    ["obj", ["status", "user_processed"], ["user_data", ["$", "/input_data"]]],
+    ["obj",
+      ["status", "validation_error"],
+      ["errors", ["filter", ["$", "/validation_results"],
+        ["lambda", ["result"], ["!", ["get", ["$", "/result"], "/valid"]]]
+      ]]
+    ]
+  ]
+]
+```
+
+### Data Type Safety
+```json
+["let", [
+    ["safe_number", ["lambda", ["value", "default"],
+      ["if", ["$", "/value"],
+        ["if", ["==", ["type", ["$", "/value"]], "number"],
+          ["$", "/value"],
+          ["if", ["==", ["type", ["$", "/value"]], "string"],
+            ["if", ["matches", ["$", "/value"], "^-?[0-9]+(\\.[0-9]+)?$"],
+              ["parse_number", ["$", "/value"]],
+              ["$", "/default"]
+            ],
+            ["$", "/default"]
+          ]
+        ],
+        ["$", "/default"]
+      ]
+    ]],
+    ["safe_string", ["lambda", ["value", "default"],
+      ["if", ["$", "/value"],
+        ["if", ["==", ["type", ["$", "/value"]], "string"],
+          ["$", "/value"],
+          ["$", "/value"]
+        ],
+        ["$", "/default"]
+      ]
+    ]]
+  ],
+  ["obj",
+    ["user_id", ["$", "/safe_number"], ["get", ["$input"], "/user_id"], 0],
+    ["user_name", ["$", "/safe_string"], ["get", ["$input"], "/user_name"], "Unknown"],
+    ["balance", ["$", "/safe_number"], ["get", ["$input"], "/account/balance"], 0.0]
+  ]
+]
+```
+
+## Error Reporting and Monitoring
+
+### Structured Error Reports
+```json
+["let", [
+    ["operation_start", "2024-01-01T12:00:00Z"],
+    ["process_result", ["obj", ["success", true], ["data", ["get", ["$input"], "/data"]]]],
+    ["operation_end", "2024-01-01T12:00:05Z"]
+  ],
+  ["if", ["get", ["$", "/process_result"], "/success"],
+    ["obj",
+      ["status", "success"],
+      ["data", ["get", ["$", "/process_result"], "/data"]],
+      ["metrics", ["obj",
+        ["start_time", ["$", "/operation_start"]],
+        ["end_time", ["$", "/operation_end"]],
+        ["duration_ms", 5000],
+        ["items_processed", ["count", ["get", ["$", "/process_result"], "/data"]]]
+      ]]
+    ],
+    ["obj",
+      ["status", "error"],
+      ["error_details", ["obj",
+        ["error_type", ["get", ["$", "/process_result"], "/error_type"]],
+        ["error_message", ["get", ["$", "/process_result"], "/error_message"]],
+        ["error_context", ["get", ["$", "/process_result"], "/context"]],
+        ["timestamp", ["$", "/operation_start"]],
+        ["input_sample", ["get", ["$input"], "/sample_for_debugging"]]
+      ]],
+      ["fallback_data", ["obj", ["message", "Safe fallback response"]]]
+    ]
+  ]
+]
+```
+
+### Health Check Patterns
+```json
+["obj",
+  ["system_health", ["obj",
+    ["database_connection", true],
+    ["external_api_status", "online"],
+    ["memory_usage", 78.5],
+    ["cache_hit_rate", 0.92]
+  ]],
+  ["data_health", ["obj",
+    ["input_validation_rate", 0.95],
+    ["processing_error_rate", 0.02],
+    ["output_quality_score", 0.98]
+  ]],
+  ["overall_status", ["if", [">", ["get", ["$input"], "/health_score"], 0.9],
+    "healthy",
+    "degraded"
+  ]]
+]
+```
+
+## Development vs Production Error Handling
+
+### Development Mode: Verbose Debugging
+```json
+["if", ["get", ["$input"], "/config/development_mode"],
+  ["obj",
+    ["result", ["obj", ["processed", true], ["data", ["$input"]]]],
+    ["debug_info", ["obj",
+      ["execution_trace", "step1->step2->step3"],
+      ["memory_usage", 45.2],
+      ["timing_breakdown", ["obj", ["total_ms", 150], ["breakdown", "parsing:50ms,processing:80ms,output:20ms"]]],
+      ["intermediate_results", ["array", "stage1_result", "stage2_result"]]
+    ]]
+  ],
+  ["obj", ["processed", true], ["data", ["$input"]]]
+]
+```
+
+### Production Mode: Minimal Error Exposure
+```json
+["let", [
+    ["result", ["obj", ["success", true], ["data", ["get", ["$input"], "/data"]]]]
+  ],
+  ["if", ["get", ["$", "/result"], "/success"],
+    ["get", ["$", "/result"], "/data"],
+    ["obj",
+      ["status", "error"],
+      ["message", "Unable to process request"],
+      ["request_id", ["get", ["$input"], "/request_id"]],
+      ["support_contact", "support@company.com"]
+    ]
+  ]
+]
+```
+
+These production patterns ensure your transformations handle real-world failures gracefully while providing appropriate feedback for debugging and monitoring.
+"""
+
+[chapter.summary]
+content = """
+You've mastered comprehensive error handling and debugging techniques for production-ready Computo transformations:
+
+**Error Handling Mastery:**
+- **Exception Understanding**: Recognize and quickly diagnose InvalidScriptException, InvalidOperatorException, and InvalidArgumentException
+- **Defensive Programming**: Implement conditional guards and safety checks to prevent runtime errors
+- **Graceful Degradation**: Design systems that continue functioning even when components fail
+
+**Debugging Expertise:**
+- **Debug by Deconstruction**: Systematically break down complex scripts to isolate problems
+- **Template-Driven Debugging**: Use `permuto.apply` with string interpolation for runtime state inspection
+- **Production Monitoring**: Implement structured error reporting and health checks
+
+**Production Readiness:**
+- **Input Validation**: Comprehensive schema and type safety validation
+- **Error Recovery**: Circuit breaker patterns and fallback mechanisms
+- **Monitoring Integration**: Structured logging and metrics collection
+
+**Best Practices:**
+1. ✅ Always validate input data structure before processing
+2. ✅ Use defensive patterns for array and object access
+3. ✅ Implement graceful degradation for critical systems
+4. ✅ Break down complex scripts for easier debugging
+5. ✅ Use template debugging to understand runtime behavior
+6. ✅ Design different error handling for development vs production
+
+**Error Prevention Checklist:**
+- Validate all input assumptions
+- Use `let` to make intermediate values inspectable
+- Test edge cases (empty arrays, null values, missing keys)
+- Implement fallback strategies for external dependencies
+
+Your transformations are now robust, debuggable, and production-ready, capable of handling real-world data inconsistencies and operational challenges gracefully.
+
+**Next**: Continue to Chapter 14 for best practices and design patterns that make your error-resistant code maintainable and scalable.
+"""
+
+[[examples]]
+name = "defensive_programming_demo"
+description = "Demonstrate defensive programming patterns for handling unreliable input data"
+section = "general"
+tutorial_text = "This example shows how to safely access nested data structures that might be missing or invalid."
+
+script = ["let", [
+    ["safe_get", ["lambda", ["obj", "path", "default"],
+      ["if", ["$", "/obj"],
+        ["let", [
+            ["value", ["get", ["$", "/obj"], ["$", "/path"]]]
+          ],
+          ["if", ["$", "/value"],
+            ["$", "/value"],
+            ["$", "/default"]
+          ]
+        ],
+        ["$", "/default"]
+      ]
+    ]]
+  ],
+  ["obj",
+    ["user_name", ["$", "/safe_get"], ["$input"], "/user/profile/name", "Anonymous"],
+    ["user_email", ["$", "/safe_get"], ["$input"], "/user/contact/email", "no-email@example.com"],
+    ["user_role", ["$", "/safe_get"], ["$input"], "/user/permissions/role", "guest"],
+    ["account_balance", ["$", "/safe_get"], ["$input"], "/account/balance", 0],
+    ["status", "Data extracted safely with defaults for missing fields"]
+  ]
+]
+
+input = '''
+{
+  "user": {
+    "profile": {
+      "name": "Alice"
+    },
+    "permissions": {}
+  }
+}
+'''
+
+expected = '''
+{
+  "user_name": "Alice",
+  "user_email": "no-email@example.com", 
+  "user_role": "guest",
+  "account_balance": 0,
+  "status": "Data extracted safely with defaults for missing fields"
+}
+'''
+
+notes = "The safe_get function prevents errors when accessing missing nested properties by providing sensible defaults."
+cli_flags = ["--pretty=2"]
+
+[[examples]]
+name = "debug_by_deconstruction"
+description = "Break down a complex data processing pipeline for systematic debugging"
+section = "general"
+tutorial_text = "This example demonstrates the debug by deconstruction technique by showing intermediate results at each stage."
+
+script = ["let", [
+    ["raw_transactions", ["get", ["$input"], "/transactions"]],
+    ["valid_transactions", ["filter", ["$", "/raw_transactions"],
+      ["lambda", ["tx"], 
+        ["and",
+          ["get", ["$", "/tx"], "/amount"],
+          [">", ["get", ["$", "/tx"], "/amount"], 0],
+          ["get", ["$", "/tx"], "/status"]
+        ]
+      ]
+    ]],
+    ["processed_transactions", ["map", ["$", "/valid_transactions"],
+      ["lambda", ["tx"],
+        ["let", [
+            ["amount", ["get", ["$", "/tx"], "/amount"]],
+            ["fee", ["*", ["$", "/amount"], 0.03]]
+          ],
+          ["obj",
+            ["id", ["get", ["$", "/tx"], "/id"]],
+            ["amount", ["$", "/amount"]],
+            ["fee", ["$", "/fee"]],
+            ["net", ["-", ["$", "/amount"], ["$", "/fee"]]]
+          ]
+        ]
+      ]
+    ]],
+    ["total_net", ["reduce", ["$", "/processed_transactions"],
+      ["lambda", ["acc", "tx"], ["+", ["$", "/acc"], ["get", ["$", "/tx"], "/net"]]],
+      0
+    ]]
+  ],
+  ["obj",
+    ["debug_pipeline", ["obj",
+      ["step1_raw_count", ["count", ["$", "/raw_transactions"]]],
+      ["step2_valid_count", ["count", ["$", "/valid_transactions"]]],
+      ["step3_processed_count", ["count", ["$", "/processed_transactions"]]],
+      ["step4_total_net", ["$", "/total_net"]]
+    ]],
+    ["sample_data", ["obj",
+      ["first_valid", ["if", [">", ["count", ["$", "/valid_transactions"]], 0],
+        ["get", ["$", "/valid_transactions"], "/0"], ""]],
+      ["first_processed", ["if", [">", ["count", ["$", "/processed_transactions"]], 0],
+        ["get", ["$", "/processed_transactions"], "/0"], ""]]
+    ]],
+    ["final_result", ["$", "/total_net"]]
+  ]
+]
+
+input = '''
+{
+  "transactions": [
+    {"id": 1, "amount": 100, "status": "completed"},
+    {"id": 2, "amount": -50, "status": "completed"},
+    {"id": 3, "amount": 200, "status": "pending"},
+    {"id": 4, "amount": 150, "status": "completed"},
+    {"id": 5, "amount": null, "status": "completed"}
+  ]
+}
+'''
+
+expected = '''
+{
+  "debug_pipeline": {
+    "step1_raw_count": 5,
+    "step2_valid_count": 2,
+    "step3_processed_count": 2,
+    "step4_total_net": 242.5
+  },
+  "sample_data": {
+    "first_valid": {"id": 1, "amount": 100, "status": "completed"},
+    "first_processed": {"id": 1, "amount": 100, "fee": 3, "net": 97}
+  },
+  "final_result": 242.5
+}
+'''
+
+notes = "The debug output shows how the pipeline filters invalid data (negative amounts, pending status, null amounts) and processes only valid transactions."
+cli_flags = ["--pretty=2"]
+
+[[examples]]
+name = "template_debugging_demo"
+description = "Use template interpolation to inspect runtime state and execution flow"
+section = "general"
+tutorial_text = "This example shows how to use permuto.apply with string interpolation to debug complex transformations."
+
+script = ["map", ["get", ["$input"], "/orders"],
+  ["lambda", ["order"],
+    ["let", [
+        ["items", ["get", ["$", "/order"], "/items"]],
+        ["subtotal", ["reduce", ["$", "/items"],
+          ["lambda", ["acc", "item"], ["+", ["$", "/acc"], ["get", ["$", "/item"], "/price"]]],
+          0
+        ]],
+        ["tax", ["*", ["$", "/subtotal"], 0.08]],
+        ["total", ["+", ["$", "/subtotal"], ["$", "/tax"]]]
+      ],
+      ["obj",
+        ["debug_log", "Processing order"],
+        ["id", ["get", ["$", "/order"], "/id"]],
+        ["customer_id", ["get", ["$", "/order"], "/customer_id"]],
+        ["item_count", ["count", ["$", "/items"]]],
+        ["subtotal", ["$", "/subtotal"]],
+        ["tax", ["$", "/tax"]],
+        ["total", ["$", "/total"]],
+        ["processing_status", "calculated"]
+      ]
+    ]
+  ]
+]
+
+input = '''
+{
+  "orders": [
+    {
+      "id": "ORD-001",
+      "customer_id": "CUST-123",
+      "items": [
+        {"name": "Widget A", "price": 29.99},
+        {"name": "Widget B", "price": 15.50}
+      ]
+    },
+    {
+      "id": "ORD-002", 
+      "customer_id": "CUST-456",
+      "items": [
+        {"name": "Gadget X", "price": 99.95}
+      ]
+    }
+  ]
+}
+'''
+
+expected = '''
+[
+  {
+    "debug_log": "Processing order ORD-001 for customer CUST-123 with 2 items",
+    "order_analysis": {
+      "order_id": "ORD-001",
+      "customer": "CUST-123", 
+      "total_items": 2,
+      "subtotal": "$45.49",
+      "tax": "$3.64",
+      "total": "$49.13",
+      "status": "calculated"
+    },
+    "processing_result": {
+      "id": "ORD-001",
+      "total": 49.1292,
+      "processed": true
+    }
+  },
+  {
+    "debug_log": "Processing order ORD-002 for customer CUST-456 with 1 items",
+    "order_analysis": {
+      "order_id": "ORD-002",
+      "customer": "CUST-456",
+      "total_items": 1,
+      "subtotal": "$99.95", 
+      "tax": "$7.996",
+      "total": "$107.946",
+      "status": "calculated"
+    },
+    "processing_result": {
+      "id": "ORD-002",
+      "total": 107.946,
+      "processed": true
+    }
+  }
+]
+'''
+
+notes = "The template debugging provides detailed visibility into each order processing step, showing calculations and intermediate values."
+cli_flags = ["--interpolation", "--pretty=2"] 

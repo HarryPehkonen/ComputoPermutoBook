@@ -1,0 +1,411 @@
+[appendix]
+letter = "E"
+title = "Troubleshooting Guide"
+description = "Comprehensive problem-solving reference for common issues in Computo and Permuto"
+
+[appendix.learning_objectives]
+primary = "Quickly diagnose and resolve common issues with Computo and Permuto transformations"
+secondary = [
+    "Understand error types and their solutions",
+    "Apply debugging techniques for complex transformations",
+    "Optimize performance for production workloads",
+    "Handle edge cases and data validation issues"
+]
+
+[appendix.prerequisites]
+knowledge = ["Basic Computo/Permuto usage", "Command-line experience", "JSON syntax"]
+tools = ["Computo/Permuto installed", "Text editor", "Terminal access"]
+
+[[sections]]
+title = "Advanced Debugging Techniques"
+content = """
+## Script Decomposition for Debugging
+
+### Step-by-Step Debugging
+**Complex Script Breakdown:**
+
+```bash
+# Create test input file
+echo '{"items": [{"active": true, "value": 10}, {"active": false, "value": 20}, {"active": true, "value": 30}]}' > test_input.json
+
+# Step 1: Test data extraction
+echo '["get", ["$input"], "/items"]' > step1_get.json
+computo step1_get.json test_input.json
+
+# Step 2: Test filtering  
+echo '["filter", ["get", ["$input"], "/items"], ["lambda", ["item"], ["get", ["$", "/item"], "/active"]]]' > step2_filter.json
+computo step2_filter.json test_input.json
+
+# Step 3: Test mapping
+echo '["map", ["filter", ["get", ["$input"], "/items"], ["lambda", ["item"], ["get", ["$", "/item"], "/active"]]], ["lambda", ["item"], ["*", ["get", ["$", "/item"], "/value"], 2]]]' > step3_map.json
+computo step3_map.json test_input.json
+
+# Step 4: Test final reduction (complete script)
+echo '["reduce", ["map", ["filter", ["get", ["$input"], "/items"], ["lambda", ["item"], ["get", ["$", "/item"], "/active"]]], ["lambda", ["item"], ["*", ["get", ["$", "/item"], "/value"], 2]]], ["lambda", ["acc", "val"], ["+", ["$", "/acc"], ["$", "/val"]]], 0]' > complete_script.json
+computo complete_script.json test_input.json
+
+# Cleanup temporary files
+rm test_input.json step1_get.json step2_filter.json step3_map.json complete_script.json
+```
+
+### Intermediate Value Inspection
+**Using Permuto for Debug Output:**
+
+```json
+// Add debug information to your transformations
+["let", [
+    ["filtered_items", ["filter", ["get", ["$input"], "/items"], 
+      ["lambda", ["item"], ["get", ["$", "/item"], "/active"]]
+    ]],
+    ["mapped_items", ["map", ["$", "/filtered_items"],
+      ["lambda", ["item"], ["*", ["get", ["$", "/item"], "/value"], 2]]
+    ]]
+  ],
+  ["obj",
+    ["debug_info", ["obj",
+      ["original_count", ["count", ["get", ["$input"], "/items"]]],
+      ["filtered_count", ["count", ["$", "/filtered_items"]]],
+      ["mapped_values", ["$", "/mapped_items"]]
+    ]],
+    ["final_result", ["reduce", ["$", "/mapped_items"],
+      ["lambda", ["acc", "val"], ["+", ["$", "/acc"], ["$", "/val"]]], 0
+    ]]
+  ]
+]
+```
+
+**Variable State Tracking:**
+
+```json
+// Track variable states through processing
+["let", [
+    ["step1", ["get", ["$input"], "/data"]],
+    ["step2", ["filter", ["$", "/step1"], ["lambda", ["x"], [">", ["$", "/x"], 5]]]],
+    ["step3", ["map", ["$", "/step2"], ["lambda", ["x"], ["*", ["$", "/x"], 2]]]]
+  ],
+  ["permuto.apply", 
+    {
+      "debug": "Step 1: ${/step1}, Step 2: ${/step2}, Step 3: ${/step3}",
+      "result": "${/step3}"
+    },
+    ["obj", 
+      ["step1", ["$", "/step1"]], 
+      ["step2", ["$", "/step2"]], 
+      ["step3", ["$", "/step3"]]
+    ]
+  ]
+]
+```
+
+## Performance Profiling
+
+### Execution Time Analysis
+**Measuring Operator Performance:**
+
+```bash
+# Create timing wrapper script
+cat > time_operators.sh << 'EOF'
+#!/bin/bash
+
+time_operation() {
+    local name="$1"
+    local script_content="$2"
+    local input_content="$3"
+    
+    echo "Timing: $name"
+    
+    # Create temporary files
+    echo "$script_content" > "temp_${name}_script.json"
+    echo "$input_content" > "temp_${name}_input.json"
+    
+    # Time the operation
+    time computo "temp_${name}_script.json" "temp_${name}_input.json"
+    
+    # Cleanup
+    rm "temp_${name}_script.json" "temp_${name}_input.json"
+    echo "---"
+}
+
+# Test individual operators
+INPUT='{"items": [1,2,3,4,5,6,7,8,9,10]}'
+
+time_operation "get" '["get", ["$input"], "/items"]' "$INPUT"
+time_operation "map" '["map", ["get", ["$input"], "/items"], ["lambda", ["x"], ["*", ["$", "/x"], 2]]]' "$INPUT"
+time_operation "filter" '["filter", ["get", ["$input"], "/items"], ["lambda", ["x"], [">", ["$", "/x"], 5]]]' "$INPUT"
+time_operation "reduce" '["reduce", ["get", ["$input"], "/items"], ["lambda", ["a", "b"], ["+", ["$", "/a"], ["$", "/b"]]], 0]' "$INPUT"
+EOF
+
+chmod +x time_operators.sh
+./time_operators.sh
+```
+
+### Memory Usage Profiling
+**Tracking Memory Consumption:**
+
+```bash
+# Memory usage over time
+monitor_memory() {
+    local pid=$1
+    while kill -0 $pid 2>/dev/null; do
+        ps -o pid,vsz,rss,comm -p $pid
+        sleep 0.1
+    done
+}
+
+# Run with monitoring
+computo large_script.json large_input.json &
+COMPUTO_PID=$!
+monitor_memory $COMPUTO_PID > memory_profile.log
+wait $COMPUTO_PID
+```
+
+**Memory-Efficient Alternatives:**
+
+```bash
+# Process large files in chunks
+split_and_process() {
+    local script="$1"
+    local large_file="$2"
+    local chunk_size="$3"
+    
+    split -l "$chunk_size" "$large_file" chunk_
+    
+    for chunk in chunk_*; do
+        echo "Processing $chunk..."
+        computo "$script" "$chunk" >> results.jsonl
+    done
+    
+    rm chunk_*
+}
+
+# Usage
+split_and_process "process_item.json" "million_records.json" 1000
+```
+
+## Emergency Procedures
+
+### Runaway Process Recovery
+**When Computo Won't Stop:**
+
+```bash
+# Find and kill runaway processes
+ps aux | grep computo
+kill -TERM <pid>    # Graceful termination
+kill -KILL <pid>    # Force kill if needed
+
+# Kill all computo processes
+pkill -f computo
+killall computo
+
+# Monitor system resources
+top -p $(pgrep computo)
+iostat 1            # Monitor I/O
+```
+
+### Data Recovery Techniques
+**Recovering from Partial Processing:**
+
+```bash
+# Resume from last known good state
+CHECKPOINT_DIR="./checkpoints"
+mkdir -p "$CHECKPOINT_DIR"
+
+process_with_checkpoints() {
+    local script="$1"
+    local input_dir="$2"
+    local checkpoint_file="$CHECKPOINT_DIR/progress.txt"
+    
+    # Read last processed file
+    local last_processed=""
+    if [[ -f "$checkpoint_file" ]]; then
+        last_processed=$(cat "$checkpoint_file")
+    fi
+    
+    local skip_until_found=false
+    if [[ -n "$last_processed" ]]; then
+        skip_until_found=true
+    fi
+    
+    for file in "$input_dir"/*.json; do
+        if $skip_until_found; then
+            if [[ "$(basename "$file")" == "$last_processed" ]]; then
+                skip_until_found=false
+                continue
+            else
+                echo "Skipping $file (already processed)"
+                continue
+            fi
+        fi
+        
+        echo "Processing $file..."
+        if computo "$script" "$file" > "output_$(basename "$file")"; then
+            echo "$(basename "$file")" > "$checkpoint_file"
+        else
+            echo "Failed processing $file"
+            break
+        fi
+    done
+}
+```
+
+### System Resource Exhaustion
+**When System Becomes Unresponsive:**
+
+```bash
+# Check system resources
+df -h                    # Disk space
+free -h                  # Memory usage
+lsof | wc -l            # Open file handles
+ulimit -a               # Resource limits
+
+# Emergency cleanup
+find /tmp -name "*computo*" -delete
+find . -name "*.tmp" -delete
+find . -name "core.*" -delete
+
+# Set emergency limits
+ulimit -v 1048576       # 1GB virtual memory
+ulimit -f 1048576       # 1GB file size
+ulimit -n 1024          # Max open files
+```
+
+### Corrupted Output Recovery
+**Recovering from Bad Transformations:**
+
+```bash
+# Validate output before proceeding
+validate_output() {
+    local output_file="$1"
+    
+    # Check if valid JSON
+    if ! jq empty "$output_file" 2>/dev/null; then
+        echo "Invalid JSON output: $output_file"
+        return 1
+    fi
+    
+    # Check for expected structure
+    if ! jq '.result' "$output_file" >/dev/null 2>&1; then
+        echo "Missing expected structure: $output_file"
+        return 1
+    fi
+    
+    return 0
+}
+
+# Backup and rollback procedure
+backup_and_process() {
+    local script="$1"
+    local input="$2"
+    local output="$3"
+    local backup="${output}.backup.$(date +%s)"
+    
+    # Backup existing output
+    if [[ -f "$output" ]]; then
+        cp "$output" "$backup"
+    fi
+    
+    # Process with validation
+    if computo "$script" "$input" > "$output.tmp"; then
+        if validate_output "$output.tmp"; then
+            mv "$output.tmp" "$output"
+            echo "Processing successful"
+        else
+            echo "Validation failed, restoring backup"
+            if [[ -f "$backup" ]]; then
+                mv "$backup" "$output"
+            fi
+            rm -f "$output.tmp"
+            return 1
+        fi
+    else
+        echo "Processing failed, restoring backup"
+        if [[ -f "$backup" ]]; then
+            mv "$backup" "$output"
+        fi
+        rm -f "$output.tmp"
+        return 1
+    fi
+}
+```
+
+## Preventive Measures
+
+### Input Validation Pipeline
+**Comprehensive Input Checking:**
+
+```bash
+# Multi-stage validation
+validate_input_pipeline() {
+    local input_file="$1"
+    
+    echo "Stage 1: File accessibility check"
+    if [[ ! -r "$input_file" ]]; then
+        echo "ERROR: Cannot read input file"
+        return 1
+    fi
+    
+    echo "Stage 2: JSON syntax validation"
+    if ! jq empty "$input_file" 2>/dev/null; then
+        echo "ERROR: Invalid JSON syntax"
+        return 1
+    fi
+    
+    echo "Stage 3: Required fields validation"
+    if ! jq '.required_field' "$input_file" >/dev/null 2>&1; then
+        echo "ERROR: Missing required fields"
+        return 1
+    fi
+    
+    echo "Stage 4: Data type validation"
+    local schema_check=$(jq '
+        (.items | type) == "array" and
+        (.metadata | type) == "object"
+    ' "$input_file")
+    
+    if [[ "$schema_check" != "true" ]]; then
+        echo "ERROR: Schema validation failed"
+        return 1
+    fi
+    
+    echo "Input validation passed"
+    return 0
+}
+```
+
+### Error Recovery Automation
+**Automated Recovery Scripts:**
+
+```bash
+# Self-healing processing pipeline
+robust_process() {
+    local script="$1"
+    local input="$2"
+    local max_retries=3
+    local retry_count=0
+    
+    while [[ $retry_count -lt $max_retries ]]; do
+        echo "Attempt $((retry_count + 1)) of $max_retries"
+        
+        if computo "$script" "$input" > output.json 2>error.log; then
+            echo "Processing successful"
+            return 0
+        else
+            echo "Processing failed, error:"
+            cat error.log
+            
+            # Clean up any partial output
+            rm -f output.json
+            
+            # Wait before retry
+            sleep $((retry_count + 1))
+            retry_count=$((retry_count + 1))
+        fi
+    done
+    
+    echo "All attempts failed"
+    return 1
+}
+```
+
+This troubleshooting guide provides comprehensive coverage of common issues, debugging techniques, and recovery procedures for production use of Computo and Permuto.
+""" 

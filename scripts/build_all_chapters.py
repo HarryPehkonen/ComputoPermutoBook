@@ -39,17 +39,23 @@ class BookBuilder:
         self.validation_results = {}
         
     def discover_chapters(self):
-        """Find all chapter TOML files."""
-        pattern = "ch*.toml"
-        self.chapter_files = sorted(list(self.source_dir.glob(pattern)))
+        """Find all chapter and appendix TOML files."""
+        # Find chapters and appendices
+        chapter_files = sorted(list(self.source_dir.glob("ch*.toml")))
+        appendix_files = sorted(list(self.source_dir.glob("appendix_*.toml")))
+        
+        # Combine with chapters first, then appendices
+        self.chapter_files = chapter_files + appendix_files
         
         if not self.chapter_files:
-            print(f"No chapter files found in {self.source_dir}")
+            print(f"No chapter or appendix files found in {self.source_dir}")
             return False
             
-        print(f"Found {len(self.chapter_files)} chapter files:")
-        for chapter_file in self.chapter_files:
-            print(f"  {chapter_file.name}")
+        print(f"Found {len(chapter_files)} chapters and {len(appendix_files)} appendices:")
+        for chapter_file in chapter_files:
+            print(f"  📖 {chapter_file.name}")
+        for appendix_file in appendix_files:
+            print(f"  📑 {appendix_file.name}")
         return True
 
     def generate_single_chapter(self, chapter_file: Path, validate: bool = False):
@@ -69,9 +75,14 @@ class BookBuilder:
             print(f"  Saving examples...")
             generator.save_examples()
             
-            chapter_num = generator.chapter_data['chapter']['number']
+            # Get identifier based on type
+            if generator.is_appendix:
+                identifier = f"Appendix {generator.content_data['letter']}"
+            else:
+                identifier = generator.content_data['number']
+            
             return {
-                'chapter': chapter_num,
+                'chapter': identifier,
                 'file': chapter_file,
                 'success': success,
                 'validation_results': generator.example_results if validate else None
@@ -86,8 +97,8 @@ class BookBuilder:
             }
 
     def generate_all_chapters(self, validate: bool = False):
-        """Generate all chapters."""
-        print(f"Generating {len(self.chapter_files)} chapters...")
+        """Generate all chapters and appendices."""
+        print(f"Generating {len(self.chapter_files)} chapters and appendices...")
         
         results = []
         for chapter_file in self.chapter_files:
@@ -141,9 +152,9 @@ class BookBuilder:
 
 **Generated**: {Path().cwd()}
 
-## Chapter Generation
+## Content Generation
 
-- **Total Chapters**: {total_chapters}
+- **Total Items**: {total_chapters}
 - **Successful**: {successful_chapters}
 - **Failed**: {failed_chapters}
 
@@ -158,11 +169,27 @@ class BookBuilder:
 
 """
         
-        content += "## Chapter Details\n\n"
+        content += "## Content Details\n\n"
         
-        for result in sorted(results, key=lambda x: str(x['chapter'])):
+        # Sort results: chapters by number, then appendices by letter
+        def sort_key(result):
+            chapter_id = result['chapter']
+            if isinstance(chapter_id, int):
+                return (0, chapter_id)  # Chapters first, sorted by number
+            elif isinstance(chapter_id, str) and chapter_id.startswith("Appendix "):
+                # Appendix - extract letter for sorting
+                try:
+                    letter = chapter_id.split()[-1]  # "Appendix B" -> "B"
+                    return (1, ord(letter))  # Appendices second, sorted by letter
+                except (IndexError, TypeError):
+                    return (1, 999)  # Put problematic appendices at the end
+            else:
+                # Fallback for other types (like error messages)
+                return (2, str(chapter_id))
+        
+        for result in sorted(results, key=sort_key):
             status = "PASS" if result['success'] else "FAIL"
-            content += f"- **{status}** Chapter {result['chapter']}"
+            content += f"- **{status}** {result['chapter']}"
             
             if 'error' in result:
                 content += f" - Error: {result['error']}"

@@ -1,0 +1,271 @@
+[appendix]
+letter = "D"
+title = "Integration Patterns"
+description = "Essential patterns for embedding Computo/Permuto in different environments"
+
+[[sections]]
+title = "C++ Library Integration"
+content = """
+## Basic Usage
+```cpp
+#include <computo/engine.hpp>
+#include <nlohmann/json.hpp>
+
+computo::Engine engine;
+auto script = nlohmann::json::parse(R"(["get", ["$input"], "/users"])");
+auto input = nlohmann::json::parse(R"({"users": ["Alice", "Bob"]})");
+auto result = engine.execute(script, input);
+```
+
+## Exception Handling
+```cpp
+try {
+    auto result = engine.execute(script, input);
+} catch (const computo::ExecutionException& e) {
+    std::cerr << "Execution error: " << e.what() << std::endl;
+}
+```
+
+## Thread Safety
+```cpp
+class ThreadSafeTransformer {
+    mutable std::shared_mutex mutex_;
+    computo::Engine engine_;
+public:
+    nlohmann::json execute(const nlohmann::json& script, 
+                          const nlohmann::json& input) const {
+        std::shared_lock lock(mutex_);
+        return engine_.execute(script, input);
+    }
+};
+```
+"""
+
+[[sections]]
+title = "Build System Integration"
+content = """
+## CMake Integration
+```cmake
+find_package(nlohmann_json REQUIRED)
+pkg_check_modules(COMPUTO REQUIRED computo)
+
+add_executable(transform_app src/main.cpp)
+target_link_libraries(transform_app 
+    ${COMPUTO_LIBRARIES} 
+    nlohmann_json::nlohmann_json 
+    pthread
+)
+```
+
+## Package Management
+**vcpkg:**
+```json
+{
+  "dependencies": ["nlohmann-json", "computo", "permuto"]
+}
+```
+
+**Conan:**
+```ini
+[requires]
+nlohmann_json/3.11.2
+computo/1.0.0
+```
+"""
+
+[[sections]]
+title = "Scripting Integration"
+content = """
+## Shell Scripts
+```bash
+#!/bin/bash
+transform_data() {
+    local script="$1"
+    local input="$2"
+    local output="$3"
+    
+    computo "$script" "$input" > "$output"
+}
+
+# Batch processing
+for file in data/*.json; do
+    transform_data "scripts/process.json" "$file" "output/$(basename $file)"
+done
+```
+
+## Python Wrapper
+```python
+import subprocess
+import json
+from pathlib import Path
+
+class ComputoWrapper:
+    def __init__(self, computo_path="computo"):
+        self.computo_path = computo_path
+    
+    def execute(self, script, input_data, flags=None):
+        # Write temp files
+        script_file = Path("temp_script.json")
+        input_file = Path("temp_input.json")
+        
+        script_file.write_text(json.dumps(script))
+        input_file.write_text(json.dumps(input_data))
+        
+        # Execute
+        cmd = [self.computo_path]
+        if flags: cmd.extend(flags)
+        cmd.extend([str(script_file), str(input_file)])
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        return json.loads(result.stdout)
+```
+
+## Node.js Integration
+```javascript
+const { spawn } = require('child_process');
+
+class ComputoIntegration {
+    async execute(script, inputData, options = {}) {
+        return new Promise((resolve, reject) => {
+            const args = [];
+            if (options.pretty) args.push(`--pretty=${options.pretty}`);
+            
+            const child = spawn('computo', args, { stdio: 'pipe' });
+            child.stdin.write(JSON.stringify(script) + '\n');
+            child.stdin.write(JSON.stringify(inputData));
+            child.stdin.end();
+            
+            let output = '';
+            child.stdout.on('data', data => output += data);
+            child.on('close', code => {
+                if (code === 0) resolve(JSON.parse(output));
+                else reject(new Error(`Computo failed with code ${code}`));
+            });
+        });
+    }
+}
+```
+"""
+
+[[sections]]
+title = "Web Service Integration"
+content = """
+## REST API (Express.js)
+```javascript
+const express = require('express');
+const ComputoIntegration = require('./computo-integration');
+
+const app = express();
+const computo = new ComputoIntegration();
+
+app.post('/api/transform', async (req, res) => {
+    try {
+        const { script, data, options = {} } = req.body;
+        const result = await computo.execute(script, data, options);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+```
+
+## Caching Strategy
+```javascript
+const NodeCache = require('node-cache');
+const crypto = require('crypto');
+
+class CachedComputoService {
+    constructor() {
+        this.cache = new NodeCache({ stdTTL: 300 });
+    }
+    
+    async execute(script, data, options) {
+        const key = crypto.createHash('sha256')
+            .update(JSON.stringify({ script, data, options }))
+            .digest('hex');
+        
+        const cached = this.cache.get(key);
+        if (cached) return cached;
+        
+        const result = await this.computo.execute(script, data, options);
+        this.cache.set(key, result);
+        return result;
+    }
+}
+```
+"""
+
+[[sections]]
+title = "Container & Deployment"
+content = """
+## Dockerfile
+```dockerfile
+FROM ubuntu:22.04
+
+RUN apt-get update && apt-get install -y \
+    build-essential cmake pkg-config
+
+COPY ./computo-*.deb /tmp/
+RUN dpkg -i /tmp/computo-*.deb
+
+WORKDIR /app
+COPY scripts/ ./scripts/
+VOLUME ["/app/data", "/app/output"]
+
+ENTRYPOINT ["computo"]
+```
+
+## Kubernetes Deployment
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: computo-processor
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: computo
+        image: myregistry/computo-processor:v1.0
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+```
+
+## Production Configuration
+```yaml
+computo:
+  performance:
+    max_execution_time: 30s
+    max_memory_usage: 1GB
+    worker_threads: 4
+  security:
+    enable_sandboxing: true
+    max_script_size: 1MB
+```
+"""
+
+[appendix.summary]
+content = """
+Essential integration patterns:
+
+**C++ Library**: Direct usage, exception handling, thread safety with shared_mutex
+**Build Systems**: CMake, vcpkg, Conan for dependency management
+**Scripting**: Shell automation, Python/Node.js wrappers for integration
+**Web Services**: REST APIs with Express.js, caching for performance
+**Containers**: Docker, Kubernetes deployments, production configuration
+
+**Key Practices**:
+- Use RAII and smart pointers for C++ memory management
+- Implement proper error handling across all integration layers
+- Cache transformations for performance in web services
+- Use containers for consistent deployment environments
+- Configure resource limits and timeouts for production safety
+
+These patterns enable robust Computo/Permuto integration across technology stacks.
+""" 
